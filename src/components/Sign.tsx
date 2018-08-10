@@ -1,8 +1,12 @@
-import * as React from 'react'
+import * as React from 'react';
 
-const Sign = () =>
-    <div>
-        <h1>Hello App!</h1>
-    </div>
+export default class Sign extends React.Component {
 
-export default Sign
+    render() {
+        return (
+            <div>
+                <h1>Hello Артурыч!!!</h1>
+            </div>
+        );
+    }
+}

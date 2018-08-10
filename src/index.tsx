@@ -1,9 +1,11 @@
 import * as React from 'react'
 import { render } from 'react-dom'
-//import { BrowserRouter, Router, Link } from 'react-router-dom'
-import Sign from './components/Sign'
+import { BrowserRouter } from 'react-router-dom'
+import App from './components/App'
 
 render(
-    <Sign/>,
+    <BrowserRouter>
+        <App/>
+    </BrowserRouter>,
     document.getElementById("react-container")
 )
