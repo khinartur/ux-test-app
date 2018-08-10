@@ -10,7 +10,11 @@ export default class Sign extends React.Component {
     }
 
     githubSignIn() {
-
+        const provider = new firebase.auth.GithubAuthProvider();
+        firebase.auth().signInWithPopup(provider).then(function (result) {
+            console.log("Result:");
+            console.dir(result);
+        });
     }
 
     render() {
