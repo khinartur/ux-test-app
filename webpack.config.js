@@ -1,3 +1,5 @@
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+
 module.exports = {
     devtool: 'inline-source-map',
     cache: true,
@@ -10,6 +12,10 @@ module.exports = {
         filename: 'js/index.js',
     },
     devServer: {
+        contentBase: [
+            __dirname + '/public',
+            __dirname + '/dist',
+        ],
         port: 7000,
         historyApiFallback: true
     },
@@ -26,4 +32,10 @@ module.exports = {
             },
         ],
     },
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: 'src/templates/index.html',
+            filename: 'index.html',
+        })
+    ]
 };
