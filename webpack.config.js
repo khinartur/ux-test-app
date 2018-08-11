@@ -5,7 +5,7 @@ module.exports = {
     cache: true,
     entry: './src/index.tsx',
     resolve: {
-        extensions: ['.tsx', '.d.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
     },
     output: {
         path: __dirname + '/dist/static',
@@ -30,7 +30,26 @@ module.exports = {
                     },
                 ],
             },
-        ],
+            {
+                test: /\.scss$/,
+                use: [
+                    {
+                        loader: "style-loader"
+                    },
+                    {
+                        loader: "css-loader",
+                        options: {
+                            sourceMap: true
+                        }
+                    },
+                    {
+                        loader: "sass-loader",
+                        options: {
+                            sourceMap: true
+                        }
+                    }
+                ],
+            },
     },
     plugins: [
         new HtmlWebpackPlugin({
