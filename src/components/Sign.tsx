@@ -25,7 +25,7 @@ export default class Sign extends React.Component {
         return (
             <div>
                 <h4>Технопарк. Тестирование по курсу UX</h4>
-                <button onClick={this.githubSignIn}>Войти с помощью Github</button>
+                <button onClick={this.githubSignIn}>Войти с помощью Github nah</button>
                 <Link to="/admin">Admin</Link>
                 <button onClick={() => history.push("/admin")}>CHECK</button>
             </div>

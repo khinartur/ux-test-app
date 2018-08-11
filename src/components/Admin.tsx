@@ -10,6 +10,7 @@ export default class Admin extends React.Component {
                 <button>Посмотреть результаты</button>
                 <Link to="/admin/students">Результаты студентов</Link>
                 <button>Список студентов</button>
+                <button>Добавить администратора</button>
             </div>
         );
     }

@@ -1,4 +1,5 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var webpack = require('webpack');
 
 module.exports = {
     devtool: 'inline-source-map',
@@ -17,7 +18,8 @@ module.exports = {
             __dirname + '/dist',
         ],
         port: 7000,
-        historyApiFallback: true
+        historyApiFallback: true,
+        hot: true,
     },
     module: {
         rules: [
@@ -50,11 +52,13 @@ module.exports = {
                     }
                 ],
             },
+        ]
     },
     plugins: [
         new HtmlWebpackPlugin({
             template: 'src/templates/index.html',
             filename: 'index.html',
-        })
+        }),
+        new webpack.HotModuleReplacementPlugin()
     ]
 };

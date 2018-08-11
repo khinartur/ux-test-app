@@ -7,7 +7,8 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-
+import AddStudentDialog from './AddStudentDialog'
+import {ChangeEvent} from 'react';
 
 let id = 0;
 function createData(name, team, github, status, points) {
@@ -15,26 +16,40 @@ function createData(name, team, github, status, points) {
     return { id, name, team, github, status, points };
 }
 
+interface State {
+    addStudentDialogOpened: boolean;
+    newStudentsString: string;
+}
 
-export default class StudentsList extends React.Component {
+export default class StudentsList extends React.Component<{}, State> {
 
     constructor(props) {
         super(props);
 
         this.state = {
             addStudentDialogOpened: false,
+            newStudentsString: "",
         };
 
         this.githubSignIn = this.githubSignIn.bind(this);
     }
 
+
+
     githubSignIn() {
+        //TODO: check instanse
         const provider = new firebase.auth.GithubAuthProvider();
         firebase.auth().signInWithPopup(provider).then(function (result) {
             console.log("Result:");
             console.dir(result);
         });
     }
+
+    onDialogInputChange = (evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        this.setState({
+            newStudentsString: evt.target.value,
+        });
+    };
 
     openAddStudentDialog = () => {
         this.setState({
@@ -45,7 +60,17 @@ export default class StudentsList extends React.Component {
     closeAddStudentDialog = () => {
         this.setState({
             addStudentDialogOpened: false,
-        })
+        });
+    };
+
+    onDialogSubmit = () => {
+        this.setState({
+            addStudentDialogOpened: false,
+        });
+
+        this.state.newStudentsString.split(/\s+/g).forEach(function(login) {
+            console.log("LOGIN: ", login);
+        });
     };
 
     render() {
@@ -83,10 +108,11 @@ export default class StudentsList extends React.Component {
                         </TableBody>
                     </Table>
                 </Paper>
-                <Button onClick={this.openAddStudentDialog}>
-                        Добавить студента
-                </Button>
-
+                <AddStudentDialog onClose={this.closeAddStudentDialog}
+                                  open={this.state.addStudentDialogOpened}
+                                  onChange={this.onDialogInputChange}
+                                  onSubmit={this.onDialogSubmit}/>
+                <Button onClick={this.openAddStudentDialog}>Добавить студента</Button>
             </div>
         );
     }
