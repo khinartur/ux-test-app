@@ -5,6 +5,7 @@ import Admin from './Admin';
 import StudentsList from './StudentsList';
 
 import '../styles/App.scss';
+import TestEditForm from './TestEditForm';
 
 export default class App extends React.Component {
 
@@ -15,6 +16,7 @@ export default class App extends React.Component {
                     <Route exact path="/" component={Sign}/>
                     <Route exact path="/admin" component={Admin}/>
                     <Route path="/admin/students" component={StudentsList}/>
+                    <Route path="/admin/edit/test" component={TestEditForm}/>
                 </Switch>
             </div>
         );
