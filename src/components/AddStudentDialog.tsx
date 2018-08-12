@@ -30,15 +30,28 @@ export default class AddStudentDialog extends React.Component<Props> {
                 <DialogTitle id="dialog-title">Добавление студентов</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Чтобы добавить студентов для прохождения тестов введите их логины GitHub через любые пробельные
-                        символы.
+                        Введите данные студента.
                     </DialogContentText>
                     <TextField
                         onChange={onChange}
                         autoFocus
                         margin="dense"
-                        id="result"
-                        label="Student github's logins"
+                        name={"newStudentName"}
+                        label="Name"
+                        fullWidth
+                    />
+                    <TextField
+                        onChange={onChange}
+                        margin="dense"
+                        name={"newStudentSurname"}
+                        label="Surname"
+                        fullWidth
+                    />
+                    <TextField
+                        onChange={onChange}
+                        margin="dense"
+                        name={"newStudentGithub"}
+                        label="Student github's login"
                         fullWidth
                     />
                 </DialogContent>

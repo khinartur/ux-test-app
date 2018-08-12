@@ -10,15 +10,29 @@ import TableRow from '@material-ui/core/TableRow';
 import AddStudentDialog from './AddStudentDialog'
 import {ChangeEvent} from 'react';
 
+import {database} from '../modules/firebase'
+
 let id = 0;
-function createData(name, team, github, status, points) {
+function createData(name, surname, team, github, status, points) {
     id += 1;
-    return { id, name, team, github, status, points };
+    return { id, name, surname, team, github, status, points };
+}
+
+interface StudentInfo {
+    name: string;
+    surname: string;
+    github: string;
+    points: number;
+    test_passed: boolean;
+    test_is_checked: boolean;
 }
 
 interface State {
     addStudentDialogOpened: boolean;
-    newStudentsString: string;
+    newStudentName: string;
+    newStudentSurname: string;
+    newStudentGithub: string;
+    studentList: StudentInfo[];
 }
 
 export default class StudentsList extends React.Component<{}, State> {
@@ -28,7 +42,10 @@ export default class StudentsList extends React.Component<{}, State> {
 
         this.state = {
             addStudentDialogOpened: false,
-            newStudentsString: "",
+            newStudentName: "",
+            newStudentSurname: "",
+            newStudentGithub: "",
+            studentList: [],
         };
 
         this.githubSignIn = this.githubSignIn.bind(this);
@@ -37,7 +54,7 @@ export default class StudentsList extends React.Component<{}, State> {
 
 
     githubSignIn() {
-        //TODO: check instanse
+        //TODO: check instance
         const provider = new firebase.auth.GithubAuthProvider();
         firebase.auth().signInWithPopup(provider).then(function (result) {
             console.log("Result:");
@@ -46,9 +63,15 @@ export default class StudentsList extends React.Component<{}, State> {
     }
 
     onDialogInputChange = (evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        this.setState({
-            newStudentsString: evt.target.value,
-        });
+        const inputName = evt.target.name as keyof State;
+        const inputValue = evt.target.value;
+
+        this.setState(
+            {
+                ...this.state,
+                [inputName]: inputValue,
+            },
+        );
     };
 
     openAddStudentDialog = () => {
@@ -64,21 +87,44 @@ export default class StudentsList extends React.Component<{}, State> {
     };
 
     onDialogSubmit = () => {
-        this.setState({
-            addStudentDialogOpened: false,
-        });
-
-        this.state.newStudentsString.split(/\s+/g).forEach(function(login) {
-            console.log("LOGIN: ", login);
+        //TODO: make loading
+        database.ref('users/'+this.state.newStudentGithub).set({
+            name: this.state.newStudentName,
+            surname: this.state.newStudentSurname,
+            github: this.state.newStudentGithub,
+            test_passed: false,
+            points: 0,
+            test_is_checked: false,
+        }).then(() => {
+            this.setState({
+                addStudentDialogOpened: false,
+                newStudentName: '',
+                newStudentSurname: '',
+                newStudentGithub: '',
+            });
         });
     };
 
-    render() {
-        const data = [
-            createData('Артур Хинельцев', 'gophers', 'khinartur', 'Тест не пройден', 0),
-            createData('Анатолий Остапенко', 'perlmonks', 'akamandusa', 'Тест пройден', 100),
-        ];
+    updateStudentList = (students) => {
+        let list = [];
+        for (const studentLogin in students) {
+            list.push(students[studentLogin]);
+        }
 
+        this.setState({
+            ...this.state,
+            studentList: list,
+        });
+    };
+
+    componentDidMount() {
+        const usersRef = database.ref('users/');
+        usersRef.on('value', function(snapshot) {
+            this.updateStudentList(snapshot.val());
+        }.bind(this));
+    }
+
+    render() {
         return (
             <div>
                 <Paper>
@@ -86,21 +132,21 @@ export default class StudentsList extends React.Component<{}, State> {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Студент</TableCell>
-                                <TableCell>Команда</TableCell>
                                 <TableCell>GitHub</TableCell>
                                 <TableCell>Статус теста</TableCell>
+                                <TableCell>Тест проверен</TableCell>
                                 <TableCell>Кол-во баллов</TableCell>
                                 <TableCell>Действия</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {data.map(n => {
+                            {this.state.studentList.map(n => {
                                 return (
-                                    <TableRow key={n.id}>
-                                        <TableCell>{n.name}</TableCell>
-                                        <TableCell numeric>{n.team}</TableCell>
+                                    <TableRow key={n.github}>
+                                        <TableCell>{n.name + ' ' + n.surname}</TableCell>
                                         <TableCell numeric>{n.github}</TableCell>
-                                        <TableCell numeric>{n.status}</TableCell>
+                                        <TableCell numeric>{n.test_passed}</TableCell>
+                                        <TableCell numeric>{n.test_is_checked}</TableCell>
                                         <TableCell numeric>{n.points}</TableCell>
                                     </TableRow>
                                 );
