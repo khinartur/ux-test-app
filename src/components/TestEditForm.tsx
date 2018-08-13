@@ -1,54 +1,68 @@
 import * as React from 'react';
-import Paper from '@material-ui/core/Paper';
 import {database} from '../modules/firebase';
 import Button from '@material-ui/core/Button';
 import {IQuestion} from './Question';
+import QuestionEditForm from './QuestionEditForm';
 
+import '../styles/TestEditForm.scss';
 
 interface State {
     questions: IQuestion[];
+    showAddQuestionForm: boolean;
 }
 
 export default class TestEditForm extends React.Component<{}, State> {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            questions: [],
-        };
-    }
-
     updateQuestionsList = (questions) => {
         this.setState({
             ...this.state,
             questions: questions,
         });
     };
-
     showAddForm = () => {
-
+        this.setState({
+            ...this.state,
+            showAddQuestionForm: true,
+        });
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            questions: [],
+            showAddQuestionForm: false,
+        };
+    }
 
     componentDidMount() {
         const questionsRef = database.ref('question/');
-        questionsRef.on('value', function(snapshot) {
+        questionsRef.on('value', function (snapshot) {
             this.updateQuestionsList(snapshot.val());
         }.bind(this));
     }
 
     render() {
         return (
-            <div>
+            <div className={'test-edit-form'}>
                 {
-                    this.state.questions.length ?
-                    this.state.questions.map(question => {
-                        return <div><span>{question.order + ') '}</span>{question.question}</div>
-                    })
-                        :
-                        <div>В тесте нет вопросов.</div>
+                    <div className={'test-edit-form__item'}>
+                        {this.state.questions && this.state.questions.length ?
+
+                            this.state.questions.map(question => {
+                                return <div><span>{question.order + ') '}</span>{question.question}</div>;
+                            })
+                            :
+                            <div>В тесте нет вопросов.</div>
+                        }
+                    </div>
                 }
-                <br/>
-                <Button onClick={this.showAddForm}>Добавить вопрос</Button>
+                <div className={'test-edit-form__item'}>
+                    <Button onClick={this.showAddForm}>Добавить вопрос</Button>
+                    <br/>
+                    {
+                        this.state.showAddQuestionForm && <QuestionEditForm question={null}/>
+                    }
+                </div>
             </div>
         );
     }

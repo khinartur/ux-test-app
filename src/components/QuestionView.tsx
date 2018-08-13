@@ -3,16 +3,9 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 
-export enum questionTypeEnum {
-    choose_right,
-    match_columns,
-    open_question,
-}
-
 export interface IQuestion {
-    question: string;
+    text: string;
     order: number;
-    type: questionTypeEnum;
     data: any;
 }
 
