@@ -1,29 +1,22 @@
 import * as React from 'react';
 import Paper from '@material-ui/core/Paper';
-import {IQuestion, questionTypeEnum} from './QuestionView';
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Button from '@material-ui/core/Button';
 
 import '../styles/QuestionEditForm.scss';
 import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 import ChooseRightQuestion from './ChooseRightQuestion';
+import {IChooseRightData, IMatchColumnsData, IOpenQuestionData, IQuestion, QuestionType} from '../interfaces/IQuestion';
 
 interface Props {
-    question: IQuestion | null;
+    question: IQuestion<IChooseRightData | IMatchColumnsData | IOpenQuestionData>;
 }
 
 interface State {
-    type: questionTypeEnum;
-    choose_right_data: any;
+    type: QuestionType;
 }
 
 export default class QuestionEditForm extends React.Component<Props, State> {
@@ -39,8 +32,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            type: questionTypeEnum.choose_right,
-            choose_right_data: {},
+            type: QuestionType.choose_right,
         };
     }
 
@@ -52,20 +44,20 @@ export default class QuestionEditForm extends React.Component<Props, State> {
                 <FormControl>
                     <InputLabel htmlFor="type">Тип вопроса</InputLabel>
                     <Select
-                        value={question ? question.type : questionTypeEnum.choose_right}
+                        value={question ? question.type : this.state.type}
                         inputProps={{
                             id: 'type',
                         }}
                         onChange={this.onSelectChange}
                     >
-                        <MenuItem value={questionTypeEnum.choose_right}>С выбором ответа</MenuItem>
-                        <MenuItem value={questionTypeEnum.match_columns}>Сопоставить столбцы</MenuItem>
-                        <MenuItem value={questionTypeEnum.open_question}>Открытый вопрос</MenuItem>
+                        <MenuItem value={QuestionType.choose_right}>С выбором ответа</MenuItem>
+                        <MenuItem value={QuestionType.match_columns}>Сопоставить столбцы</MenuItem>
+                        <MenuItem value={QuestionType.open_question}>Открытый вопрос</MenuItem>
                     </Select>
                 </FormControl>
-                {this.state.type === questionTypeEnum.choose_right && <ChooseRightQuestion question={null}/>}
-                {this.state.type === questionTypeEnum.match_columns && <MatchColumnsQuestion question={null}/>}
-                {this.state.type === questionTypeEnum.open_question && <OpenQuestion question={null}/>}
+                {this.state.type === QuestionType.choose_right && <ChooseRightQuestion question={null}/>}
+                {this.state.type === QuestionType.match_columns && <MatchColumnsQuestion question={null}/>}
+                {this.state.type === QuestionType.open_question && <OpenQuestion question={null}/>}
             </Paper>
         );
     }

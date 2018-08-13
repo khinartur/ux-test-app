@@ -4,7 +4,7 @@ export enum QuestionType {
     open_question,
 }
 
-export interface IQuestion<T extends IChooseRightData | IMatchColumnsData | IOpenQuestion> {
+export interface IQuestion<T extends IChooseRightData | IMatchColumnsData | IOpenQuestionData> {
     text: string;
     order: number;
     type: QuestionType;
@@ -29,9 +29,9 @@ export interface IMatchColumnsData {
 export interface IMatchAnswer {
     left: string;
     right: string;
-    user_answer: string | null;
+    user_answer: string;
 }
 
-export interface IOpenQuestion {
-    answer: string | null;
+export interface IOpenQuestionData {
+    answer: string;
 }

@@ -32,7 +32,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 text: null,
                 order: null,
                 type: QuestionType.choose_right,
-                questionData: null,
+                questionData: {answers: []},
                 is_answered: false,
             },
             addingAnswer: null,

@@ -1,19 +1,11 @@
 import * as React from 'react';
 import Paper from '@material-ui/core/Paper';
-import {IQuestion, questionTypeEnum} from './Question';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 
 import '../styles/ChooseRightQuestion.scss';
-import {IChooseAnswer, IMatchColumnsData} from '../interfaces/IQuestion';
+import {IQuestion, IMatchAnswer, IMatchColumnsData, QuestionType} from '../interfaces/IQuestion';
 
 interface Props {
     question: IQuestion<IMatchColumnsData>;
@@ -21,8 +13,8 @@ interface Props {
 
 interface State {
     mode: any;
-    question: IQuestion<IChooseRightData>;
-    addingAnswer: IChooseAnswer;
+    question: IQuestion<IMatchColumnsData>;
+    addingAnswer: IMatchAnswer;
 }
 
 export default class MatchColumnsQuestion extends React.Component<Props, State> {
@@ -31,9 +23,35 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         super(props);
 
         this.state = {
-
+            mode: null,
+            question: {
+                text: null,
+                order: null,
+                type: QuestionType.match_columns,
+                questionData: null,
+                is_answered: false,
+            },
+            addingAnswer: null,
         };
     }
+
+    onAnswerChange = (evt) => {
+        this.setState({
+            ...this.state,
+            addingAnswer: {
+                ...this.state.addingAnswer,
+                [evt.target.name]: evt.target.value,
+            }
+        });
+    };
+
+    onAnswerAdd = () => {
+        this.state.question.questionData.answers.push(this.state.addingAnswer);
+        this.setState({
+            ...this.state,
+            addingAnswer: null,
+        });
+    };
 
     render() {
         const {question} = this.props;
@@ -50,30 +68,41 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                         {question ? question.text : null}
                     </TextField>
                     <br/>
+                    <div className={'answers'}>
+                        {
+                            this.state.question.questionData.answers.length &&
+                            this.state.question.questionData.answers.map((answer: IMatchAnswer) => {
+                                return <Paper>{answer.left + '<=====>' + answer.right}</Paper>;
+                            })
+                        }
+                    </div>
+                    <br/>
                     <div className={'answer-variant'}>
                         <div className={'answer-variant__item'}>
-                            <TextField className={'answer-variant-textfield'}
-                                       label='Ответ'
+                            <TextField className={'answer-variant-left'}
+                                       label='Левый столбец'
                                        fullWidth={true}
-                                       margin={'dense'}/>
+                                       margin={'dense'}
+                                       inputProps={{
+                                           name: 'left',
+                                       }}
+                                       onChange={this.onAnswerChange}/>
                         </div>
                         <div className={'answer-variant__item'}>
-                            <FormGroup className={'answer-variant-checkbox'}
-                                       row>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            color="primary"
-                                        />
-                                    }
-                                    label="Правильный ответ"
-                                />
-                            </FormGroup>
+                            <TextField className={'answer-variant-right'}
+                                       label='Правый столбец'
+                                       fullWidth={true}
+                                       margin={'dense'}
+                                       inputProps={{
+                                           name: 'right',
+                                       }}
+                                       onChange={this.onAnswerChange}/>
                         </div>
                         <div className={'answer-variant__item'}>
                             <Button className={'answer-variant-button'}
                                     variant="contained"
-                                    color="primary">
+                                    color="primary"
+                                    onSubmit={this.onAnswerAdd}>
                                 Сохранить
                             </Button>
                         </div>
