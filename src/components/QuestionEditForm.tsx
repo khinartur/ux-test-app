@@ -17,7 +17,7 @@ import {
 //TODO: разобраться с типом функций
 interface Props {
     question: IQuestion<AnyQuestion>;
-    order: number;
+    order?: number;
     onSuccess: any;
 }
 
@@ -38,7 +38,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            type: this.props.question.type || QuestionType.choose_right,
+            type: this.props.question && this.props.question.type || QuestionType.choose_right,
         };
     }
 

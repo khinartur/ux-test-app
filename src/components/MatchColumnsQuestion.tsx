@@ -29,7 +29,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                 order: null,
                 type: QuestionType.match_columns,
                 questionData: null,
-                is_answered: false,
             },
             addingAnswer: null,
         };

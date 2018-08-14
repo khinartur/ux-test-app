@@ -28,7 +28,6 @@ export default class OpenQuestion extends React.Component<Props, State> {
                 order: null,
                 type: QuestionType.open_question,
                 questionData: null,
-                is_answered: false,
             },
             addingAnswer: null,
         };

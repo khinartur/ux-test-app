@@ -31,14 +31,14 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
 
-    editQuestion = (evt: any) => {
-        const qorder = evt.target.dataset.qorder;
-        const qToEdit = this.state.questions.filter((q) => q.order === qorder)[0];
+    editQuestion = (evt: any, order: number) => {
+        console.log('edit question');
+        debugger;
+        const qToEdit = this.state.questions.filter((q) => q.order === order)[0];
 
         this.setState({
             ...this.state,
             questionToEdit: qToEdit,
-            questionOrder: qorder,
             showAddQuestionForm: true,
         })
     };
@@ -75,7 +75,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                             this.state.questions.map((question: IQuestion<AnyQuestion>, index: number) => {
                                 return <Paper key={index}
                                               data-qorder={question.order}
-                                              onClick={this.editQuestion}
+                                              onClick={(evt) => this.editQuestion(evt, question.order)}
                                         >
                                             <span>{question.order + ') '}</span>{question.text}
                                         </Paper>;
