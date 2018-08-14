@@ -23,15 +23,19 @@ interface State {
     question: IQuestion<IChooseRightData>;
     addingAnswer: IChooseAnswer;
     error?: string;
+    answerVariantText?: string;
+    answerVariantChecked?: boolean;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
+    //TODO: form ref
+    private editFormRef: any;
 
     constructor(props) {
         super(props);
 
         this.state = {
-            question: {
+            question: this.props.question || {
                 text: null,
                 order: this.props.order,
                 type: QuestionType.choose_right,
@@ -54,6 +58,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
     onAnswerChange = (evt) => {
         this.setState({
             ...this.state,
+            answerVariantText: evt.target.value,
             addingAnswer: {
                 ...this.state.addingAnswer,
                 text: evt.target.value,
@@ -76,8 +81,16 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         this.setState({
             ...this.state,
             addingAnswer: null,
+            answerVariantText: '',
+            answerVariantChecked: false,
         });
     };
+
+    componentDidMount() {
+        if (this.props.mode === 'create') {
+
+        }
+    }
 
     onFormSubmit = (evt) => {
         evt.preventDefault();
@@ -114,8 +127,11 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
     };
 
     render() {
-        const {question} = this.props;
-        const isEdit = this.props.mode === 'edit';
+        const {question, mode} = this.props;
+        const isEdit = mode === 'edit';
+        //TODO: think about another solution
+        //this.editFormRef.reset();
+        //ref={(el) => this.editFormRef = el
 
         return (
             <Paper>
@@ -127,8 +143,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <TextField label="Формулировка вопроса:"
                                fullWidth={true}
                                margin={'dense'}
-                               onChange={this.onQuestionChange}>
-                        {isEdit ? question.text : null}
+                               onChange={this.onQuestionChange}
+                               defaultValue={isEdit ? question.text : null}>
                     </TextField>
                     <br/>
                     <div className={'answers'}>
@@ -149,6 +165,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                        fullWidth={true}
                                        margin={'dense'}
                                        onChange={this.onAnswerChange}
+                                       value={this.state.answerVariantText}
                             />
                         </div>
                         <div className={'answer-variant__item'}>
@@ -159,6 +176,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                         <Checkbox
                                             color="primary"
                                             onChange={this.onCheckboxChange}
+                                            checked={this.state.answerVariantChecked}
                                         />
                                     }
                                     label="Правильный ответ"

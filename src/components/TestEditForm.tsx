@@ -20,20 +20,21 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             questions: questions,
-            questionOrder: questions ? questions.length + 1 : 1,
+            questionOrder: questions ? questions.length : 1,
         });
     };
 
     showAddForm = () => {
+        const questions = this.state.questions;
         this.setState({
             ...this.state,
+            questionToEdit: null,
+            questionOrder: questions ? questions.length : 1,
             showAddQuestionForm: true,
         });
     };
 
     editQuestion = (evt: any, order: number) => {
-        console.log('edit question');
-        debugger;
         const qToEdit = this.state.questions.filter((q) => q.order === order)[0];
 
         this.setState({
@@ -66,6 +67,8 @@ export default class TestEditForm extends React.Component<{}, State> {
     }
 
     render() {
+        const qToEdit = this.state.questionToEdit;
+
         return (
             <div className={'test-edit-form'}>
                 {
@@ -95,7 +98,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                     {
                         this.state.showAddQuestionForm &&
                         <QuestionEditForm question={this.state.questionToEdit}
-                                          order={this.state.questionOrder}
+                                          order={qToEdit ? qToEdit.order : this.state.questionOrder}
                                           onSuccess={this.onSuccessQuestionEdit}/>
                     }
                 </div>

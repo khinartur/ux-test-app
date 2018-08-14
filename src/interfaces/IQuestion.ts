@@ -1,7 +1,7 @@
 export enum QuestionType {
-    choose_right,
-    match_columns,
-    open_question,
+    choose_right='choose_right',
+    match_columns='match_columns',
+    open_question='open_question',
 }
 
 export type AnyQuestion = IChooseRightData | IMatchColumnsData | IOpenQuestionData;
