@@ -14,9 +14,11 @@ import {
     QuestionType
 } from '../interfaces/IQuestion';
 
+//TODO: разобраться с типом функций
 interface Props {
     question: IQuestion<AnyQuestion>;
     order: number;
+    onSuccess: any;
 }
 
 interface State {
@@ -36,7 +38,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            type: QuestionType.choose_right,
+            type: this.props.question.type || QuestionType.choose_right,
         };
     }
 
@@ -48,7 +50,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
                 <FormControl>
                     <InputLabel htmlFor="type">Тип вопроса</InputLabel>
                     <Select
-                        value={question ? question.type : this.state.type}
+                        value={this.state.type}
                         inputProps={{
                             id: 'type',
                         }}
@@ -59,7 +61,13 @@ export default class QuestionEditForm extends React.Component<Props, State> {
                         <MenuItem value={QuestionType.open_question}>Открытый вопрос</MenuItem>
                     </Select>
                 </FormControl>
-                {this.state.type === QuestionType.choose_right && <ChooseRightQuestion question={question as IQuestion<IChooseRightData>} order={order}/>}
+                {
+                    this.state.type === QuestionType.choose_right &&
+                    <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
+                                         order={order}
+                                         mode={question ? 'edit' : 'create'}
+                                         onSuccess={this.props.onSuccess}/>
+                }
                 {this.state.type === QuestionType.match_columns && <MatchColumnsQuestion question={null}/>}
                 {this.state.type === QuestionType.open_question && <OpenQuestion question={null}/>}
             </Paper>

@@ -11,7 +11,6 @@ export interface IQuestion<T extends AnyQuestion> {
     order: number;
     type: QuestionType;
     questionData: T;
-    is_answered: boolean;
 }
 
 export interface IChooseRightData {

@@ -6,11 +6,13 @@ import QuestionEditForm from './QuestionEditForm';
 
 import '../styles/TestEditForm.scss';
 import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
 
 interface State {
     questions?: IQuestion<AnyQuestion>[];
     showAddQuestionForm: boolean;
-    nextQuestionNumber?: number;
+    questionOrder?: number;
+    questionToEdit?: IQuestion<AnyQuestion>;
 }
 
 export default class TestEditForm extends React.Component<{}, State> {
@@ -18,13 +20,33 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             questions: questions,
-            nextQuestionNumber: questions ? questions.length + 1 : 1,
+            questionOrder: questions ? questions.length + 1 : 1,
         });
     };
+
     showAddForm = () => {
         this.setState({
             ...this.state,
             showAddQuestionForm: true,
+        });
+    };
+
+    editQuestion = (evt: any) => {
+        const qorder = evt.target.dataset.qorder;
+        const qToEdit = this.state.questions.filter((q) => q.order === qorder)[0];
+
+        this.setState({
+            ...this.state,
+            questionToEdit: qToEdit,
+            questionOrder: qorder,
+            showAddQuestionForm: true,
+        })
+    };
+
+    onSuccessQuestionEdit = () => {
+        this.setState({
+            ...this.state,
+            showAddQuestionForm: false,
         });
     };
 
@@ -51,7 +73,12 @@ export default class TestEditForm extends React.Component<{}, State> {
                         {this.state.questions && this.state.questions.length ?
 
                             this.state.questions.map((question: IQuestion<AnyQuestion>, index: number) => {
-                                return <div key={index}><span>{question.order + ') '}</span>{question.text}</div>;
+                                return <Paper key={index}
+                                              data-qorder={question.order}
+                                              onClick={this.editQuestion}
+                                        >
+                                            <span>{question.order + ') '}</span>{question.text}
+                                        </Paper>;
                             })
                             :
                             <Typography variant="body1" gutterBottom>
@@ -67,7 +94,9 @@ export default class TestEditForm extends React.Component<{}, State> {
                     <br/>
                     {
                         this.state.showAddQuestionForm &&
-                        <QuestionEditForm question={null} order={this.state.nextQuestionNumber}/>
+                        <QuestionEditForm question={this.state.questionToEdit}
+                                          order={this.state.questionOrder}
+                                          onSuccess={this.onSuccessQuestionEdit}/>
                     }
                 </div>
             </div>

@@ -15,10 +15,11 @@ import {database} from '../modules/firebase';
 interface Props {
     question: IQuestion<IChooseRightData>;
     order: number;
+    onSuccess: any;
+    mode: string;
 }
 
 interface State {
-    mode: any;
     question: IQuestion<IChooseRightData>;
     addingAnswer: IChooseAnswer;
     error?: string;
@@ -30,13 +31,11 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            mode: null,
             question: {
                 text: null,
-                order: null,
+                order: this.props.order,
                 type: QuestionType.choose_right,
                 questionData: {answers: []},
-                is_answered: false,
             },
             addingAnswer: null,
         };
@@ -109,17 +108,19 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             ...this.state.question
         }).then(() => {
             console.log('On success add question');
+            this.props.onSuccess();
         });
 
     };
 
     render() {
         const {question} = this.props;
+        const isEdit = this.props.mode === 'edit';
 
         return (
             <Paper>
                 <Typography
-                    variant="title">{question ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
+                    variant="title">{isEdit ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                 <br/>
                 <Paper className={'error'}>{this.state.error}</Paper>
                 <form autoComplete="off" onSubmit={this.onFormSubmit}>
@@ -127,7 +128,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                fullWidth={true}
                                margin={'dense'}
                                onChange={this.onQuestionChange}>
-                        {question ? question.text : null}
+                        {isEdit ? question.text : null}
                     </TextField>
                     <br/>
                     <div className={'answers'}>
@@ -177,7 +178,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             variant="contained"
                             color="primary"
                             type="submit">
-                        {question ? 'Сохранить' : 'Создать'}
+                        {isEdit ? 'Сохранить' : 'Создать'}
                     </Button>
                 </form>
             </Paper>
