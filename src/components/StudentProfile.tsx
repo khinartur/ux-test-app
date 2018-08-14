@@ -3,24 +3,18 @@ import {database, firebaseApp} from '../modules/firebase';
 import Paper from '@material-ui/core/Paper';
 import {withRouter} from 'react-router';
 import Typography from '@material-ui/core/Typography';
+import {IUser} from '../interfaces/IUser';
 
-interface IUser {
-    github: string;
-    name: string;
-    surname: string;
-    points: number;
-    test_is_checked: boolean;
-    test_passed: boolean;
-}
 
-interface State {
+interface Props {
     user: IUser;
 }
 
-class StudentProfile extends React.Component<{}, State> {
+class StudentProfile extends React.Component<Props> {
 
     componentWillMount() {
         debugger;
+        console.dir(firebaseApp.auth().currentUser);
         const userId = firebaseApp.auth().currentUser.uid;
         return database.ref('/users/' + userId).once('value').then(function(snapshot) {
             const username = (snapshot.val() && snapshot.val().username) || 'Anonymous';
@@ -29,6 +23,8 @@ class StudentProfile extends React.Component<{}, State> {
     }
 
     render() {
+        const {user} = this.props;
+
         return (
             <div className={'wrapper'}>
                 <div className={'space-item-a'}></div>
@@ -41,13 +37,13 @@ class StudentProfile extends React.Component<{}, State> {
                             Профиль студента
                         </Typography>
                         <Typography variant="display2" gutterBottom>
-                            Имя: {this.state.user.name}
+                            Имя: {user.name}
                         </Typography>
                         <Typography variant="display2" gutterBottom>
-                            Фамилия: {this.state.user.surname}
+                            Фамилия: {user.surname}
                         </Typography>
                         <Typography variant="display2" gutterBottom>
-                            Github: {this.state.user.github}
+                            Github: {user.github}
                         </Typography>
                         <br/>
                     </Paper>

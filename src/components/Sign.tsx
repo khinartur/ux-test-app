@@ -4,23 +4,67 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import {withRouter} from 'react-router-dom';
 
+import '../styles/App.scss';
 import '../styles/Sign.scss';
+import {auth, database, provider} from '../modules/firebase';
+import Paper from '@material-ui/core/Paper';
+import * as H from 'history';
+import {IUser} from '../interfaces/IUser';
 
-interface Props {
-    //TODO: find out type
-    history: any;
+interface RouterProps {
+    history: H.History;
 }
 
-class Sign extends React.Component<Props> {
+interface Props {
+    onSign: (user: IUser) => void;
+}
+
+interface State {
+    error?: string;
+}
+
+class Sign extends React.Component<Props & RouterProps, State> {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            error: '',
+        };
+    }
+
+    isAdmin = (login: string) => {
+        return database.ref('/admins').once('value').then(function(snapshot) {
+            const admins = snapshot.val();
+            return admins && admins[login];
+        });
+    };
+
+    isAllowedUser = (login: string) => {
+        return database.ref('/users').once('value').then(function(snapshot) {
+            const users = snapshot.val();
+            return users[login];
+        });
+    };
 
     githubSignIn = () => {
-        this.props.history.push('/admin');
-
-        // const provider = new firebase.auth.GithubAuthProvider();
-        // firebase.auth().signInWithPopup(provider).then(function (result) {
-        //     console.log("Result:");
-        //     console.dir(result);
-        // });
+        auth.signInWithPopup(provider).then(function (result) {
+            console.dir(result);
+            const login = result.additionalUserInfo.username;
+            this.isAdmin(login).then(isAdmin => {
+                if (isAdmin) this.props.history.push('/admin');
+                return this.isAllowedUser(login);
+            }).then(isAllowed => {
+                if (isAllowed) {
+                    this.props.history.push('/profile')
+                } else {
+                    this.setState({
+                        ...this.state,
+                        error: 'Вас не удается найти в базе студентов',
+                    });
+                }
+            });
+        }.bind(this));
     };
 
     render() {
@@ -31,6 +75,7 @@ class Sign extends React.Component<Props> {
                 <div className={'space-item-d'}></div>
                 <div className={'space-item-e'}></div>
                 <div className={'sign-form'}>
+                    <Paper className={'error'}>{this.state.error}</Paper>
                     <Typography variant="headline" gutterBottom>
                         Технопарк. Тестирование по курсу UX
                     </Typography>
@@ -44,4 +89,4 @@ class Sign extends React.Component<Props> {
     }
 }
 
-export default withRouter(Sign as any);
+export default withRouter(Sign);
