@@ -9,10 +9,14 @@ import '../styles/QuestionEditForm.scss';
 import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 import ChooseRightQuestion from './ChooseRightQuestion';
-import {IChooseRightData, IMatchColumnsData, IOpenQuestionData, IQuestion, QuestionType} from '../interfaces/IQuestion';
+import {
+    AnyQuestion, IChooseRightData, IQuestion,
+    QuestionType
+} from '../interfaces/IQuestion';
 
 interface Props {
-    question: IQuestion<IChooseRightData | IMatchColumnsData | IOpenQuestionData>;
+    question: IQuestion<AnyQuestion>;
+    order: number;
 }
 
 interface State {
@@ -37,7 +41,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
     }
 
     render() {
-        const {question} = this.props;
+        const {question, order} = this.props;
 
         return (
             <Paper>
@@ -55,7 +59,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
                         <MenuItem value={QuestionType.open_question}>Открытый вопрос</MenuItem>
                     </Select>
                 </FormControl>
-                {this.state.type === QuestionType.choose_right && <ChooseRightQuestion question={null}/>}
+                {this.state.type === QuestionType.choose_right && <ChooseRightQuestion question={question as IQuestion<IChooseRightData>} order={order}/>}
                 {this.state.type === QuestionType.match_columns && <MatchColumnsQuestion question={null}/>}
                 {this.state.type === QuestionType.open_question && <OpenQuestion question={null}/>}
             </Paper>

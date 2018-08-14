@@ -10,15 +10,18 @@ import Button from '@material-ui/core/Button';
 import '../styles/ChooseRightQuestion.scss';
 
 import {IChooseAnswer, IChooseRightData, IQuestion, QuestionType} from '../interfaces/IQuestion';
+import {database} from '../modules/firebase';
 
 interface Props {
     question: IQuestion<IChooseRightData>;
+    order: number;
 }
 
 interface State {
     mode: any;
     question: IQuestion<IChooseRightData>;
     addingAnswer: IChooseAnswer;
+    error?: string;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -77,6 +80,39 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         });
     };
 
+    onFormSubmit = (evt) => {
+        evt.preventDefault();
+        console.log("SUBMIT");
+
+        const qText = this.state.question.text;
+        if (!qText) {
+            this.setState({
+                ...this.state,
+                error: "Формулировка вопроса не может быть пустой",
+            });
+
+            return;
+        }
+
+        const qAnswers = this.state.question.questionData.answers;
+        const rightAnswers = qAnswers.filter((a: IChooseAnswer) => a.isRight );
+        if (!rightAnswers.length) {
+            this.setState({
+                ...this.state,
+                error: "Необходим хотя бы один правильный ответ",
+            });
+
+            return;
+        }
+
+        database.ref('question/'+this.props.order).set({
+            ...this.state.question
+        }).then(() => {
+            console.log('On success add question');
+        });
+
+    };
+
     render() {
         const {question} = this.props;
 
@@ -85,7 +121,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 <Typography
                     variant="title">{question ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                 <br/>
-                <form autoComplete="off">
+                <Paper className={'error'}>{this.state.error}</Paper>
+                <form autoComplete="off" onSubmit={this.onFormSubmit}>
                     <TextField label="Формулировка вопроса:"
                                fullWidth={true}
                                margin={'dense'}
@@ -95,10 +132,12 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <br/>
                     <div className={'answers'}>
                         {
-                            this.state.question.questionData.answers.length &&
-                            this.state.question.questionData.answers.map((answer: IChooseAnswer) => {
-                                return <Paper>{answer.text}</Paper>;
+                            this.state.question.questionData.answers.length ?
+                            this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
+                                return <Paper key={index}>{answer.text}</Paper>;
                             })
+                                :
+                                <div>Нет вариантов ответа.</div>
                         }
                     </div>
                     <br/>
@@ -129,11 +168,17 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             <Button className={'answer-variant-button'}
                                     variant="contained"
                                     color="primary"
-                                    onSubmit={this.onAnswerAdd}>
+                                    onClick={this.onAnswerAdd}>
                                 Сохранить
                             </Button>
                         </div>
                     </div>
+                    <Button
+                            variant="contained"
+                            color="primary"
+                            type="submit">
+                        {question ? 'Сохранить' : 'Создать'}
+                    </Button>
                 </form>
             </Paper>
         );

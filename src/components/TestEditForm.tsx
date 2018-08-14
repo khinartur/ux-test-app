@@ -1,14 +1,16 @@
 import * as React from 'react';
 import {database} from '../modules/firebase';
 import Button from '@material-ui/core/Button';
-import {IQuestion} from './Question';
+import {AnyQuestion, IQuestion} from '../interfaces/IQuestion';
 import QuestionEditForm from './QuestionEditForm';
 
 import '../styles/TestEditForm.scss';
+import Typography from '@material-ui/core/Typography';
 
 interface State {
-    questions: IQuestion[];
+    questions?: IQuestion<AnyQuestion>[];
     showAddQuestionForm: boolean;
+    nextQuestionNumber?: number;
 }
 
 export default class TestEditForm extends React.Component<{}, State> {
@@ -16,6 +18,7 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             questions: questions,
+            nextQuestionNumber: questions ? questions.length + 1 : 1,
         });
     };
     showAddForm = () => {
@@ -29,7 +32,6 @@ export default class TestEditForm extends React.Component<{}, State> {
         super(props);
 
         this.state = {
-            questions: [],
             showAddQuestionForm: false,
         };
     }
@@ -48,19 +50,24 @@ export default class TestEditForm extends React.Component<{}, State> {
                     <div className={'test-edit-form__item'}>
                         {this.state.questions && this.state.questions.length ?
 
-                            this.state.questions.map(question => {
-                                return <div><span>{question.order + ') '}</span>{question.question}</div>;
+                            this.state.questions.map((question: IQuestion<AnyQuestion>, index: number) => {
+                                return <div key={index}><span>{question.order + ') '}</span>{question.text}</div>;
                             })
                             :
-                            <div>В тесте нет вопросов.</div>
+                            <Typography variant="body1" gutterBottom>
+                                В тесте нет вопросов.
+                            </Typography>
                         }
                     </div>
                 }
                 <div className={'test-edit-form__item'}>
-                    <Button onClick={this.showAddForm}>Добавить вопрос</Button>
+                    <Button variant="contained" color="primary" fullWidth={true} onClick={this.showAddForm}>
+                        Добавить вопрос
+                    </Button>
                     <br/>
                     {
-                        this.state.showAddQuestionForm && <QuestionEditForm question={null}/>
+                        this.state.showAddQuestionForm &&
+                        <QuestionEditForm question={null} order={this.state.nextQuestionNumber}/>
                     }
                 </div>
             </div>

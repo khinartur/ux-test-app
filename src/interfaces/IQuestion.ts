@@ -4,7 +4,9 @@ export enum QuestionType {
     open_question,
 }
 
-export interface IQuestion<T extends IChooseRightData | IMatchColumnsData | IOpenQuestionData> {
+export type AnyQuestion = IChooseRightData | IMatchColumnsData | IOpenQuestionData;
+
+export interface IQuestion<T extends AnyQuestion> {
     text: string;
     order: number;
     type: QuestionType;

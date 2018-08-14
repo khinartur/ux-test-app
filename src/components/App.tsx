@@ -11,14 +11,12 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <div>
-                <Switch>
-                    <Route exact path="/" component={Sign}/>
-                    <Route exact path="/admin" component={Admin}/>
-                    <Route path="/admin/students" component={StudentsList}/>
-                    <Route path="/admin/edit/test" component={TestEditForm}/>
-                </Switch>
-            </div>
+            <Switch>
+                <Route exact path="/" component={Sign}/>
+                <Route exact path="/admin" component={Admin}/>
+                <Route exact path="/admin/students" component={StudentsList}/>
+                <Route exact path="/admin/edit/test" component={TestEditForm}/>
+            </Switch>
         );
     }
 }
