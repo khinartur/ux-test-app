@@ -23,6 +23,7 @@ export default class App extends React.Component<{}, State> {
         });
     };
 
+    //TODO: what with routing? should user be able to route to any route?
     render() {
         return (
             <Switch>
