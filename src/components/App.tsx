@@ -8,6 +8,7 @@ import '../styles/App.scss';
 import TestEditForm from './TestEditForm';
 import StudentProfile from './StudentProfile';
 import {IUser} from '../interfaces/IUser';
+import Test from './Test';
 
 interface State {
     loggedUser?: IUser;
@@ -29,7 +30,8 @@ export default class App extends React.Component<{}, State> {
                 <Route exact path="/admin" component={Admin}/>
                 <Route exact path="/admin/students" component={StudentsList}/>
                 <Route exact path="/admin/edit/test" component={TestEditForm}/>
-                <Route exact path="/profile" component={StudentProfile}/>
+                <Route exact path="/profile" render={() => <StudentProfile user={this.state.loggedUser}/>} />
+                <Route exact path="/test" render={() => <Test user={this.state.loggedUser}/>} />
             </Switch>
         );
     }

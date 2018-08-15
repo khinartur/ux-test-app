@@ -1,26 +1,19 @@
 import * as React from 'react';
-import {database, firebaseApp} from '../modules/firebase';
 import Paper from '@material-ui/core/Paper';
-import {withRouter} from 'react-router';
+import {RouteComponentProps, withRouter} from 'react-router';
 import Typography from '@material-ui/core/Typography';
 import {IUser} from '../interfaces/IUser';
-
+import Button from '@material-ui/core/Button';
 
 interface Props {
     user: IUser;
 }
 
-class StudentProfile extends React.Component<Props> {
+class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, {}> {
 
-    componentWillMount() {
-        debugger;
-        console.dir(firebaseApp.auth().currentUser);
-        const userId = firebaseApp.auth().currentUser.uid;
-        return database.ref('/users/' + userId).once('value').then(function(snapshot) {
-            const username = (snapshot.val() && snapshot.val().username) || 'Anonymous';
-            // ...
-        });
-    }
+    initTest = () => {
+        this.props.history.push('/test');
+    };
 
     render() {
         const {user} = this.props;
@@ -36,15 +29,30 @@ class StudentProfile extends React.Component<Props> {
                         <Typography variant="display1" gutterBottom>
                             Профиль студента
                         </Typography>
-                        <Typography variant="display2" gutterBottom>
+                        <Typography variant="body2" gutterBottom>
                             Имя: {user.name}
                         </Typography>
-                        <Typography variant="display2" gutterBottom>
+                        <Typography variant="body2" gutterBottom>
                             Фамилия: {user.surname}
                         </Typography>
-                        <Typography variant="display2" gutterBottom>
+                        <Typography variant="body2" gutterBottom>
                             Github: {user.github}
                         </Typography>
+                        {
+                            user.test_passed ?
+                                (
+                                    <Typography variant="body2" gutterBottom>
+                                        Вы уже прошли тест. Ваш результат: {user.points}
+                                        (Задание на листочках {user.test_is_checked ? "проверены" : "не проверены"})
+                                    </Typography>
+                                )
+                                :
+                                (
+                                    <Button variant="contained" color="primary" onClick={this.initTest}>
+                                        Начать тест
+                                    </Button>
+                                )
+                        }
                         <br/>
                     </Paper>
                 </div>
@@ -53,4 +61,4 @@ class StudentProfile extends React.Component<Props> {
     }
 }
 
-export default withRouter(StudentProfile as any);
+export default withRouter(StudentProfile);

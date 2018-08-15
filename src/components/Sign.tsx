@@ -54,9 +54,10 @@ class Sign extends React.Component<Props & RouterProps, State> {
             this.isAdmin(login).then(isAdmin => {
                 if (isAdmin) this.props.history.push('/admin');
                 return this.isAllowedUser(login);
-            }).then(isAllowed => {
-                if (isAllowed) {
-                    this.props.history.push('/profile')
+            }).then(allowedUser => {
+                if (allowedUser) {
+                    this.props.onSign(allowedUser);
+                    this.props.history.push('/profile');
                 } else {
                     this.setState({
                         ...this.state,
