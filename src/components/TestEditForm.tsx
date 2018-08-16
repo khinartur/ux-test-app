@@ -53,6 +53,7 @@ export default class TestEditForm extends React.Component<{}, State> {
     onSuccessQuestionEdit = () => {
         this.setState({
             ...this.state,
+            questionOrder: this.state.questionOrder + 1,
             showAddQuestionForm: false,
         });
     };
@@ -88,12 +89,11 @@ export default class TestEditForm extends React.Component<{}, State> {
                     <div className={'test-edit-form__item'}>
                         {qCount ? //TODO: replace with generator
                             new Array(qCount).fill(true).map((v: boolean, i: number) => {
-                                i += 1; //TODO: govno kakoe to
-                                const q = questions[qMap[i]];
+                                const q = questions[qMap[i+1]];
                                 return <Paper key={i}
-                                              onClick={(evt) => this.editQuestion(evt, i)}
+                                              onClick={(evt) => this.editQuestion(evt, q.order)}
                                 >
-                                    <span>{i + ') '}</span>{q.text}
+                                    <span>{q.order + ') '}</span>{q.text}
                                 </Paper>;
                             })
                             :

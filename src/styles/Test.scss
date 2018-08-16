@@ -1,0 +1,16 @@
+.container {
+    width: 500px;
+    margin: 50px auto;
+}
+
+.question-paper {
+    padding: 50px;
+}
+
+.question-button {
+    margin: 8px 8px;
+
+    &__next {
+        margin-top: 30px;
+    }
+}

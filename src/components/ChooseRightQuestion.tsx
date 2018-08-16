@@ -8,6 +8,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 
 import '../styles/ChooseRightQuestion.scss';
+import '../styles/Test.scss';
 
 import {IChooseAnswer, IChooseRightData, IQuestion, QuestionType} from '../interfaces/IQuestion';
 import {database} from '../modules/firebase';
@@ -17,6 +18,7 @@ interface Props {
     order?: number;
     onSuccess?: any;
     onPass?: any;
+    onSkip?: any;
     mode: string;
 }
 
@@ -36,6 +38,15 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             question: {
                 ...this.state.question,
                 text: evt.target.value,
+            }
+        });
+    };
+    onPointsChange = (evt) => {
+        this.setState({
+            ...this.state,
+            question: {
+                ...this.state.question,
+                points: evt.target.value,
             }
         });
     };
@@ -99,7 +110,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
         //TODO: save without key
         database.ref('questions/' + key).set({
-            ...this.state.question
+            ...this.state.question,
+            order: this.props.order,
         }).then(() => {
             database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
                 console.log('On success add question');
@@ -117,6 +129,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 order: this.props.order,
                 type: QuestionType.choose_right,
                 questionData: {answers: []},
+                points: 2,
             },
             addingAnswer: null,
         };
@@ -124,75 +137,115 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
     render() {
         const {question, mode} = this.props;
-        const isEdit = mode === 'edit';
 
         return (
-            <Paper>
-                <Typography
-                    variant="title">{isEdit ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
-                <br/>
-                <Paper className={'error'}>{this.state.error}</Paper>
-                <form autoComplete="off" onSubmit={this.onFormSubmit}>
-                    <TextField label="Формулировка вопроса:"
-                               fullWidth={true}
-                               margin={'dense'}
-                               onChange={this.onQuestionChange}
-                               defaultValue={isEdit ? question.text : null}>
-                    </TextField>
-                    <br/>
-                    <div className={'answers'}>
-                        {
-                            this.state.question.questionData.answers.length ?
-                                this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
-                                    return <Paper key={index}>{answer.text}</Paper>;
-                                })
-                                :
-                                <div>Нет вариантов ответа.</div>
-                        }
-                    </div>
-                    <br/>
-                    <div className={'answer-variant'}>
-                        <div className={'answer-variant__item'}>
-                            <TextField className={'answer-variant-textfield'}
-                                       label='Ответ'
+            <div>
+                {
+                    (mode === 'edit' || mode === 'create') &&
+                    <Paper>
+                        <Typography
+                            variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
+                        <br/>
+                        < Paper className={'error'}>{this.state.error}</Paper>
+                        <form autoComplete="off" onSubmit={this.onFormSubmit}>
+                            <TextField label="Формулировка вопроса:"
                                        fullWidth={true}
                                        margin={'dense'}
-                                       onChange={this.onAnswerChange}
-                                       value={this.state.answerVariantText}
-                            />
-                        </div>
-                        <div className={'answer-variant__item'}>
-                            <FormGroup className={'answer-variant-checkbox'}
-                                       row>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            color="primary"
-                                            onChange={this.onCheckboxChange}
-                                            checked={this.state.answerVariantChecked}
+                                       onChange={this.onQuestionChange}
+                                       defaultValue={mode === 'edit' ? question.text : null}>
+                            </TextField>
+                            <br/>
+                            <TextField label="Количество баллов:"
+                                       fullWidth={true}
+                                       margin={'dense'}
+                                       onChange={this.onPointsChange}
+                                       defaultValue={mode === 'edit' ? question.points : 2}>
+                            </TextField>
+                            <br/>
+                            <div className={'answers'}>
+                                {
+                                    this.state.question.questionData.answers.length ?
+                                        this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
+                                            return <Paper key={index}>{answer.text}</Paper>;
+                                        })
+                                        :
+                                        <div>Нет вариантов ответа.</div>
+                                }
+                            </div>
+                            <br/>
+                            <div className={'answer-variant'}>
+                                <div className={'answer-variant__item'}>
+                                    <TextField className={'answer-variant-textfield'}
+                                               label='Ответ'
+                                               fullWidth={true}
+                                               margin={'dense'}
+                                               onChange={this.onAnswerChange}
+                                               value={this.state.answerVariantText}
+                                    />
+                                </div>
+                                <div className={'answer-variant__item'}>
+                                    <FormGroup className={'answer-variant-checkbox'}
+                                               row>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    color="primary"
+                                                    onChange={this.onCheckboxChange}
+                                                    checked={this.state.answerVariantChecked}
+                                                />
+                                            }
+                                            label='Правильный ответ'
                                         />
-                                    }
-                                    label="Правильный ответ"
-                                />
-                            </FormGroup>
-                        </div>
-                        <div className={'answer-variant__item'}>
-                            <Button className={'answer-variant-button'}
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={this.onAnswerAdd}>
-                                Сохранить
+                                    </FormGroup>
+                                </div>
+                                <div className={'answer-variant__item'}>
+                                    <Button className={'answer-variant-button'}
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={this.onAnswerAdd}>
+                                        Сохранить
+                                    </Button>
+                                </div>
+                            </div>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit">
+                                {mode === 'edit' ? 'Сохранить' : 'Создать'}
                             </Button>
-                        </div>
+                        </form>
+                    </Paper>
+                }
+                {mode === 'show' &&
+                <Paper className={'question-paper'}
+                       elevation={10}>
+                    <Typography variant="title">
+                        {question.order + ') ' + question.text}
+                    </Typography>
+                    <br/>
+                    {
+                        question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
+                            return (
+                                <div className={'question-button'}>
+                                    <Button variant="contained"
+                                            color="primary"
+                                            fullWidth={true}>
+                                        {answer.text}
+                                    </Button>
+                                </div>
+                            );
+                        })
+                    }
+                    <div className={'question-button__next'}>
+                        <Button variant="contained"
+                                color="primary"
+                                fullWidth={true}>
+                            Дальше
+                        </Button>
                     </div>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        type="submit">
-                        {isEdit ? 'Сохранить' : 'Создать'}
-                    </Button>
-                </form>
-            </Paper>
+                </Paper>
+                }
+            </div>
         );
     }
 }

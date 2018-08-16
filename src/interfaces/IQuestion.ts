@@ -12,6 +12,7 @@ export interface IQuestion<T extends AnyQuestion> {
     order: number;
     type: QuestionType;
     questionData: T;
+    points: number;
 }
 
 export interface IChooseRightData {
