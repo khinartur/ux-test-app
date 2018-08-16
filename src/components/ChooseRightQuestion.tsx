@@ -14,8 +14,9 @@ import {database} from '../modules/firebase';
 
 interface Props {
     question: IQuestion<IChooseRightData>;
-    order: number;
-    onSuccess: any;
+    order?: number;
+    onSuccess?: any;
+    onPass?: any;
     mode: string;
 }
 
@@ -28,8 +29,84 @@ interface State {
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
-    //TODO: form ref
-    private editFormRef: any;
+
+    onQuestionChange = (evt) => {
+        this.setState({
+            ...this.state,
+            question: {
+                ...this.state.question,
+                text: evt.target.value,
+            }
+        });
+    };
+    onAnswerChange = (evt) => {
+        this.setState({
+            ...this.state,
+            answerVariantText: evt.target.value,
+            addingAnswer: {
+                ...this.state.addingAnswer,
+                text: evt.target.value,
+            },
+        });
+    };
+    onCheckboxChange = (evt) => {
+        this.setState({
+            ...this.state,
+            addingAnswer: {
+                ...this.state.addingAnswer,
+                isRight: evt.target.checked,
+            },
+        });
+    };
+    onAnswerAdd = () => {
+        this.state.question.questionData.answers.push(this.state.addingAnswer);
+        this.setState({
+            ...this.state,
+            addingAnswer: null,
+            answerVariantText: '',
+            answerVariantChecked: false,
+        });
+    };
+    onFormSubmit = (evt) => {
+        evt.preventDefault();
+        console.log('SUBMIT');
+
+        const qText = this.state.question.text;
+        if (!qText) {
+            this.setState({
+                ...this.state,
+                error: 'Формулировка вопроса не может быть пустой',
+            });
+
+            return;
+        }
+
+        const qAnswers = this.state.question.questionData.answers;
+        const rightAnswers = qAnswers.filter((a: IChooseAnswer) => a.isRight);
+        if (!rightAnswers.length) {
+            this.setState({
+                ...this.state,
+                error: 'Необходим хотя бы один правильный ответ',
+            });
+
+            return;
+        }
+
+
+        const key = this.props.mode === 'create' ?
+            database.ref().child('/questions').push().key :
+            this.state.question.key;
+
+        //TODO: save without key
+        database.ref('questions/' + key).set({
+            ...this.state.question
+        }).then(() => {
+            database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
+                console.log('On success add question');
+                this.props.onSuccess();
+            });
+        });
+    };
 
     constructor(props) {
         super(props);
@@ -45,93 +122,9 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         };
     }
 
-    onQuestionChange = (evt) => {
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                text: evt.target.value,
-            }
-        });
-    };
-
-    onAnswerChange = (evt) => {
-        this.setState({
-            ...this.state,
-            answerVariantText: evt.target.value,
-            addingAnswer: {
-                ...this.state.addingAnswer,
-                text: evt.target.value,
-            },
-        });
-    };
-
-    onCheckboxChange = (evt) => {
-        this.setState({
-            ...this.state,
-            addingAnswer: {
-                ...this.state.addingAnswer,
-                isRight: evt.target.checked,
-            },
-        });
-    };
-
-    onAnswerAdd = () => {
-        this.state.question.questionData.answers.push(this.state.addingAnswer);
-        this.setState({
-            ...this.state,
-            addingAnswer: null,
-            answerVariantText: '',
-            answerVariantChecked: false,
-        });
-    };
-
-    componentDidMount() {
-        if (this.props.mode === 'create') {
-
-        }
-    }
-
-    onFormSubmit = (evt) => {
-        evt.preventDefault();
-        console.log("SUBMIT");
-
-        const qText = this.state.question.text;
-        if (!qText) {
-            this.setState({
-                ...this.state,
-                error: "Формулировка вопроса не может быть пустой",
-            });
-
-            return;
-        }
-
-        const qAnswers = this.state.question.questionData.answers;
-        const rightAnswers = qAnswers.filter((a: IChooseAnswer) => a.isRight );
-        if (!rightAnswers.length) {
-            this.setState({
-                ...this.state,
-                error: "Необходим хотя бы один правильный ответ",
-            });
-
-            return;
-        }
-
-        database.ref('question/'+this.props.order).set({
-            ...this.state.question
-        }).then(() => {
-            console.log('On success add question');
-            this.props.onSuccess();
-        });
-
-    };
-
     render() {
         const {question, mode} = this.props;
         const isEdit = mode === 'edit';
-        //TODO: think about another solution
-        //this.editFormRef.reset();
-        //ref={(el) => this.editFormRef = el
 
         return (
             <Paper>
@@ -150,9 +143,9 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <div className={'answers'}>
                         {
                             this.state.question.questionData.answers.length ?
-                            this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
-                                return <Paper key={index}>{answer.text}</Paper>;
-                            })
+                                this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
+                                    return <Paper key={index}>{answer.text}</Paper>;
+                                })
                                 :
                                 <div>Нет вариантов ответа.</div>
                         }
@@ -193,9 +186,9 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                         </div>
                     </div>
                     <Button
-                            variant="contained"
-                            color="primary"
-                            type="submit">
+                        variant="contained"
+                        color="primary"
+                        type="submit">
                         {isEdit ? 'Сохранить' : 'Создать'}
                     </Button>
                 </form>

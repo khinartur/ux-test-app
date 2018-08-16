@@ -5,6 +5,8 @@ import Typography from '@material-ui/core/Typography';
 import {IUser} from '../interfaces/IUser';
 import Button from '@material-ui/core/Button';
 
+import '../styles/StudentProfile.scss';
+
 interface Props {
     user: IUser;
 }
