@@ -7,11 +7,12 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 
+import '../styles/TestEditForm.scss';
 import '../styles/ChooseRightQuestion.scss';
 import '../styles/Test.scss';
 
 import {IChooseAnswer, IChooseRightData, IQuestion, QuestionType} from '../interfaces/IQuestion';
-import {database} from '../modules/firebase';
+import {database, storageRef} from '../modules/firebase';
 
 interface Props {
     question: IQuestion<IChooseRightData>;
@@ -28,6 +29,8 @@ interface State {
     error?: string;
     answerVariantText?: string;
     answerVariantChecked?: boolean;
+    uploadedFiles: File[];
+    uploadedFilenames: string[];
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -78,6 +81,16 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             answerVariantChecked: false,
         });
     };
+    onFilesUpload = (evt) => {
+        const files = evt.target.files;
+
+        const filenames = Array.prototype.map.call(files,file => file.name);
+        this.setState({
+            ...this.state,
+            uploadedFilenames: filenames,
+            uploadedFiles: files,
+        });
+    };
     onFormSubmit = (evt) => {
         evt.preventDefault();
         console.log('SUBMIT');
@@ -114,11 +127,21 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             order: this.props.order,
         }).then(() => {
             database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
-                console.log('On success add question');
-                this.props.onSuccess();
+                this.uploadFiles(key, 0);
             });
         });
     };
+    uploadFiles(key: string, fileIndex: number) {
+        const file = this.state.uploadedFiles[fileIndex];
+        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
+            if (this.state.uploadedFiles.length == fileIndex + 1) {
+                console.log('On success add question');
+                this.props.onSuccess();
+            } else {
+                this.uploadFiles(key, fileIndex + 1);
+            }
+        });
+    }
 
     constructor(props) {
         super(props);
@@ -132,6 +155,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 points: 2,
             },
             addingAnswer: null,
+            uploadedFilenames: [],
+            uploadedFiles: [],
         };
     }
 
@@ -146,7 +171,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                         <Typography
                             variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                         <br/>
-                        < Paper className={'error'}>{this.state.error}</Paper>
+                        <Paper className={'error'}>{this.state.error}</Paper>
                         <form autoComplete="off" onSubmit={this.onFormSubmit}>
                             <TextField label="Формулировка вопроса:"
                                        fullWidth={true}
@@ -161,6 +186,31 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                        onChange={this.onPointsChange}
                                        defaultValue={mode === 'edit' ? question.points : 2}>
                             </TextField>
+                            <br/>
+                            <div>
+                                <input
+                                    accept="image/*"
+                                    className={'upload-file-button'}
+                                    id="raised-button-file"
+                                    multiple
+                                    type="file"
+                                    onChange={(evt) => this.onFilesUpload(evt)}
+                                />
+                                <label htmlFor="raised-button-file">
+                                    <Button variant="contained" color="primary" component="span">
+                                        Добавить картинки
+                                    </Button>
+                                </label>
+                            </div>
+                            <br/>
+                            <div>
+                                {
+                                    this.state.uploadedFilenames &&
+                                        this.state.uploadedFilenames.map((name: string, i: number) => {
+                                            return <div key={i}>{name}</div>;
+                                        })
+                                }
+                            </div>
                             <br/>
                             <div className={'answers'}>
                                 {
@@ -216,34 +266,35 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                         </form>
                     </Paper>
                 }
+
                 {mode === 'show' &&
-                <Paper className={'question-paper'}
-                       elevation={10}>
-                    <Typography variant="title">
-                        {question.order + ') ' + question.text}
-                    </Typography>
-                    <br/>
-                    {
-                        question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
-                            return (
-                                <div className={'question-button'}>
-                                    <Button variant="contained"
-                                            color="primary"
-                                            fullWidth={true}>
-                                        {answer.text}
-                                    </Button>
-                                </div>
-                            );
-                        })
-                    }
-                    <div className={'question-button__next'}>
-                        <Button variant="contained"
-                                color="primary"
-                                fullWidth={true}>
-                            Дальше
-                        </Button>
-                    </div>
-                </Paper>
+                    <Paper className={'question-paper'}
+                           elevation={10}>
+                        <Typography variant="title">
+                            {question.order + ') ' + question.text}
+                        </Typography>
+                        <br/>
+                        {
+                            question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
+                                return (
+                                    <div className={'question-button'}>
+                                        <Button variant="contained"
+                                                color="primary"
+                                                fullWidth={true}>
+                                            {answer.text}
+                                        </Button>
+                                    </div>
+                                );
+                            })
+                        }
+                        <div className={'question-button__next'}>
+                            <Button variant="contained"
+                                    color="primary"
+                                    fullWidth={true}>
+                                Дальше
+                            </Button>
+                        </div>
+                    </Paper>
                 }
             </div>
         );
