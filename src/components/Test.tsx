@@ -13,6 +13,7 @@ import embedKey from '../utils/key-embedding';
 
 interface ITest {
     questions: IQuestion<AnyQuestion>[];
+    count: number;
     passedQuestions?: IQuestion<AnyQuestion>[];
     skippedQuestions?: IQuestion<AnyQuestion>[];
     currentPointsSum: number;
@@ -107,6 +108,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 ...this.state,
                 test: {
                     questions: dbQuestions as IQuestion<AnyQuestion>[],
+                    count: dbQuestions.length,
                     skippedQuestions: [],
                     passedQuestions: [],
                     currentPointsSum: 0,
@@ -132,7 +134,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     <div>
                         {this.state.currentQuestion.type === QuestionType.choose_right &&
                         <ChooseRightQuestion question={this.state.currentQuestion as IQuestion<IChooseRightData>}
-                                             mode={'show'}
+                                             count={this.state.test.count}
+                                             mode={'pass'}
                                              onPass={this.onQuestionPass}
                                              onSkip={this.onQuestionSkip}/>}
                         {/*{currentQuestion.type === QuestionType.match_columns &&*/}

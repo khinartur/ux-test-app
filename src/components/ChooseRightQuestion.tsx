@@ -15,8 +15,13 @@ import '../styles/Test.scss';
 import {IChooseAnswer, IChooseRightData, IQuestion, QuestionType} from '../interfaces/IQuestion';
 import {database, storageRef} from '../modules/firebase';
 
+interface IPassMode {
+    isAnswered: boolean;
+}
+
 interface Props {
     question: IQuestion<IChooseRightData>;
+    count?: number;
     order?: number;
     onSuccess?: any;
     onPass?: any;
@@ -32,6 +37,7 @@ interface State {
     answerVariantChecked?: boolean;
     uploadedFiles: File[];
     downloadedFiles: string[];
+    passMode?: IPassMode;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -145,7 +151,25 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 this.uploadFiles(key, fileIndex + 1);
             }
         });
-    }
+    };
+    onAnswerClick = (evt) => {
+        console.log(evt.target.textContent);
+        let userAnswer = evt.target.textContent;
+        let answers = this.state.question.questionData.answers;
+        answers.map((ans: IChooseAnswer) => {
+            if (ans.text == userAnswer) ans.isAnswered = true;
+        });
+
+        this.setState({
+            ...this.state,
+            question: {
+                ...this.state.question,
+                questionData: {
+                    answers: answers,
+                },
+            },
+        });
+    };
 
     constructor(props) {
         super(props);
@@ -163,6 +187,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             addingAnswer: null,
             uploadedFiles: [],
             downloadedFiles: [],
+            passMode: this.props.mode === 'pass' ?
+                {isAnswered: false} : null,
         };
     }
 
@@ -180,7 +206,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
     }
 
     render() {
-        const {question, mode} = this.props;
+        const {question, mode, count} = this.props;
 
         return (
             <div>
@@ -286,18 +312,26 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     </Paper>
                 }
 
-                {mode === 'show' &&
+                {mode === 'pass' &&
                     <Paper className={'question-paper'}
                            elevation={10}>
-                        <Typography variant="title">
-                            <div className={'question-number-div'}>{' ' + question.order + '.'}</div>
+                        <Typography variant="title"
+                                    style={{paddingTop: '3px'}}>
+                            <div className={'question-number-div'}>
+                                <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
+                            </div>
                             {question.text}
                         </Typography>
                         <br/>
                         {
                             this.state.downloadedFiles &&
                             this.state.downloadedFiles.map((url: string, i: number) => {
-                                    return <img key={i} src={url} height="300px"/>;
+                                    return <img key={i}
+                                                src={url}
+                                                style={{
+                                                            height: '180px',
+                                                            display: 'inline-block',
+                                                        }}/>;
                                 })
                         }
                         <br/>
@@ -307,7 +341,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                     <div key={i} className={'question-button'}>
                                         <Button variant="contained"
                                                 color="primary"
-                                                fullWidth={true}>
+                                                fullWidth={true}
+                                                onClick={(evt) => this.onAnswerClick(evt)}>
                                             {answer.text}
                                         </Button>
                                     </div>
@@ -317,8 +352,11 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                         <div className={'question-button__next'}>
                             <Button variant="contained"
                                     color="primary"
-                                    fullWidth={true}>
-                                Дальше
+                                    fullWidth={true}
+                                    onClick={this.state.passMode.isAnswered ?
+                                        this.props.onPass(question) :
+                                        this.props.onSkip(question)}>
+                                {this.state.passMode.isAnswered ? 'Ответить' : 'Дальше'}
                             </Button>
                         </div>
                     </Paper>

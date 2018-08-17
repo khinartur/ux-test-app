@@ -2,3 +2,9 @@
     display: grid;
     grid-template-columns: 3fr 1fr 1fr;
 }
+
+.question-order-span {
+    position: relative;
+    left: 8px;
+    top: 4px;
+}

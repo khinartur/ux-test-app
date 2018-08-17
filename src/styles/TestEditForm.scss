@@ -14,4 +14,15 @@
 .question-choose-paper {
     padding: 5px;
     margin: 5px;
+
+    &__active {
+        background-color: #00695f;
+        color: white;
+    }
+}
+
+.question-choose-typo {
+    &__active {
+        color: white;
+    }
 }
