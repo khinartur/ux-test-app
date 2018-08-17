@@ -30,7 +30,7 @@ interface State {
     answerVariantText?: string;
     answerVariantChecked?: boolean;
     uploadedFiles: File[];
-    uploadedFilenames: string[];
+    downloadedFiles: string[];
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -87,7 +87,10 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         const filenames = Array.prototype.map.call(files,file => file.name);
         this.setState({
             ...this.state,
-            uploadedFilenames: filenames,
+            question: {
+                ...this.state.question,
+                pictures: filenames,
+            },
             uploadedFiles: files,
         });
     };
@@ -145,6 +148,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
     constructor(props) {
         super(props);
+        console.log('choose right constructor');
+        console.dir(this.props.question);
 
         this.state = {
             question: this.props.question || {
@@ -155,9 +160,22 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 points: 2,
             },
             addingAnswer: null,
-            uploadedFilenames: [],
             uploadedFiles: [],
+            downloadedFiles: [],
         };
+    }
+
+    componentDidMount() {
+        if (this.props.mode === 'show' && this.state.question.pictures) {
+            this.state.question.pictures.map((filename: string) => {
+                storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
+                    this.setState({
+                        ...this.state,
+                        downloadedFiles: [...this.state.downloadedFiles, url],
+                    });
+                });
+            });
+        }
     }
 
     render() {
@@ -205,8 +223,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             <br/>
                             <div>
                                 {
-                                    this.state.uploadedFilenames &&
-                                        this.state.uploadedFilenames.map((name: string, i: number) => {
+                                    this.state.question.pictures &&
+                                        this.state.question.pictures.map((name: string, i: number) => {
                                             return <div key={i}>{name}</div>;
                                         })
                                 }
@@ -275,9 +293,16 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                         </Typography>
                         <br/>
                         {
+                            this.state.downloadedFiles &&
+                            this.state.downloadedFiles.map((url: string, i: number) => {
+                                    return <img key={i} src={url} height="300px"/>;
+                                })
+                        }
+                        <br/>
+                        {
                             question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
                                 return (
-                                    <div className={'question-button'}>
+                                    <div key={i} className={'question-button'}>
                                         <Button variant="contained"
                                                 color="primary"
                                                 fullWidth={true}>

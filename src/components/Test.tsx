@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 import '../styles/Test.scss';
+import embedKey from '../utils/key-embedding';
 
 interface ITest {
     questions: IQuestion<AnyQuestion>[];
@@ -101,7 +102,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     componentDidMount() {
         Test.getTestQuestions().then(snapshot => {
-            const dbQuestions = Object.entries(snapshot.val()).map((q) => q[1]);
+            const dbQuestions = Object.entries(embedKey(snapshot.val())).map((q) => q[1]);
             this.setState({
                 ...this.state,
                 test: {

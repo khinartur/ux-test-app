@@ -9,6 +9,7 @@ export type AnyQuestion = IChooseRightData | IMatchColumnsData | IOpenQuestionDa
 export interface IQuestion<T extends AnyQuestion> {
     key?: string;
     text: string;
+    pictures?: string[];
     order: number;
     type: QuestionType;
     questionData: T;
