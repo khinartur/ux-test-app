@@ -23,13 +23,13 @@ class Admin extends React.Component<Props> {
 
     render() {
         return (
-            <div className={'wrapper'}>
+            <div className={'admin-wrapper'}>
                 <div className={'space-item-a'}></div>
                 <div className={'space-item-c'}></div>
                 <div className={'space-item-d'}></div>
                 <div className={'space-item-e'}></div>
                 <div className={'admin-form'}>
-                    <Typography variant="headline" gutterBottom>
+                    <Typography variant="headline" gutterBottom align={'center'}>
                         Администратор
                     </Typography>
                     <Button variant="contained" color="primary" fullWidth={true} onClick={this.goToTestEdit}>

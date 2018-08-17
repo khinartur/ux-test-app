@@ -46,7 +46,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
         const {question, order} = this.props;
 
         return (
-            <Paper>
+            <Paper className={'question-edit-form'}>
                 <FormControl>
                     <InputLabel htmlFor="type">Тип вопроса</InputLabel>
                     <Select

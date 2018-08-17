@@ -70,17 +70,21 @@ class Sign extends React.Component<Props & RouterProps, State> {
 
     render() {
         return (
-            <div className={'wrapper'}>
+            <div className={'sign-wrapper'}>
                 <div className={'space-item-a'}></div>
                 <div className={'space-item-c'}></div>
                 <div className={'space-item-d'}></div>
                 <div className={'space-item-e'}></div>
                 <div className={'sign-form'}>
                     <Paper className={'error'}>{this.state.error}</Paper>
-                    <Typography variant="headline" gutterBottom>
+                    <Typography variant="headline" gutterBottom align={'center'}>
                         Технопарк. Тестирование по курсу UX
                     </Typography>
-                    <Button variant="contained" color="primary" onClick={this.githubSignIn}>
+                    <Button variant="contained"
+                            className={'github-button'}
+                            color="primary"
+                            onClick={this.githubSignIn}
+                            >
                         Войти с помощью GitHub&nbsp;&nbsp;&nbsp;
                         <GithubCircle/>
                     </Button>

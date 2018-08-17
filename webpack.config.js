@@ -1,5 +1,8 @@
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+//const CleanWebpackPlugin = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const devMode = process.env.NODE_ENV !== 'production'
+const webpack = require('webpack');
 
 module.exports = {
     devtool: 'inline-source-map',
@@ -33,25 +36,36 @@ module.exports = {
                 ],
             },
             {
-                test: /\.scss$/,
+                test: /\.(sa|sc|c)ss$/,
                 use: [
-                    {
-                        loader: "style-loader"
-                    },
-                    {
-                        loader: "css-loader",
-                        options: {
-                            sourceMap: true
-                        }
-                    },
-                    {
-                        loader: "sass-loader",
-                        options: {
-                            sourceMap: true
-                        }
-                    }
+                    devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+                    'css-loader',
+                    // 'postcss-loader',
+                    'sass-loader',
                 ],
             },
+            // {
+            //     test: /\.scss$/,
+            //     use: ExtractTextPlugin.extract({
+            //         use: [
+            //             {
+            //                 loader: "style-loader"
+            //             },
+            //             {
+            //                 loader: "css-loader",
+            //                 options: {
+            //                     sourceMap: true
+            //                 }
+            //             },
+            //             {
+            //                 loader: "sass-loader",
+            //                 options: {
+            //                     sourceMap: true
+            //                 }
+            //             }
+            //         ],
+            //     })
+            // },
         ]
     },
     plugins: [
@@ -59,6 +73,13 @@ module.exports = {
             template: 'src/templates/index.html',
             filename: 'index.html',
         }),
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        new MiniCssExtractPlugin({
+            // Options similar to the same options in webpackOptions.output
+            // both options are optional
+            filename: devMode ? '[name].css' : '[name].[hash].css',
+            chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
+        }),
+        //new CleanWebpackPlugin(['dist']),
     ]
 };

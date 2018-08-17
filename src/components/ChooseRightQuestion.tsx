@@ -7,6 +7,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 
+import '../styles/App.scss';
 import '../styles/TestEditForm.scss';
 import '../styles/ChooseRightQuestion.scss';
 import '../styles/Test.scss';
@@ -289,7 +290,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <Paper className={'question-paper'}
                            elevation={10}>
                         <Typography variant="title">
-                            {question.order + ') ' + question.text}
+                            <div className={'question-number-div'}>{' ' + question.order + '.'}</div>
+                            {question.text}
                         </Typography>
                         <br/>
                         {

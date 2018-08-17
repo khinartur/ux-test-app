@@ -16,6 +16,7 @@ interface State {
     questionsOrderMap?: { [key: number]: string };
     questionToEdit?: IQuestion<AnyQuestion>;
     loading: boolean;
+    qPaper: { [key: string]: string };
 }
 
 export default class TestEditForm extends React.Component<{}, State> {
@@ -58,12 +59,35 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
 
+    onQuestionMouseOver = () => {
+        this.setState({
+            ...this.state,
+            qPaper: {
+                bgColor: 'grey',
+                textColor: 'white',
+            },
+        });
+    };
+
+    onQuestionMouseOut = () => {
+        this.setState({
+            ...this.state,
+            qPaper: {
+                bgColor: 'white',
+                textColor: 'black',
+            },
+        });
+    };
+
     constructor(props) {
         super(props);
 
         this.state = {
             showAddQuestionForm: false,
             loading: true,
+            qPaper: {
+                bgColor: 'white',
+            },
         };
     }
 
@@ -91,9 +115,18 @@ export default class TestEditForm extends React.Component<{}, State> {
                             new Array(qCount).fill(true).map((v: boolean, i: number) => {
                                 const q = questions[qMap[i+1]];
                                 return <Paper key={i}
+                                              className={'question-choose-paper'}
                                               onClick={(evt) => this.editQuestion(evt, q.order)}
+                                              onMouseOver={this.onQuestionMouseOver}
+                                              onMouseOut={this.onQuestionMouseOut}
+                                              style={{
+                                                  backgroundColor: this.state.qPaper.bgColor,
+                                              }}
                                 >
-                                    <span>{q.order + ') '}</span>{q.text}
+                                    <Typography variant="body1"
+                                                style={{color: this.state.qPaper.textColor}}>
+                                        {q.order + ') ' + q.text}
+                                    </Typography>
                                 </Paper>;
                             })
                             :

@@ -21,14 +21,14 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, {}
         const {user} = this.props;
 
         return (
-            <div className={'wrapper'}>
+            <div className={'profile-wrapper'}>
                 <div className={'space-item-a'}></div>
                 <div className={'space-item-c'}></div>
                 <div className={'space-item-d'}></div>
                 <div className={'space-item-e'}></div>
                 <div className={'user-profile-panel'}>
-                    <Paper>
-                        <Typography variant="display1" gutterBottom>
+                    <Paper className={'profile-paper'}>
+                        <Typography variant="title" gutterBottom align={'center'}>
                             Профиль студента
                         </Typography>
                         <Typography variant="body2" gutterBottom>
@@ -50,7 +50,10 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, {}
                                 )
                                 :
                                 (
-                                    <Button variant="contained" color="primary" onClick={this.initTest}>
+                                    <Button variant="contained"
+                                            color="primary"
+                                            className={'test-button'}
+                                            onClick={this.initTest}>
                                         Начать тест
                                     </Button>
                                 )

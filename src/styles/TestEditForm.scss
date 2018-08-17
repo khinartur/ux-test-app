@@ -1,8 +1,17 @@
 .test-edit-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
+
+    &__item {
+        margin: 50px;
+    }
 }
 
 .upload-file-button {
     display: none;
+}
+
+.question-choose-paper {
+    padding: 5px;
+    margin: 5px;
 }
