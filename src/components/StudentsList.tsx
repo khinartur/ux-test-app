@@ -7,15 +7,17 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import AddStudentDialog from './AddStudentDialog'
+import AddStudentDialog from './AddStudentDialog';
 import {ChangeEvent} from 'react';
 
-import {database} from '../modules/firebase'
+import {database} from '../modules/firebase';
+import {IUser} from '../interfaces/IUser';
 
 let id = 0;
+
 function createData(name, surname, team, github, status, points) {
     id += 1;
-    return { id, name, surname, team, github, status, points };
+    return {id, name, surname, team, github, status, points};
 }
 
 interface StudentInfo {
@@ -37,31 +39,6 @@ interface State {
 
 export default class StudentsList extends React.Component<{}, State> {
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            addStudentDialogOpened: false,
-            newStudentName: "",
-            newStudentSurname: "",
-            newStudentGithub: "",
-            studentList: [],
-        };
-
-        this.githubSignIn = this.githubSignIn.bind(this);
-    }
-
-
-
-    githubSignIn() {
-        //TODO: check instance
-        const provider = new firebase.auth.GithubAuthProvider();
-        firebase.auth().signInWithPopup(provider).then(function (result) {
-            console.log("Result:");
-            console.dir(result);
-        });
-    }
-
     onDialogInputChange = (evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const inputName = evt.target.name as keyof State;
         const inputValue = evt.target.value;
@@ -73,22 +50,19 @@ export default class StudentsList extends React.Component<{}, State> {
             },
         );
     };
-
     openAddStudentDialog = () => {
         this.setState({
             addStudentDialogOpened: true,
         });
     };
-
     closeAddStudentDialog = () => {
         this.setState({
             addStudentDialogOpened: false,
         });
     };
-
     onDialogSubmit = () => {
         //TODO: make loading
-        database.ref('users/'+this.state.newStudentGithub).set({
+        database.ref('users/' + this.state.newStudentGithub).set({
             name: this.state.newStudentName,
             surname: this.state.newStudentSurname,
             github: this.state.newStudentGithub,
@@ -104,7 +78,6 @@ export default class StudentsList extends React.Component<{}, State> {
             });
         });
     };
-
     updateStudentList = (students) => {
         let list = [];
         for (const studentLogin in students) {
@@ -117,49 +90,74 @@ export default class StudentsList extends React.Component<{}, State> {
         });
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            addStudentDialogOpened: false,
+            newStudentName: '',
+            newStudentSurname: '',
+            newStudentGithub: '',
+            studentList: [],
+        };
+
+        this.githubSignIn = this.githubSignIn.bind(this);
+    }
+
+    githubSignIn() {
+        //TODO: check instance
+        const provider = new firebase.auth.GithubAuthProvider();
+        firebase.auth().signInWithPopup(provider).then(function (result) {
+            console.log('Result:');
+            console.dir(result);
+        });
+    }
+
     componentDidMount() {
         const usersRef = database.ref('users/');
-        usersRef.on('value', function(snapshot) {
+        usersRef.on('value', function (snapshot) {
             this.updateStudentList(snapshot.val());
         }.bind(this));
     }
 
     render() {
         return (
-            <div>
-                <Paper>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Студент</TableCell>
-                                <TableCell>GitHub</TableCell>
-                                <TableCell>Статус теста</TableCell>
-                                <TableCell>Тест проверен</TableCell>
-                                <TableCell>Кол-во баллов</TableCell>
-                                <TableCell>Действия</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {this.state.studentList.map(n => {
-                                return (
-                                    <TableRow key={n.github}>
-                                        <TableCell>{n.name + ' ' + n.surname}</TableCell>
-                                        <TableCell numeric>{n.github}</TableCell>
-                                        <TableCell numeric>{n.test_passed}</TableCell>
-                                        <TableCell numeric>{n.test_is_checked}</TableCell>
-                                        <TableCell numeric>{n.points}</TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </Paper>
+            <Paper className={'students-list-container'}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Студент</TableCell>
+                            <TableCell>GitHub</TableCell>
+                            <TableCell>Статус теста</TableCell>
+                            <TableCell>Тест проверен</TableCell>
+                            <TableCell>Кол-во баллов</TableCell>
+                            <TableCell>Действия</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {this.state.studentList.map((n: IUser, i: number)  => {
+                            return (
+                                <TableRow key={i}>
+                                    <TableCell>{n.name + ' ' + n.surname}</TableCell>
+                                    <TableCell>{n.github}</TableCell>
+                                    <TableCell>{n.test_passed ? 'пройден' : 'не пройден'}</TableCell>
+                                    <TableCell>{n.test_is_checked ? 'да' : 'нет'}</TableCell>
+                                    <TableCell>{n.points}</TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
                 <AddStudentDialog onClose={this.closeAddStudentDialog}
                                   open={this.state.addStudentDialogOpened}
                                   onChange={this.onDialogInputChange}
                                   onSubmit={this.onDialogSubmit}/>
-                <Button onClick={this.openAddStudentDialog}>Добавить студента</Button>
-            </div>
+                <Button onClick={this.openAddStudentDialog}
+                        variant="contained"
+                        color="primary">
+                    Добавить студента
+                </Button>
+            </Paper>
         );
     }
 }

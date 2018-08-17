@@ -51,19 +51,29 @@ export default class TestEditForm extends React.Component<{}, State> {
     };
 
     onSuccessQuestionEdit = () => {
+        this.updateQuestions();
+
         this.setState({
             ...this.state,
             questionOrder: this.state.questionOrder + 1,
             showAddQuestionForm: false,
+            loading: true,
         });
     };
 
     onQuestionMouseOver = (evt) => {
-        evt.target.className = 'question-choose-paper__active';
+        evt.target.className = 'question-choose-div__active';
     };
 
     onQuestionMouseOut = (evt) => {
-        evt.target.className = 'question-choose-paper';
+        evt.target.className = 'question-choose-div';
+    };
+    updateQuestions = () => {
+        database.ref('questions/').on('value', function (questionsSnapshot) {
+            database.ref('questions-order/').once('value').then(function (mapSnapshot) {
+                this.updateQuestionsList(questionsSnapshot.val(), mapSnapshot.val());
+            }.bind(this));
+        }.bind(this));
     };
 
     constructor(props) {
@@ -76,11 +86,7 @@ export default class TestEditForm extends React.Component<{}, State> {
     }
 
     componentDidMount() {
-        database.ref('questions/').on('value', function (questionsSnapshot) {
-            database.ref('questions-order/').once('value').then(function (mapSnapshot) {
-                this.updateQuestionsList(questionsSnapshot.val(), mapSnapshot.val());
-            }.bind(this));
-        }.bind(this));
+        this.updateQuestions();
     }
 
     render() {
@@ -97,18 +103,18 @@ export default class TestEditForm extends React.Component<{}, State> {
                     <div className={'test-edit-form__item'}>
                         {qCount ? //TODO: replace with generator
                             new Array(qCount).fill(true).map((v: boolean, i: number) => {
-                                const q = questions[qMap[i+1]];
-                                return <Paper key={i}
-                                              className={'question-choose-paper'}
-                                              onClick={(evt) => this.editQuestion(evt, q.order)}
-                                              onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
-                                              onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
+                                const q = questions[qMap[i + 1]];
+                                return <div key={i}
+                                            className={'question-choose-div'}
+                                            onClick={(evt) => this.editQuestion(evt, q.order)}
+                                            onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
+                                            onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
                                 >
-                                    <Typography variant="body1"
-                                                className={'question-choose-typo'}>
-                                        {q.order + ') ' + q.text}
-                                    </Typography>
-                                </Paper>;
+                                    {/*<Typography variant="body1"*/}
+                                    {/*className={'question-choose-typo'}>*/}
+                                    {q.order + ') ' + q.text}
+                                    {/*</Typography>*/}
+                                </div>;
                             })
                             :
                             <Typography variant="body1" gutterBottom>

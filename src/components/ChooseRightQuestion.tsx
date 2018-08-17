@@ -38,6 +38,7 @@ interface State {
     uploadedFiles: File[];
     downloadedFiles: string[];
     passMode?: IPassMode;
+    loading: boolean;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -91,7 +92,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
     onFilesUpload = (evt) => {
         const files = evt.target.files;
 
-        const filenames = Array.prototype.map.call(files,file => file.name);
+        const filenames = Array.prototype.map.call(files, file => file.name);
         this.setState({
             ...this.state,
             question: {
@@ -137,28 +138,35 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             order: this.props.order,
         }).then(() => {
             database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
-                this.uploadFiles(key, 0);
+                if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
+                    this.uploadFiles(key, 0);
+                } else {
+                    this.props.onSuccess();
+                }
             });
-        });
-    };
-    uploadFiles(key: string, fileIndex: number) {
-        const file = this.state.uploadedFiles[fileIndex];
-        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
-            if (this.state.uploadedFiles.length == fileIndex + 1) {
-                console.log('On success add question');
-                this.props.onSuccess();
-            } else {
-                this.uploadFiles(key, fileIndex + 1);
-            }
         });
     };
     onAnswerClick = (evt) => {
         console.log(evt.target.textContent);
+
+
         let userAnswer = evt.target.textContent;
         let answers = this.state.question.questionData.answers;
         answers.map((ans: IChooseAnswer) => {
-            if (ans.text == userAnswer) ans.isAnswered = true;
+            if (ans.text == userAnswer) {
+                if (ans.isAnswered) {
+                    ans.isAnswered = false;
+                    evt.target.style.backgroundColor = '#000000';
+                } else {
+                    ans.isAnswered = true;
+                    evt.target.style.backgroundColor = '#009688';
+                }
+            }
         });
+
+        const isQAnswered = !!(answers.filter((ans: IChooseAnswer) => ans.isAnswered));
+
+        console.dir(answers);
 
         this.setState({
             ...this.state,
@@ -168,7 +176,17 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     answers: answers,
                 },
             },
+            passMode: {
+                isAnswered: isQAnswered,
+            },
         });
+    };
+    onNextQuestion = () => {
+        const question = this.state.question;
+
+        this.state.passMode.isAnswered ?
+            this.props.onPass(question) :
+            this.props.onSkip(question);
     };
 
     constructor(props) {
@@ -189,18 +207,38 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             downloadedFiles: [],
             passMode: this.props.mode === 'pass' ?
                 {isAnswered: false} : null,
+            loading: true,
         };
     }
 
+    uploadFiles(key: string, fileIndex: number) {
+        const file = this.state.uploadedFiles[fileIndex];
+        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
+            if (this.state.uploadedFiles.length == fileIndex + 1) {
+                console.log('On success add question');
+                this.props.onSuccess();
+            } else {
+                this.uploadFiles(key, fileIndex + 1);
+            }
+        });
+    };
+
     componentDidMount() {
-        if (this.props.mode === 'show' && this.state.question.pictures) {
+        if (this.props.mode === 'pass' && this.state.question.pictures) {
             this.state.question.pictures.map((filename: string) => {
                 storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
+                    const downloadedCount = this.state.downloadedFiles.length;
                     this.setState({
                         ...this.state,
                         downloadedFiles: [...this.state.downloadedFiles, url],
+                        loading: this.state.question.pictures.length !== downloadedCount + 1,
                     });
                 });
+            });
+        } else {
+            this.setState({
+                ...this.state,
+                loading: false,
             });
         }
     }
@@ -212,7 +250,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             <div>
                 {
                     (mode === 'edit' || mode === 'create') &&
-                    <Paper>
+                    <Paper className={'choose-right-edit-paper'}>
                         <Typography
                             variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                         <br/>
@@ -251,9 +289,9 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             <div>
                                 {
                                     this.state.question.pictures &&
-                                        this.state.question.pictures.map((name: string, i: number) => {
-                                            return <div key={i}>{name}</div>;
-                                        })
+                                    this.state.question.pictures.map((name: string, i: number) => {
+                                        return <div key={i}>{name}</div>;
+                                    })
                                 }
                             </div>
                             <br/>
@@ -261,7 +299,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                 {
                                     this.state.question.questionData.answers.length ?
                                         this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
-                                            return <Paper key={index}>{answer.text}</Paper>;
+                                            return <Paper key={index} className={'answer-paper'}>{answer.text}</Paper>;
                                         })
                                         :
                                         <div>Нет вариантов ответа.</div>
@@ -312,54 +350,52 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     </Paper>
                 }
 
-                {mode === 'pass' &&
-                    <Paper className={'question-paper'}
-                           elevation={10}>
-                        <Typography variant="title"
-                                    style={{paddingTop: '3px'}}>
-                            <div className={'question-number-div'}>
-                                <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
-                            </div>
-                            {question.text}
-                        </Typography>
-                        <br/>
-                        {
-                            this.state.downloadedFiles &&
-                            this.state.downloadedFiles.map((url: string, i: number) => {
-                                    return <img key={i}
-                                                src={url}
-                                                style={{
-                                                            height: '180px',
-                                                            display: 'inline-block',
-                                                        }}/>;
-                                })
-                        }
-                        <br/>
-                        {
-                            question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
-                                return (
-                                    <div key={i} className={'question-button'}>
-                                        <Button variant="contained"
-                                                color="primary"
-                                                fullWidth={true}
-                                                onClick={(evt) => this.onAnswerClick(evt)}>
-                                            {answer.text}
-                                        </Button>
-                                    </div>
-                                );
-                            })
-                        }
-                        <div className={'question-button__next'}>
-                            <Button variant="contained"
-                                    color="primary"
-                                    fullWidth={true}
-                                    onClick={this.state.passMode.isAnswered ?
-                                        this.props.onPass(question) :
-                                        this.props.onSkip(question)}>
-                                {this.state.passMode.isAnswered ? 'Ответить' : 'Дальше'}
-                            </Button>
+                {mode === 'pass' && !this.state.loading &&
+                <Paper className={'question-paper'}
+                       elevation={10}>
+                    <Typography variant="title"
+                                style={{paddingTop: '3px'}}>
+                        <div className={'question-number-div'}>
+                            <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
                         </div>
-                    </Paper>
+                        {question.text}
+                    </Typography>
+                    <br/>
+                    {
+                        this.state.downloadedFiles &&
+                        this.state.downloadedFiles.map((url: string, i: number) => {
+                            return <img key={i}
+                                        src={url}
+                                        style={{
+                                            height: '180px',
+                                            display: 'inline-block',
+                                        }}/>;
+                        })
+                    }
+                    <br/>
+                    {
+                        question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
+                            return (
+                                <div key={i} className={'question-button'}>
+                                    <Button variant="contained"
+                                            color="primary"
+                                            fullWidth={true}
+                                            onClick={(evt) => this.onAnswerClick(evt)}>
+                                        {answer.text}
+                                    </Button>
+                                </div>
+                            );
+                        })
+                    }
+                    <div className={'question-button__next'}>
+                        <Button variant="contained"
+                                color="primary"
+                                fullWidth={true}
+                                onClick={this.onNextQuestion}>
+                            {this.state.passMode.isAnswered ? 'Ответить' : 'Дальше'}
+                        </Button>
+                    </div>
+                </Paper>
                 }
             </div>
         );

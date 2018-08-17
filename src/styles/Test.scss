@@ -13,8 +13,20 @@
     &__next {
         margin: 30px 8px 0;
     }
+
+    &__active {
+        background-color: #00695f;
+    }
 }
 
 .question-button:first-child {
     margin-top: 25px;
+}
+
+.test-done-paper {
+    padding: 15px;
+}
+
+.profile-button {
+    left: calc(50% - 51px);
 }

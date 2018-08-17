@@ -6,21 +6,47 @@ import {IUser} from '../interfaces/IUser';
 import Button from '@material-ui/core/Button';
 
 import '../styles/StudentProfile.scss';
+import {database} from '../modules/firebase';
 
 interface Props {
     user: IUser;
 }
 
-class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, {}> {
+interface State {
+    loggedUser: IUser;
+    loading: boolean;
+}
+
+class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     initTest = () => {
         this.props.history.push('/test');
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            loggedUser: this.props.user,
+            loading: true,
+        }
+    }
+
+    componentDidMount() {
+        database.ref('/users/'+this.props.user.github).once('value').then((snapshot) => {
+            const user = snapshot.val();
+            this.setState({
+                loading: false,
+                loggedUser: user,
+            });
+        });
+    }
+
     render() {
-        const {user} = this.props;
+        const user = this.state.loggedUser;
 
         return (
+            !this.state.loading &&
             <div className={'profile-wrapper'}>
                 <div className={'space-item-a'}></div>
                 <div className={'space-item-c'}></div>
@@ -40,6 +66,18 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, {}
                         <Typography variant="body2" gutterBottom>
                             Github: {user.github}
                         </Typography>
+                        {/*{*/}
+                            {/*user.test_passed &&*/}
+                            {/*<Typography variant="body2" gutterBottom>*/}
+                                {/*Кол-во баллов: {user.github}*/}
+                            {/*</Typography>*/}
+                        {/*}*/}
+                        {/*{*/}
+                            {/*user.test_passed &&*/}
+                            {/*<Typography variant="body2" gutterBottom>*/}
+                                {/*Статус проверки: {user.test_is_checked ? 'проверен' : 'не проверен'}*/}
+                            {/*</Typography>*/}
+                        {/*}*/}
                         {
                             user.test_passed ?
                                 (

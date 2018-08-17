@@ -34,13 +34,23 @@ interface State {
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     saveUserResult = () => {
-        debugger;
+        database.ref('users/'+this.props.user.github).set({
+            ...this.props.user,
+            points: this.state.test.currentPointsSum,
+            test_passed: true,
+            test_is_checked: false,
+        }).then(() => {
+            this.setState({
+                ...this.state,
+                done: true,
+            });
+        });
     };
 
     onQuestionPass = (passedQuestion: IPassedQuestion) => {
         const currQ = this.state.currentQuestion;
 
-        database.ref('passed-questions/'+currQ.key).set({
+        database.ref('passed-questions/'+this.props.user.github+'/'+currQ.key).set({
             ...passedQuestion,
         }).then(() => {
             const nextQNumber = this.state.currentQNumber + 1;
@@ -71,7 +81,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             passedQuestions: [...passedQuestions, currQ],
                             currentPointsSum: currentPointsSum,
                         },
-                        done: true,
                     });
                 }
             } else {
@@ -147,13 +156,15 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 }
                 {
                     !this.state.loading && this.state.done &&
-                        <Paper>
-                            <Typography variant="title">
+                        <Paper className={'test-done-paper'}>
+                            <Typography variant="body1" align={'center'}>
                                 Тест пройден. Следите за своими баллами в профиле.
                             </Typography>
                             <br/>
                             <Button variant="contained"
-                                    color="primary">
+                                    color="primary"
+                                    className={'profile-button'}
+                                    onClick={() => this.props.history.push('/profile')}>
                                 Профиль
                             </Button>
                         </Paper>

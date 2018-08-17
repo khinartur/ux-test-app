@@ -11,13 +11,17 @@
     display: none;
 }
 
-.question-choose-paper {
+.question-choose-div {
     padding: 5px;
     margin: 5px;
+    box-shadow: 0 0 4px 3px rgba(0,0,0,0.6);
 
     &__active {
         background-color: #00695f;
         color: white;
+        padding: 5px;
+        margin: 5px;
+        box-shadow: 0 0 4px 3px rgba(0,0,0,0.6);
     }
 }
 
