@@ -59,6 +59,9 @@ export type QuestionAnswer = IChooseAnswer | IMatchAnswer | string;
 
 interface IPassMode {
     isAnswered: boolean;
+    leftAnswers?: string[];
+    rightAnswers?: string[];
+    answer?: any;
 }
 
 export interface IQuestionState<T extends AnyQuestionData, P extends QuestionAnswer> {

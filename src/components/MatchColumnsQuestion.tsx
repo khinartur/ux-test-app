@@ -4,13 +4,15 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
-import '../styles/ChooseRightQuestion.scss';
+import '../styles/MatchColumnsQuestion.scss';
+import '../styles/Test.scss';
+
 import {
-    IQuestion, IMatchAnswer, IMatchColumnsData, QuestionType, IQuestionProps,
-    IChooseAnswer, IChooseRightData, IQuestionState
+    IMatchAnswer, IMatchColumnsData, QuestionType, IQuestionProps, IQuestionState, IChooseAnswer
 } from '../interfaces/IQuestion';
 import {MATCH_COLUMNS_POINTS} from '../constants/points';
 import {database, storageRef} from '../modules/firebase';
+import shuffle from '../utils/key-embedding';
 
 interface Props extends IQuestionProps<IMatchColumnsData> {
 }
@@ -147,6 +149,112 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         });
     };
 
+    componentDidMount() {
+        if (this.props.mode === 'pass' && this.state.question.pictures) {
+            if (this.state.question.pictures) {
+                this.state.question.pictures.map((filename: string) => {
+                    storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
+                        const downloadedCount = this.state.downloadedFiles.length;
+                        this.setState({
+                            ...this.state,
+                            downloadedFiles: [...this.state.downloadedFiles, url],
+                            loading: this.state.question.pictures.length !== downloadedCount + 1,
+                        });
+                    });
+                });
+            }
+
+            let [leftAnswers, rightAnswers] = [[], []];
+            this.state.question.questionData.answers.map((answer: IMatchAnswer) => {
+                leftAnswers.push(answer.left);
+                rightAnswers.push(answer.right);
+            });
+
+            this.setState({
+                ...this.state,
+                passMode: {
+                    ...this.state.passMode,
+                    leftAnswers: shuffle(leftAnswers),
+                    rightAnswers: shuffle(rightAnswers),
+                }
+            });
+        } else {
+            this.setState({
+                ...this.state,
+                loading: false,
+            });
+        }
+    }
+    onAnswerClick = (evt) => {
+        console.log(evt.target.textContent);
+        const answerText = evt.target.textContent;
+        const answers = this.state.question.questionData.answers;
+
+        const currentAnswer = this.state.passMode.answer || {};
+        switch (evt.target.name) {
+            case 'left':
+                currentAnswer.left = answerText;
+                if (currentAnswer.right) {
+                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
+                    dbAnswer.user_answer = currentAnswer.right;
+                    evt.currentTarget.style.display = 'none';
+                    this.setState({
+                        ...this.state,
+                        passMode: {
+                            ...this.state.passMode,
+                            answer: null,
+                        }
+                    });
+                } else {
+                    evt.currentTarget.style.backgroundColor = '#009688';
+                }
+                break;
+            case 'right':
+                currentAnswer.right = answerText;
+                if (currentAnswer.left) {
+                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
+                    dbAnswer.user_answer = currentAnswer.right;
+                    evt.currentTarget.style.display = 'none';
+                    this.setState({
+                        ...this.state,
+                        passMode: {
+                            ...this.state.passMode,
+                            answer: null,
+                        }
+                    });
+                } else {
+                    evt.currentTarget.style.backgroundColor = '#009688';
+                }
+                break;
+        }
+
+        const isQAnswered = answers.filter((ans: IMatchAnswer) => ans.user_answer).length == answers.length;
+
+        console.log('MATCH COLUMNS ANSWERS:');
+        console.dir(answers);
+
+        this.setState({
+            ...this.state,
+            question: {
+                ...this.state.question,
+                questionData: {
+                    answers: answers,
+                },
+            },
+            passMode: {
+                isAnswered: isQAnswered,
+            },
+        });
+    };
+    onNextQuestion = () => {
+        const question = this.state.question;
+
+        this.state.passMode.isAnswered ?
+            this.props.onPass(question) :
+            this.props.onSkip(question);
+    };
+
+
     render() {
         const {question, mode, count} = this.props;
 
@@ -219,8 +327,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             <div className={'match-answer-variant'}>
                                 <div className={'match-answer-variant__item'}>
                                     <TextField className={'match-answer-variant-textfield'}
-                                               label='Ответ'
-                                               fullWidth={false}
+                                               label='Левый столбец'
+                                               fullWidth={true}
                                                margin={'dense'}
                                                inputProps={{
                                                    name: 'left',
@@ -231,8 +339,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 </div>
                                 <div className={'match-answer-variant__item'}>
                                     <TextField className={'match-answer-variant-textfield'}
-                                               label='Ответ'
-                                               fullWidth={false}
+                                               label='Правый столбец'
+                                               fullWidth={true}
                                                margin={'dense'}
                                                inputProps={{
                                                    name: 'right',
@@ -258,6 +366,65 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             </Button>
                         </form>
                     </Paper>
+                }
+                {mode === 'pass' && !this.state.loading &&
+                <Paper className={'question-paper'}
+                       elevation={10}>
+                    <Typography variant="title"
+                                style={{paddingTop: '3px'}}>
+                        <div className={'question-number-div'}>
+                            <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
+                        </div>
+                        {question.text}
+                    </Typography>
+                    <br/>
+                    {
+                        this.state.downloadedFiles &&
+                        this.state.downloadedFiles.map((url: string, i: number) => {
+                            return <img key={i}
+                                        src={url}
+                                        style={{
+                                            height: '180px',
+                                            display: 'inline-block',
+                                        }}/>;
+                        })
+                    }
+                    <br/>
+                    {
+                        new Array(this.state.question.questionData.answers.length).fill(true).map((n: boolean, i: number) => {
+                            return (
+                                <div key={i} className={'match-row'}>
+                                    <div className={'match-row__item'}>
+                                        <Button variant="contained"
+                                                color="primary"
+                                                fullWidth={true}
+                                                name={'left'}
+                                                onClick={(evt) => this.onAnswerClick(evt)}>
+                                            {this.state.passMode.leftAnswers[i]}
+                                        </Button>
+                                    </div>
+                                    <div className={'match-row__item'}>
+                                        <Button variant="contained"
+                                                color="primary"
+                                                fullWidth={true}
+                                                name={'right'}
+                                                onClick={(evt) => this.onAnswerClick(evt)}>
+                                            {this.state.passMode.rightAnswers[i]}
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    }
+                    <div className={'question-button__next'}>
+                        <Button variant="contained"
+                                color="primary"
+                                fullWidth={true}
+                                onClick={this.onNextQuestion}>
+                            {this.state.passMode.isAnswered ? 'Ответить' : 'Дальше'}
+                        </Button>
+                    </div>
+                </Paper>
                 }
             </div>
         );

@@ -145,10 +145,10 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             if (ans.text == userAnswer) {
                 if (ans.isAnswered) {
                     ans.isAnswered = false;
-                    evt.target.style.backgroundColor = '#000000';
+                    evt.currentTarget.style.backgroundColor = '#000000';
                 } else {
                     ans.isAnswered = true;
-                    evt.target.style.backgroundColor = '#009688';
+                    evt.currentTarget.style.backgroundColor = '#009688';
                 }
             }
         });

@@ -2,8 +2,6 @@ import * as React from 'react';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
-
-import '../styles/ChooseRightQuestion.scss';
 import {
     IMatchAnswer,
     IOpenQuestionData, IQuestionProps, IQuestionState,
@@ -12,6 +10,9 @@ import {
 import {OPEN_QUESTIONS_POINTS} from '../constants/points';
 import Button from '@material-ui/core/Button';
 import {database, storageRef} from '../modules/firebase';
+
+import '../styles/OpenQuestion.scss';
+import '../styles/Test.scss';
 
 interface Props extends IQuestionProps<IOpenQuestionData> {
 }
@@ -121,6 +122,26 @@ export default class OpenQuestion extends React.Component<Props, State> {
         });
     };
 
+    componentDidMount() {
+        if (this.props.mode === 'pass' && this.state.question.pictures) {
+            this.state.question.pictures.map((filename: string) => {
+                storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
+                    const downloadedCount = this.state.downloadedFiles.length;
+                    this.setState({
+                        ...this.state,
+                        downloadedFiles: [...this.state.downloadedFiles, url],
+                        loading: this.state.question.pictures.length !== downloadedCount + 1,
+                    });
+                });
+            });
+        } else {
+            this.setState({
+                ...this.state,
+                loading: false,
+            });
+        }
+    }
+
     render() {
         const {question, mode, count} = this.props;
 
@@ -183,6 +204,53 @@ export default class OpenQuestion extends React.Component<Props, State> {
                             </Button>
                         </form>
                     </Paper>
+                }
+                {mode === 'pass' && !this.state.loading &&
+                <Paper className={'question-paper'}
+                       elevation={10}>
+                    <Typography variant="title"
+                                style={{paddingTop: '3px'}}>
+                        <div className={'question-number-div'}>
+                            <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
+                        </div>
+                        {question.text}
+                    </Typography>
+                    <br/>
+                    {
+                        this.state.downloadedFiles &&
+                        this.state.downloadedFiles.map((url: string, i: number) => {
+                            return <img key={i}
+                                        src={url}
+                                        style={{
+                                            height: '180px',
+                                            display: 'inline-block',
+                                        }}/>;
+                        })
+                    }
+                    <br/>
+                    {
+                        question.questionData.answers.map((answer: IMatchAnswer, i: number) => {
+                            return (
+                                <div key={i} className={'question-button'}>
+                                    <Button variant="contained"
+                                            color="primary"
+                                            fullWidth={true}
+                                            onClick={(evt) => this.onAnswerClick(evt)}>
+                                        {answer.text}
+                                    </Button>
+                                </div>
+                            );
+                        })
+                    }
+                    <div className={'question-button__next'}>
+                        <Button variant="contained"
+                                color="primary"
+                                fullWidth={true}
+                                onClick={this.onNextQuestion}>
+                            {this.state.passMode.isAnswered ? 'Ответить' : 'Дальше'}
+                        </Button>
+                    </div>
+                </Paper>
                 }
             </div>
         )
