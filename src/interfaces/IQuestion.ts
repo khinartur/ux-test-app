@@ -50,6 +50,7 @@ export interface IQuestionProps<T extends AnyQuestionData>{
     count?: number;
     order?: number;
     onSuccess?: any;
+    onCancel?: any;
     onPass?: any;
     onSkip?: any;
     mode: string;

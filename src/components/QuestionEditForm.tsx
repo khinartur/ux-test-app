@@ -19,6 +19,7 @@ interface Props {
     question: IQuestion<AnyQuestionData>;
     order?: number;
     onSuccess: any;
+    onCancel: any;
 }
 
 interface State {
@@ -66,21 +67,24 @@ export default class QuestionEditForm extends React.Component<Props, State> {
                     <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
                                          order={order}
                                          mode={question ? 'edit' : 'create'}
-                                         onSuccess={this.props.onSuccess}/>
+                                         onSuccess={this.props.onSuccess}
+                                         onCancel={this.props.onCancel}/>
                 }
                 {
                     this.state.type === QuestionType.match_columns &&
                     <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
                                           order={order}
                                           mode={question ? 'edit' : 'create'}
-                                          onSuccess={this.props.onSuccess}/>
+                                          onSuccess={this.props.onSuccess}
+                                          onCancel={this.props.onCancel}/>
                 }
                 {
                     this.state.type === QuestionType.open_question &&
                     <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
                                   order={order}
                                   mode={question ? 'edit' : 'create'}
-                                  onSuccess={this.props.onSuccess}/>
+                                  onSuccess={this.props.onSuccess}
+                                  onCancel={this.props.onCancel}/>
                 }
             </Paper>
         );

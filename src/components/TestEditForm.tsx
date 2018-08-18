@@ -33,12 +33,14 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             questionToEdit: null,
-            questionOrder: questions ? Object.keys(questions).length : 1,
+            questionOrder: questions ? Object.keys(questions).length + 1 : 1,
             showAddQuestionForm: true,
         });
     };
 
     editQuestion = (evt: any, order: number) => {
+        if (this.state.showAddQuestionForm) return;
+
         const qKey = this.state.questionsOrderMap[order];
         const qToEdit = this.state.questions[qKey];
 
@@ -54,17 +56,25 @@ export default class TestEditForm extends React.Component<{}, State> {
 
         this.setState({
             ...this.state,
-            questionOrder: this.state.questionOrder + 1,
             showAddQuestionForm: false,
             loading: true,
         });
     };
 
+    onCancelQuestionEdit = () => {
+        this.setState({
+            ...this.state,
+            showAddQuestionForm: false,
+        });
+    };
+
     onQuestionMouseOver = (evt) => {
+        if (this.state.showAddQuestionForm) return;
         evt.target.className = 'question-choose-div__active';
     };
 
     onQuestionMouseOut = (evt) => {
+        if (this.state.showAddQuestionForm) return;
         evt.target.className = 'question-choose-div';
     };
     updateQuestions = () => {
@@ -93,6 +103,8 @@ export default class TestEditForm extends React.Component<{}, State> {
         const qMap = this.state.questionsOrderMap;
         const qToEdit = this.state.questionToEdit;
         const qCount = questions ? Object.keys(questions).length : 0;
+        const isEditFormShown = this.state.showAddQuestionForm;
+        console.log("ORDER TO PROPS:", this.state.questionOrder);
 
         return (
 
@@ -123,7 +135,11 @@ export default class TestEditForm extends React.Component<{}, State> {
                     </div>
                 }
                 <div className={'test-edit-form__item'}>
-                    <Button variant="contained" color="primary" fullWidth={true} onClick={this.showAddForm}>
+                    <Button variant="contained"
+                            color="primary"
+                            fullWidth={true}
+                            onClick={this.showAddForm}
+                            disabled={isEditFormShown}>
                         Добавить вопрос
                     </Button>
                     <br/>
@@ -131,7 +147,8 @@ export default class TestEditForm extends React.Component<{}, State> {
                         this.state.showAddQuestionForm &&
                         <QuestionEditForm question={this.state.questionToEdit}
                                           order={qToEdit ? qToEdit.order : this.state.questionOrder}
-                                          onSuccess={this.onSuccessQuestionEdit}/>
+                                          onSuccess={this.onSuccessQuestionEdit}
+                                          onCancel={this.onCancelQuestionEdit}/>
                     }
                 </div>
             </div>

@@ -3,8 +3,6 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import {
-    IChooseAnswer,
-    IMatchAnswer,
     IOpenQuestionData, IQuestionProps, IQuestionState,
     QuestionType
 } from '../interfaces/IQuestion';
@@ -13,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import {database, storageRef} from '../modules/firebase';
 
 import '../styles/OpenQuestion.scss';
+import '../styles/TestEditForm.scss';
 import '../styles/Test.scss';
 
 interface Props extends IQuestionProps<IOpenQuestionData> {
@@ -21,8 +20,6 @@ interface Props extends IQuestionProps<IOpenQuestionData> {
 interface State extends IQuestionState<IOpenQuestionData, string> {
     error?: string;
     loading: boolean;
-    answerVariantText?: string;
-    answerVariantChecked?: boolean;
 }
 
 export default class OpenQuestion extends React.Component<Props, State> {
@@ -56,6 +53,13 @@ export default class OpenQuestion extends React.Component<Props, State> {
                 pictures: filenames,
             },
             uploadedFiles: files,
+        });
+    };
+    onCancelEdit = () => {
+        this.props.onCancel();
+        this.setState({
+            ...this.state,
+            addingAnswer: null,
         });
     };
 
@@ -225,12 +229,26 @@ export default class OpenQuestion extends React.Component<Props, State> {
                                 }
                             </div>
                             <br/>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                type="submit">
-                                {mode === 'edit' ? 'Сохранить' : 'Создать'}
-                            </Button>
+                            <div>
+                                <Button
+                                    className={'edit-question-button'}
+                                    variant="contained"
+                                    color="primary"
+                                    type="submit">
+                                    {mode === 'edit' ? 'Сохранить' : 'Создать'}
+                                </Button>
+                                <Button
+                                    className={'cancel-edit-question-button'}
+                                    variant="contained"
+                                    style={{
+                                        backgroundColor: '#b2102f',
+                                        marginLeft: '10px',
+                                        color: 'white',
+                                    }}
+                                    onClick={this.onCancelEdit}>
+                                    Отмена
+                                </Button>
+                            </div>
                         </form>
                     </Paper>
                 }

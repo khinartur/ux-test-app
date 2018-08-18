@@ -5,6 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
 import '../styles/MatchColumnsQuestion.scss';
+import '../styles/TestEditForm.scss';
 import '../styles/Test.scss';
 
 import {
@@ -71,6 +72,15 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                 pictures: filenames,
             },
             uploadedFiles: files,
+        });
+    };
+    onCancelEdit = () => {
+        this.props.onCancel();
+        this.setState({
+            ...this.state,
+            addingAnswer: null,
+            answerTextLeft: null,
+            answerTextRight: null,
         });
     };
 
@@ -358,12 +368,26 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                     </Button>
                                 </div>
                             </div>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                type="submit">
-                                {mode === 'edit' ? 'Сохранить' : 'Создать'}
-                            </Button>
+                            <div>
+                                <Button
+                                    className={'edit-question-button'}
+                                    variant="contained"
+                                    color="primary"
+                                    type="submit">
+                                    {mode === 'edit' ? 'Сохранить' : 'Создать'}
+                                </Button>
+                                <Button
+                                    className={'cancel-edit-question-button'}
+                                    variant="contained"
+                                    style={{
+                                        backgroundColor: '#b2102f',
+                                        marginLeft: '10px',
+                                        color: 'white',
+                                    }}
+                                    onClick={this.onCancelEdit}>
+                                    Отмена
+                                </Button>
+                            </div>
                         </form>
                     </Paper>
                 }

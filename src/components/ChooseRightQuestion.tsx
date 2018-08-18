@@ -6,6 +6,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
+import {CheckCircle} from 'mdi-material-ui';
 
 import '../styles/App.scss';
 import '../styles/TestEditForm.scss';
@@ -13,7 +14,7 @@ import '../styles/ChooseRightQuestion.scss';
 import '../styles/Test.scss';
 
 import {
-    IChooseAnswer, IChooseRightData, IQuestion, IQuestionProps, IQuestionState,
+    IChooseAnswer, IChooseRightData, IQuestionProps, IQuestionState,
     QuestionType
 } from '../interfaces/IQuestion';
 import {database, storageRef} from '../modules/firebase';
@@ -67,12 +68,20 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 ...this.state.addingAnswer,
                 isRight: evt.target.checked,
             },
+            answerVariantChecked: evt.target.checked,
         });
     };
     onAnswerAdd = () => {
-        this.state.question.questionData.answers.push(this.state.addingAnswer);
+        const oldAnswers = this.state.question.questionData.answers;
+        const newAnswer = this.state.addingAnswer;
         this.setState({
             ...this.state,
+            question: {
+                ...this.state.question,
+                questionData: {
+                    answers: [...oldAnswers, newAnswer],
+                },
+            },
             addingAnswer: null,
             answerVariantText: '',
             answerVariantChecked: false,
@@ -176,6 +185,15 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         this.state.passMode.isAnswered ?
             this.props.onPass(question) :
             this.props.onSkip(question);
+    };
+    onCancelEdit = () => {
+        this.props.onCancel();
+        this.setState({
+            ...this.state,
+            addingAnswer: null,
+            answerVariantText: '',
+            answerVariantChecked: false,
+        });
     };
 
     constructor(props) {
@@ -285,7 +303,10 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                 {
                                     this.state.question.questionData.answers.length ?
                                         this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
-                                            return <Paper key={index} className={'answer-paper'}>{answer.text}</Paper>;
+                                            return <Paper key={index}
+                                                          className={'answer-paper'}>
+                                                {answer.text} {answer.isRight && <CheckCircle color={'secondary'}/>}
+                                                </Paper>;
                                         })
                                         :
                                         <div>Нет вариантов ответа.</div>
@@ -310,7 +331,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                                 <Checkbox
                                                     color="primary"
                                                     onChange={this.onCheckboxChange}
-                                                    checked={this.state.answerVariantChecked}
+                                                    checked={!!this.state.answerVariantChecked}
                                                 />
                                             }
                                             label='Правильный ответ'
@@ -326,12 +347,26 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                     </Button>
                                 </div>
                             </div>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                type="submit">
-                                {mode === 'edit' ? 'Сохранить' : 'Создать'}
-                            </Button>
+                            <div>
+                                <Button
+                                    className={'edit-question-button'}
+                                    variant="contained"
+                                    color="primary"
+                                    type="submit">
+                                    {mode === 'edit' ? 'Сохранить' : 'Создать'}
+                                </Button>
+                                <Button
+                                    className={'cancel-edit-question-button'}
+                                    variant="contained"
+                                    style={{
+                                        backgroundColor: '#b2102f',
+                                        marginLeft: '10px',
+                                        color: 'white',
+                                    }}
+                                    onClick={this.onCancelEdit}>
+                                    Отмена
+                                </Button>
+                            </div>
                         </form>
                     </Paper>
                 }
