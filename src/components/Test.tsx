@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 import '../styles/Test.scss';
-import embedKey from '../utils/key-embedding';
+import {embedKey} from '../utils/key-embedding';
 
 interface ITest {
     questions: IQuestion<AnyQuestionData>[];

@@ -3,6 +3,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import {
+    IChooseAnswer,
     IMatchAnswer,
     IOpenQuestionData, IQuestionProps, IQuestionState,
     QuestionType
@@ -142,6 +143,34 @@ export default class OpenQuestion extends React.Component<Props, State> {
         }
     }
 
+    onAnswerTextareaChange = (evt) => {
+        console.log(evt.target.textContent);
+
+        let userAnswer = evt.target.textContent;
+        const isQAnswered = !!userAnswer;
+
+        this.setState({
+            ...this.state,
+            question: {
+                ...this.state.question,
+                questionData: {
+                    answer: userAnswer,
+                },
+            },
+            passMode: {
+                isAnswered: isQAnswered,
+            },
+        });
+    };
+
+    onNextQuestion = () => {
+        const question = this.state.question;
+
+        this.state.passMode.isAnswered ?
+            this.props.onPass(question) :
+            this.props.onSkip(question);
+    };
+
     render() {
         const {question, mode, count} = this.props;
 
@@ -228,20 +257,15 @@ export default class OpenQuestion extends React.Component<Props, State> {
                         })
                     }
                     <br/>
-                    {
-                        question.questionData.answers.map((answer: IMatchAnswer, i: number) => {
-                            return (
-                                <div key={i} className={'question-button'}>
-                                    <Button variant="contained"
-                                            color="primary"
-                                            fullWidth={true}
-                                            onClick={(evt) => this.onAnswerClick(evt)}>
-                                        {answer.text}
-                                    </Button>
-                                </div>
-                            );
-                        })
-                    }
+                    <TextField label="Ответ:"
+                               fullWidth={true}
+                               multiline={true}
+                               rows={8}
+                               rowsMax={8}
+                               margin={'dense'}
+                               onChange={(evt) => this.onAnswerTextareaChange(evt)}>
+                    </TextField>
+                    <br/>
                     <div className={'question-button__next'}>
                         <Button variant="contained"
                                 color="primary"

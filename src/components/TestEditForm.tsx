@@ -6,8 +6,7 @@ import QuestionEditForm from './QuestionEditForm';
 
 import '../styles/TestEditForm.scss';
 import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import embedKey from '../utils/key-embedding';
+import {embedKey} from '../utils/key-embedding';
 
 interface State {
     questions?: { [key: string]: IQuestion<AnyQuestionData> };

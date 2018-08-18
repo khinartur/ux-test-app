@@ -12,7 +12,7 @@ import {
 } from '../interfaces/IQuestion';
 import {MATCH_COLUMNS_POINTS} from '../constants/points';
 import {database, storageRef} from '../modules/firebase';
-import shuffle from '../utils/key-embedding';
+import {shuffle} from '../utils/key-embedding';
 
 interface Props extends IQuestionProps<IMatchColumnsData> {
 }
