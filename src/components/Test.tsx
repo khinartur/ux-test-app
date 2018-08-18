@@ -1,30 +1,27 @@
 import * as React from 'react';
 import {RouteComponentProps, withRouter} from 'react-router';
 import {IUser} from '../interfaces/IUser';
-import {AnyQuestionData, IChooseRightData, IPassedQuestion, IQuestion, QuestionType} from '../interfaces/IQuestion';
+import {
+    AnyQuestionData, IChooseRightData, IMatchColumnsData, IOpenQuestionData, IQuestion,
+    QuestionType
+} from '../interfaces/IQuestion';
 import {database} from '../modules/firebase';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
+import {embedKey} from '../utils/key-embedding';
+import MatchColumnsQuestion from './MatchColumnsQuestion';
+import OpenQuestion from './OpenQuestion';
 
 import '../styles/Test.scss';
-import {embedKey} from '../utils/key-embedding';
-
-interface ITest {
-    questions: IQuestion<AnyQuestionData>[];
-    count: number;
-    passedQuestions?: IQuestion<AnyQuestionData>[];
-    skippedQuestions?: IQuestion<AnyQuestionData>[];
-    currentPointsSum: number;
-}
+import Button from '@material-ui/core/Button';
 
 interface Props {
     user: IUser;
 }
 
 interface State {
-    test?: ITest;
+    questions?: IQuestion<AnyQuestionData>[];
     currentQuestion?: IQuestion<AnyQuestionData>;
     currentQNumber?: number;
     done?: boolean;
@@ -32,74 +29,62 @@ interface State {
 }
 
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
+    private passedQuestions: IQuestion<AnyQuestionData>[] = [];
 
-    saveUserResult = () => {
-        database.ref('users/'+this.props.user.github).set({
-            ...this.props.user,
-            points: this.state.test.currentPointsSum,
-            test_passed: true,
-            test_is_checked: false,
+    onDone = () => {
+        let pointsSum = 0;
+        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
+            pointsSum += q.points;
+        });
+
+        let doneQuestions = [];
+        new Array(this.state.questions.length).fill(true).map((v: boolean, i: number) => {
+            if (i <= this.state.currentQNumber) {
+                doneQuestions.push(this.passedQuestions[i]);
+            } else {
+                doneQuestions.push(this.state.questions[i]);
+            }
+        });
+
+        database.ref('passed-questions/' + this.props.user.github).set({
+            ...doneQuestions,
         }).then(() => {
-            this.setState({
-                ...this.state,
-                done: true,
+            database.ref('users/' + this.props.user.github).set({
+                ...this.props.user,
+                points: pointsSum,
+                test_passed: true,
+                test_is_checked: false,
+            }).then(() => {
+                this.setState({
+                    ...this.state,
+                    done: true,
+                });
             });
         });
     };
 
-    onQuestionPass = (passedQuestion: IPassedQuestion) => {
-        const currQ = this.state.currentQuestion;
+    onQuestionPass = (passedQuestion: IQuestion<AnyQuestionData>) => {
+        this.passedQuestions.push(passedQuestion);
+        let currentQNumber = this.state.currentQNumber;
+        const currentQuestions = this.state.questions;
 
-        database.ref('passed-questions/'+this.props.user.github+'/'+currQ.key).set({
-            ...passedQuestion,
-        }).then(() => {
-            const nextQNumber = this.state.currentQNumber + 1;
-            const passedQuestions = this.state.test.passedQuestions;
-            const currentPointsSum = this.state.test.currentPointsSum + currQ.points;
-            let nextQuestion = this.state.test.questions[nextQNumber];
-
-            if (!nextQuestion) {
-                const skipped = this.state.test.skippedQuestions;
-                if (skipped.length) {
-                    this.setState({
-                        ...this.state,
-                        test: {
-                            ...this.state.test,
-                            questions: skipped,
-                            passedQuestions: [...passedQuestions, currQ],
-                            currentPointsSum: currentPointsSum,
-                        },
-                        currentQuestion: skipped[1],
-                        currentQNumber: 1,
-                    });
-                } else {
-                    this.saveUserResult();
-                    this.setState({
-                        ...this.state,
-                        test: {
-                            ...this.state.test,
-                            passedQuestions: [...passedQuestions, currQ],
-                            currentPointsSum: currentPointsSum,
-                        },
-                    });
-                }
-            } else {
-                this.setState({
-                    ...this.state,
-                    test: {
-                        ...this.state.test,
-                        passedQuestions: [...passedQuestions, currQ],
-                        currentPointsSum: currentPointsSum,
-                    },
-                    currentQuestion: nextQuestion,
-                    currentQNumber: nextQNumber,
-                });
-            }
-        });
-    };
-
-    onQuestionSkip = (skippedQuestion: IQuestion<AnyQuestionData>) => {
-        this.state.test.skippedQuestions.push(skippedQuestion);
+        if (currentQNumber + 1 > currentQuestions.length) {
+            const newQuestions = this.passedQuestions;
+            this.passedQuestions = [];
+            this.setState({
+                ...this.state,
+                questions: newQuestions,
+                currentQuestion: this.passedQuestions[0],
+                currentQNumber: 0,
+            });
+        } else {
+            currentQNumber += 1;
+            this.setState({
+                ...this.state,
+                currentQuestion: this.state.questions[currentQNumber],
+                currentQNumber: currentQNumber,
+            });
+        }
     };
 
     constructor(props) {
@@ -110,18 +95,16 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         };
     }
 
+    static getTestQuestions() {
+        return database.ref('/questions').once('value');
+    }
+
     componentDidMount() {
         Test.getTestQuestions().then(snapshot => {
             const dbQuestions = Object.entries(embedKey(snapshot.val())).map((q) => q[1]);
             this.setState({
                 ...this.state,
-                test: {
-                    questions: dbQuestions as IQuestion<AnyQuestionData>[],
-                    count: dbQuestions.length,
-                    skippedQuestions: [],
-                    passedQuestions: [],
-                    currentPointsSum: 0,
-                },
+                questions: dbQuestions as IQuestion<AnyQuestionData>[],
                 currentQNumber: 0,
                 currentQuestion: dbQuestions[0] as IQuestion<AnyQuestionData>,
                 done: false,
@@ -130,44 +113,43 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     }
 
-    static getTestQuestions() {
-        return database.ref('/questions').once('value');
-    }
-
     render() {
-
         return (
             <div className={'container'}>
+                <Button variant="contained"
+                        color="primary"
+                        className={'done-test-button'}
+                        fullWidth={false}
+                        onClick={this.onDone}>
+                    Завершить тест
+                </Button>
                 {
                     !this.state.loading && !this.state.done &&
                     <div>
                         {this.state.currentQuestion.type === QuestionType.choose_right &&
                         <ChooseRightQuestion question={this.state.currentQuestion as IQuestion<IChooseRightData>}
-                                             count={this.state.test.count}
+                                             count={this.state.questions.length}
                                              mode={'pass'}
-                                             onPass={this.onQuestionPass}
-                                             onSkip={this.onQuestionSkip}/>}
-                        {/*{currentQuestion.type === QuestionType.match_columns &&*/}
-                        {/*<ChooseRightQuestion question={currentQuestion as IQuestion<IChooseRightData>} order={} onSuccess={} mode={}/>}*/}
-                        {/*{currentQuestion.type === QuestionType.open_question &&*/}
-                        {/*<ChooseRightQuestion question={currentQuestion as IQuestion<IChooseRightData>} order={} onSuccess={} mode={}/>}*/}
-                        {/**/}
+                                             onPass={this.onQuestionPass}/>}
+                        {this.state.currentQuestion.type === QuestionType.match_columns &&
+                        <MatchColumnsQuestion question={this.state.currentQuestion as IQuestion<IMatchColumnsData>}
+                                              count={this.state.questions.length}
+                                              mode={'pass'}
+                                              onPass={this.onQuestionPass}/>}
+                        {this.state.currentQuestion.type === QuestionType.open_question &&
+                        <OpenQuestion question={this.state.currentQuestion as IQuestion<IOpenQuestionData>}
+                                      count={this.state.questions.length}
+                                      mode={'pass'}
+                                      onPass={this.onQuestionPass}/>}
                     </div>
                 }
                 {
                     !this.state.loading && this.state.done &&
-                        <Paper className={'test-done-paper'}>
-                            <Typography variant="body1" align={'center'}>
-                                Тест пройден. Следите за своими баллами в профиле.
-                            </Typography>
-                            <br/>
-                            <Button variant="contained"
-                                    color="primary"
-                                    className={'profile-button'}
-                                    onClick={() => this.props.history.push('/profile')}>
-                                Профиль
-                            </Button>
-                        </Paper>
+                    <Paper className={'test-done-paper'}>
+                        <Typography variant="body1" align={'center'}>
+                            Тест пройден. Следите за новостями портала.
+                        </Typography>
+                    </Paper>
                 }
             </div>
 

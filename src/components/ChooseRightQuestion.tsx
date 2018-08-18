@@ -182,9 +182,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
     onNextQuestion = () => {
         const question = this.state.question;
 
-        this.state.passMode.isAnswered ?
-            this.props.onPass(question) :
-            this.props.onSkip(question);
+        this.props.onPass(question);
     };
     onCancelEdit = () => {
         this.props.onCancel();
@@ -213,6 +211,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 {isAnswered: false} : null,
             loading: true,
         };
+
+        this.loadPictures();
     }
 
     uploadFiles(key: string, fileIndex: number) {
@@ -227,7 +227,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         });
     };
 
-    componentDidMount() {
+    loadPictures = () => {
         if (this.props.mode === 'pass' && this.state.question.pictures) {
             this.state.question.pictures.map((filename: string) => {
                 storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
@@ -245,11 +245,11 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 loading: false,
             });
         }
-    }
+    };
 
     render() {
         const {question, mode, count} = this.props;
-
+debugger;
         return (
             <div>
                 { //TODO: вынести общее в QuestionEditForm (заголовок, формулировку, количество баллов, картинки)

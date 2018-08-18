@@ -40,11 +40,6 @@ export interface IOpenQuestionData {
     answer: string;
 }
 
-export interface IPassedQuestion {
-    user_login: string;
-    question: IQuestion<AnyQuestionData>;
-}
-
 export interface IQuestionProps<T extends AnyQuestionData>{
     question: IQuestion<T>;
     count?: number;
