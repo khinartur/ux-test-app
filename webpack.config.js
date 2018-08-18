@@ -1,5 +1,4 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-//const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const devMode = process.env.NODE_ENV !== 'production'
 const webpack = require('webpack');
@@ -17,7 +16,6 @@ module.exports = {
     },
     devServer: {
         contentBase: [
-            __dirname + '/public',
             __dirname + '/dist',
         ],
         port: 7000,
@@ -80,6 +78,5 @@ module.exports = {
             filename: devMode ? '[name].css' : '[name].[hash].css',
             chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
         }),
-        //new CleanWebpackPlugin(['dist']),
     ]
 };

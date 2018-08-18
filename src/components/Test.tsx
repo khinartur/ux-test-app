@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {RouteComponentProps, withRouter} from 'react-router';
 import {IUser} from '../interfaces/IUser';
-import {AnyQuestion, IChooseRightData, IPassedQuestion, IQuestion, QuestionType} from '../interfaces/IQuestion';
+import {AnyQuestionData, IChooseRightData, IPassedQuestion, IQuestion, QuestionType} from '../interfaces/IQuestion';
 import {database} from '../modules/firebase';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import Paper from '@material-ui/core/Paper';
@@ -12,10 +12,10 @@ import '../styles/Test.scss';
 import embedKey from '../utils/key-embedding';
 
 interface ITest {
-    questions: IQuestion<AnyQuestion>[];
+    questions: IQuestion<AnyQuestionData>[];
     count: number;
-    passedQuestions?: IQuestion<AnyQuestion>[];
-    skippedQuestions?: IQuestion<AnyQuestion>[];
+    passedQuestions?: IQuestion<AnyQuestionData>[];
+    skippedQuestions?: IQuestion<AnyQuestionData>[];
     currentPointsSum: number;
 }
 
@@ -25,7 +25,7 @@ interface Props {
 
 interface State {
     test?: ITest;
-    currentQuestion?: IQuestion<AnyQuestion>;
+    currentQuestion?: IQuestion<AnyQuestionData>;
     currentQNumber?: number;
     done?: boolean;
     loading: boolean;
@@ -98,7 +98,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
 
-    onQuestionSkip = (skippedQuestion: IQuestion<AnyQuestion>) => {
+    onQuestionSkip = (skippedQuestion: IQuestion<AnyQuestionData>) => {
         this.state.test.skippedQuestions.push(skippedQuestion);
     };
 
@@ -116,14 +116,14 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             this.setState({
                 ...this.state,
                 test: {
-                    questions: dbQuestions as IQuestion<AnyQuestion>[],
+                    questions: dbQuestions as IQuestion<AnyQuestionData>[],
                     count: dbQuestions.length,
                     skippedQuestions: [],
                     passedQuestions: [],
                     currentPointsSum: 0,
                 },
                 currentQNumber: 0,
-                currentQuestion: dbQuestions[0] as IQuestion<AnyQuestion>,
+                currentQuestion: dbQuestions[0] as IQuestion<AnyQuestionData>,
                 done: false,
                 loading: false,
             });

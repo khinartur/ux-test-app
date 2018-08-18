@@ -4,9 +4,9 @@ export enum QuestionType {
     open_question='open_question',
 }
 
-export type AnyQuestion = IChooseRightData | IMatchColumnsData | IOpenQuestionData;
+export type AnyQuestionData = IChooseRightData | IMatchColumnsData | IOpenQuestionData;
 
-export interface IQuestion<T extends AnyQuestion> {
+export interface IQuestion<T extends AnyQuestionData> {
     key?: string;
     text: string;
     pictures?: string[];
@@ -42,5 +42,29 @@ export interface IOpenQuestionData {
 
 export interface IPassedQuestion {
     user_login: string;
-    question: IQuestion<AnyQuestion>;
+    question: IQuestion<AnyQuestionData>;
+}
+
+export interface IQuestionProps<T extends AnyQuestionData>{
+    question: IQuestion<T>;
+    count?: number;
+    order?: number;
+    onSuccess?: any;
+    onPass?: any;
+    onSkip?: any;
+    mode: string;
+}
+
+export type QuestionAnswer = IChooseAnswer | IMatchAnswer | string;
+
+interface IPassMode {
+    isAnswered: boolean;
+}
+
+export interface IQuestionState<T extends AnyQuestionData, P extends QuestionAnswer> {
+    question: IQuestion<T>;
+    addingAnswer?: P;
+    passMode?: IPassMode;
+    uploadedFiles?: File[];
+    downloadedFiles?: string[];
 }

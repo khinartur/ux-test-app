@@ -10,13 +10,13 @@ import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import {
-    AnyQuestion, IChooseRightData, IQuestion,
+    AnyQuestionData, IChooseRightData, IMatchColumnsData, IOpenQuestionData, IQuestion,
     QuestionType
 } from '../interfaces/IQuestion';
 
 //TODO: разобраться с типом функций
 interface Props {
-    question: IQuestion<AnyQuestion>;
+    question: IQuestion<AnyQuestionData>;
     order?: number;
     onSuccess: any;
 }
@@ -68,8 +68,20 @@ export default class QuestionEditForm extends React.Component<Props, State> {
                                          mode={question ? 'edit' : 'create'}
                                          onSuccess={this.props.onSuccess}/>
                 }
-                {this.state.type === QuestionType.match_columns && <MatchColumnsQuestion question={null}/>}
-                {this.state.type === QuestionType.open_question && <OpenQuestion question={null}/>}
+                {
+                    this.state.type === QuestionType.match_columns &&
+                    <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
+                                          order={order}
+                                          mode={question ? 'edit' : 'create'}
+                                          onSuccess={this.props.onSuccess}/>
+                }
+                {
+                    this.state.type === QuestionType.open_question &&
+                    <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
+                                  order={order}
+                                  mode={question ? 'edit' : 'create'}
+                                  onSuccess={this.props.onSuccess}/>
+                }
             </Paper>
         );
     }

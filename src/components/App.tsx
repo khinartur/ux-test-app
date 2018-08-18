@@ -28,11 +28,11 @@ export default class App extends React.Component<{}, State> {
         return (
             <Switch>
                 <Route exact path="/" render={() => <Sign onSign={this.onSign}/>} />
+                <Route exact path="/profile" render={() => <StudentProfile user={this.state.loggedUser}/>} />
+                <Route exact path="/test" render={() => <Test user={this.state.loggedUser}/>} />
                 <Route exact path="/admin" component={Admin}/>
                 <Route exact path="/admin/students" component={StudentsList}/>
                 <Route exact path="/admin/edit/test" component={TestEditForm}/>
-                <Route exact path="/profile" render={() => <StudentProfile user={this.state.loggedUser}/>} />
-                <Route exact path="/test" render={() => <Test user={this.state.loggedUser}/>} />
             </Switch>
         );
     }

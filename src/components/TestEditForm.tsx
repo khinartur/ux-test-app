@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {database} from '../modules/firebase';
 import Button from '@material-ui/core/Button';
-import {AnyQuestion, IQuestion} from '../interfaces/IQuestion';
+import {AnyQuestionData, IQuestion} from '../interfaces/IQuestion';
 import QuestionEditForm from './QuestionEditForm';
 
 import '../styles/TestEditForm.scss';
@@ -10,11 +10,11 @@ import Paper from '@material-ui/core/Paper';
 import embedKey from '../utils/key-embedding';
 
 interface State {
-    questions?: { [key: string]: IQuestion<AnyQuestion> };
+    questions?: { [key: string]: IQuestion<AnyQuestionData> };
     showAddQuestionForm: boolean;
     questionOrder?: number;
     questionsOrderMap?: { [key: number]: string };
-    questionToEdit?: IQuestion<AnyQuestion>;
+    questionToEdit?: IQuestion<AnyQuestionData>;
     loading: boolean;
 }
 

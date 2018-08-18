@@ -12,33 +12,22 @@ import '../styles/TestEditForm.scss';
 import '../styles/ChooseRightQuestion.scss';
 import '../styles/Test.scss';
 
-import {IChooseAnswer, IChooseRightData, IQuestion, QuestionType} from '../interfaces/IQuestion';
+import {
+    IChooseAnswer, IChooseRightData, IQuestion, IQuestionProps, IQuestionState,
+    QuestionType
+} from '../interfaces/IQuestion';
 import {database, storageRef} from '../modules/firebase';
+import {CHOOSE_RIGHT_POINTS} from '../constants/points';
 
-interface IPassMode {
-    isAnswered: boolean;
+interface Props extends IQuestionProps<IChooseRightData> {
 }
 
-interface Props {
-    question: IQuestion<IChooseRightData>;
-    count?: number;
-    order?: number;
-    onSuccess?: any;
-    onPass?: any;
-    onSkip?: any;
-    mode: string;
-}
-
-interface State {
-    question: IQuestion<IChooseRightData>;
-    addingAnswer: IChooseAnswer;
+//TODO: how to include IError interface?
+interface State extends IQuestionState<IChooseRightData, IChooseAnswer> {
     error?: string;
+    loading: boolean;
     answerVariantText?: string;
     answerVariantChecked?: boolean;
-    uploadedFiles: File[];
-    downloadedFiles: string[];
-    passMode?: IPassMode;
-    loading: boolean;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -191,8 +180,6 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
     constructor(props) {
         super(props);
-        console.log('choose right constructor');
-        console.dir(this.props.question);
 
         this.state = {
             question: this.props.question || {
@@ -200,9 +187,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 order: this.props.order,
                 type: QuestionType.choose_right,
                 questionData: {answers: []},
-                points: 2,
+                points: CHOOSE_RIGHT_POINTS,
             },
-            addingAnswer: null,
             uploadedFiles: [],
             downloadedFiles: [],
             passMode: this.props.mode === 'pass' ?
@@ -248,7 +234,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
         return (
             <div>
-                {
+                { //TODO: вынести общее в QuestionEditForm (заголовок, формулировку, количество баллов, картинки)
                     (mode === 'edit' || mode === 'create') &&
                     <Paper className={'choose-right-edit-paper'}>
                         <Typography
