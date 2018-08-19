@@ -10,9 +10,10 @@ import {OPEN_QUESTIONS_POINTS} from '../constants/points';
 import Button from '@material-ui/core/Button';
 import {database, storageRef} from '../modules/firebase';
 
-import '../styles/OpenQuestion.scss';
-import '../styles/TestEditForm.scss';
-import '../styles/Test.scss';
+import * as OpenQuestionStyles from '../styles/OpenQuestion.scss';
+import * as TestEditFormStyles from '../styles/TestEditForm.scss';
+import * as TestStyles from '../styles/Test.scss';
+import * as AppStyles from '../styles/App.scss';
 
 interface Props extends IQuestionProps<IOpenQuestionData> {
 }
@@ -184,7 +185,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
             <div>
                 {
                     (mode === 'edit' || mode === 'create') &&
-                    <Paper className={'open-question-edit-paper'}>
+                    <Paper className={OpenQuestionStyles.openQuestionEditPaper}>
                         <Typography
                             variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                         <br/>
@@ -207,7 +208,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
                             <div>
                                 <input
                                     accept="image/*"
-                                    className={'upload-file-button'}
+                                    className={TestEditFormStyles.uploadFileButton}
                                     id="raised-button-file"
                                     multiple
                                     type="file"
@@ -231,14 +232,13 @@ export default class OpenQuestion extends React.Component<Props, State> {
                             <br/>
                             <div>
                                 <Button
-                                    className={'edit-question-button'}
+                                    className={TestEditFormStyles.editQuestionButton}
                                     variant="contained"
                                     color="primary"
                                     type="submit">
                                     {mode === 'edit' ? 'Сохранить' : 'Создать'}
                                 </Button>
                                 <Button
-                                    className={'cancel-edit-question-button'}
                                     variant="contained"
                                     style={{
                                         backgroundColor: '#b2102f',
@@ -253,12 +253,12 @@ export default class OpenQuestion extends React.Component<Props, State> {
                     </Paper>
                 }
                 {mode === 'pass' && !this.state.loading &&
-                <Paper className={'question-paper'}
+                <Paper className={TestStyles.questionPaper}
                        elevation={10}>
                     <Typography variant="title"
                                 style={{paddingTop: '3px'}}>
-                        <div className={'question-number-div'}>
-                            <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
+                        <div className={AppStyles.questionNumberDiv}>
+                            <span className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
                         </div>
                         {question.text}
                     </Typography>
@@ -284,7 +284,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
                                onChange={(evt) => this.onAnswerTextareaChange(evt)}>
                     </TextField>
                     <br/>
-                    <div className={'question-button__next'}>
+                    <div className={TestStyles.questionButtonNext}>
                         <Button variant="contained"
                                 color="primary"
                                 fullWidth={true}

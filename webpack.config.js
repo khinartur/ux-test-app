@@ -1,11 +1,10 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const devMode = process.env.NODE_ENV !== 'production';
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack');
 
 module.exports = {
-    devtool: 'inline-source-map',
+    devtool: 'cheap-source-map',
     cache: true,
     entry: './src/index.tsx',
     resolve: {
@@ -42,12 +41,13 @@ module.exports = {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
                     devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+                    'cache-loader',
                     {
-                        loader: "css-loader",
+                        loader: 'typings-for-scss-modules-loader',
                         options: {
+                            sass: true,
                             modules: true,
-                            importLoaders: 1,
-                            sourceMap: true
+                            namedExport: true
                         }
                     },
                     {
@@ -59,31 +59,16 @@ module.exports = {
                             ]
                         }
                     },
-                    'sass-loader',
+                    // {
+                    //     loader: "css-loader",
+                    //     options: {
+                    //         modules: true,
+                    //         importLoaders: 1,
+                    //         sourceMap: true
+                    //     }
+                    // },
                 ],
             },
-            // {
-            //     test: /\.scss$/,
-            //     use: ExtractTextPlugin.extract({
-            //         use: [
-            //             {
-            //                 loader: "style-loader"
-            //             },
-            //             {
-            //                 loader: "css-loader",
-            //                 options: {
-            //                     sourceMap: true
-            //                 }
-            //             },
-            //             {
-            //                 loader: "sass-loader",
-            //                 options: {
-            //                     sourceMap: true
-            //                 }
-            //             }
-            //         ],
-            //     })
-            // },
         ]
     },
     plugins: [
@@ -98,6 +83,5 @@ module.exports = {
             filename: devMode ? '[name].css' : '[name].[hash].css',
             chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
         }),
-        new BundleAnalyzerPlugin(),
     ]
 };

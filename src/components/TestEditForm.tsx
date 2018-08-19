@@ -4,7 +4,7 @@ import Button from '@material-ui/core/Button';
 import {AnyQuestionData, IQuestion} from '../interfaces/IQuestion';
 import QuestionEditForm from './QuestionEditForm';
 
-import '../styles/TestEditForm.scss';
+import * as TestEditFormStyles from '../styles/TestEditForm.scss';
 import Typography from '@material-ui/core/Typography';
 import {embedKey} from '../utils/key-embedding';
 
@@ -70,12 +70,12 @@ export default class TestEditForm extends React.Component<{}, State> {
 
     onQuestionMouseOver = (evt) => {
         if (this.state.showAddQuestionForm) return;
-        evt.target.className = 'question-choose-div__active';
+        evt.target.className = TestEditFormStyles.questionChooseDivActive;
     };
 
     onQuestionMouseOut = (evt) => {
         if (this.state.showAddQuestionForm) return;
-        evt.target.className = 'question-choose-div';
+        evt.target.className = TestEditFormStyles.questionChooseDiv;
     };
     updateQuestions = () => {
         database.ref('questions/').on('value', function (questionsSnapshot) {
@@ -109,14 +109,16 @@ export default class TestEditForm extends React.Component<{}, State> {
         return (
 
             !this.state.loading &&
-            <div className={'test-edit-form'}>
+            <div className={TestEditFormStyles.testEditForm}>
                 {
-                    <div className={'test-edit-form__item'}>
+                    <div
+                        className={TestEditFormStyles.testEditFormItem}
+                    >
                         {qCount ? //TODO: replace with generator
                             new Array(qCount).fill(true).map((v: boolean, i: number) => {
                                 const q = questions[qMap[i + 1]];
                                 return <div key={i}
-                                            className={'question-choose-div'}
+                                            className={TestEditFormStyles.questionChooseDiv}
                                             onClick={(evt) => this.editQuestion(evt, q.order)}
                                             onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
                                             onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
@@ -134,7 +136,9 @@ export default class TestEditForm extends React.Component<{}, State> {
                         }
                     </div>
                 }
-                <div className={'test-edit-form__item'}>
+                <div
+                    className={TestEditFormStyles.testEditFormItem}
+                >
                     <Button variant="contained"
                             color="primary"
                             fullWidth={true}

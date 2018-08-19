@@ -4,9 +4,10 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
-import '../styles/MatchColumnsQuestion.scss';
-import '../styles/TestEditForm.scss';
-import '../styles/Test.scss';
+import * as AppStyles from '../styles/App.scss';
+import * as MatchColumnsQuestionStyles from '../styles/MatchColumnsQuestion.scss';
+import * as TestEditFormStyles from '../styles/TestEditForm.scss';
+import * as TestStyles from '../styles/Test.scss';
 
 import {
     IMatchAnswer, IMatchColumnsData, QuestionType, IQuestionProps, IQuestionState, IChooseAnswer
@@ -275,11 +276,11 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             <div>
                 {
                     (mode === 'edit' || mode === 'create') &&
-                    <Paper className={'match-columns-edit-paper'}>
+                    <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
                         <Typography
                             variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                         <br/>
-                        <Paper className={'error'}>{this.state.error}</Paper>
+                        <Paper className={AppStyles.error}>{this.state.error}</Paper>
                         <form autoComplete="off" onSubmit={this.onFormSubmit}>
                             <TextField label="Формулировка вопроса:"
                                        fullWidth={true}
@@ -298,7 +299,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             <div>
                                 <input
                                     accept="image/*"
-                                    className={'upload-file-button'}
+                                    className={TestEditFormStyles.uploadFileButton}
                                     id="raised-button-file"
                                     multiple
                                     type="file"
@@ -320,12 +321,11 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 }
                             </div>
                             <br/>
-                            <div className={'answers'}>
+                            <div>
                                 {
                                     answers.length ?
                                         answers.map((answer: IMatchAnswer, index: number) => {
-                                            return <Paper key={index}
-                                                          className={'match-answer-paper'}>
+                                            return <Paper key={index}>
                                                 {answer.left + '   =====>   ' + answer.right}
                                             </Paper>;
                                         })
@@ -334,10 +334,11 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 }
                             </div>
                             <br/>
-                            <div className={'match-answer-variant'}>
-                                <div className={'match-answer-variant__item'}>
-                                    <TextField className={'match-answer-variant-textfield'}
-                                               label='Левый столбец'
+                            <div className={MatchColumnsQuestionStyles.matchAnswerVariant}>
+                                <div
+                                //    className={MatchColumnsQuestionStyles.matchAnswerVariantItem}
+                                >
+                                    <TextField label='Левый столбец'
                                                fullWidth={true}
                                                margin={'dense'}
                                                inputProps={{
@@ -347,9 +348,10 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                value={this.state.answerTextLeft}
                                     />
                                 </div>
-                                <div className={'match-answer-variant__item'}>
-                                    <TextField className={'match-answer-variant-textfield'}
-                                               label='Правый столбец'
+                                <div
+                                //    className={MatchColumnsQuestionStyles.matchAnswerVariantItem}
+                                >
+                                    <TextField label='Правый столбец'
                                                fullWidth={true}
                                                margin={'dense'}
                                                inputProps={{
@@ -359,9 +361,10 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                value={this.state.answerTextRight}
                                     />
                                 </div>
-                                <div className={'match-answer-variant__item'}>
-                                    <Button className={'answer-variant-button'}
-                                            variant="contained"
+                                <div
+                                //    className={MatchColumnsQuestionStyles.matchAnswerVariantItem}
+                                >
+                                    <Button variant="contained"
                                             color="primary"
                                             onClick={this.onAnswerAdd}>
                                         Сохранить
@@ -370,14 +373,13 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             </div>
                             <div>
                                 <Button
-                                    className={'edit-question-button'}
+                                    className={TestEditFormStyles.editQuestionButton}
                                     variant="contained"
                                     color="primary"
                                     type="submit">
                                     {mode === 'edit' ? 'Сохранить' : 'Создать'}
                                 </Button>
                                 <Button
-                                    className={'cancel-edit-question-button'}
                                     variant="contained"
                                     style={{
                                         backgroundColor: '#b2102f',
@@ -392,12 +394,12 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     </Paper>
                 }
                 {mode === 'pass' && !this.state.loading &&
-                <Paper className={'question-paper'}
+                <Paper className={TestStyles.questionPaper}
                        elevation={10}>
                     <Typography variant="title"
                                 style={{paddingTop: '3px'}}>
-                        <div className={'question-number-div'}>
-                            <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
+                        <div className={AppStyles.questionNumberDiv}>
+                            <span className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
                         </div>
                         {question.text}
                     </Typography>
@@ -417,8 +419,10 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     {
                         new Array(this.state.question.questionData.answers.length).fill(true).map((n: boolean, i: number) => {
                             return (
-                                <div key={i} className={'match-row'}>
-                                    <div className={'match-row__item'}>
+                                <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
+                                    <div
+                                    //    className={MatchColumnsQuestionStyles.matchRowItem}
+                                    >
                                         <Button variant="contained"
                                                 color="primary"
                                                 fullWidth={true}
@@ -427,7 +431,9 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                             {this.state.passMode.leftAnswers[i]}
                                         </Button>
                                     </div>
-                                    <div className={'match-row__item'}>
+                                    <div
+                                    //    className={MatchColumnsQuestionStyles.matchRowItem}
+                                    >
                                         <Button variant="contained"
                                                 color="primary"
                                                 fullWidth={true}
@@ -440,7 +446,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             );
                         })
                     }
-                    <div className={'question-button__next'}>
+                    <div className={TestStyles.questionButtonNext}>
                         <Button variant="contained"
                                 color="primary"
                                 fullWidth={true}

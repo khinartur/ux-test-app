@@ -1,4 +1,4 @@
-.sign-wrapper {
+.signWrapper {
     position: absolute;
     top: 0;
     right: 0;
@@ -11,27 +11,27 @@
     grid-template-areas: 'a a a a a a a a' 'c c b b b b d d' 'c c b b b b d d' 'e e e e e e e e';
 }
 
-.space-item-a {
+.spaceItemA {
     grid-area: a;
 }
 
-.space-item-c {
+.spaceItemC {
     grid-area: c;
 }
 
-.space-item-d {
+.spaceItemD {
     grid-area: d;
 }
 
-.space-item-e {
+.spaceItemE {
     grid-area: e;
 }
 
-.sign-form {
+.signForm {
     grid-area: b;
 }
 
-.github-button {
+.githubButton {
     left: calc(50% - 135px);
     margin-top: 50px;
 }

@@ -1,4 +1,4 @@
-.admin-wrapper {
+.adminWrapper {
     position: absolute;
     top: 0;
     right: 0;
@@ -15,26 +15,26 @@
         'e e e e e e e e';
 }
 
-.space-item-a {
+.spaceItemA {
     grid-area: a;
 }
 
-.space-item-c {
+.spaceItemC {
     grid-area: c;
 }
 
-.space-item-d {
+.spaceItemD {
     grid-area: d;
 }
 
-.space-item-e {
+.spaceItemE {
     grid-area: e;
 }
 
-.admin-form {
+.adminForm {
     grid-area: b;
 }
 
-.br-div {
+.brDiv {
     min-height: 2%;
 }

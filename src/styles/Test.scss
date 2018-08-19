@@ -3,41 +3,41 @@
     margin: 50px auto;
 }
 
-.question-paper {
+.questionPaper {
     padding: 50px;
 }
 
-.question-button {
+.questionButton {
     margin: 8px 8px;
-
-    &__next {
-        margin: 30px 8px 0;
-    }
-
-    &__active {
-        background-color: #00695f;
-    }
 }
 
-.question-button:first-child {
+.questionButtonNext {
+    margin: 30px 8px 0;
+}
+
+.questionButtonActive {
+    background-color: #00695f;
+}
+
+.questionButton:first-child {
     margin-top: 25px;
 }
 
-.test-done-paper {
+.testDonePaper {
     padding: 15px;
 }
 
-.profile-button {
+.profileButton {
     left: calc(50% - 51px);
 }
 
-.question-order-span {
+.questionOrderSpan {
     position: relative;
     left: 8px;
     top: 4px;
 }
 
-.done-test-button {
+.doneTestButton {
     position: fixed;
     top: 20px;
     right: 20px;

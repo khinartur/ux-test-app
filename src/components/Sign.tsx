@@ -4,8 +4,8 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import {withRouter} from 'react-router-dom';
 
-import '../styles/App.scss';
-import '../styles/Sign.scss';
+import * as AppStyles from '../styles/App.scss';
+import * as SignStyles from '../styles/Sign.scss';
 import {auth, database, provider} from '../modules/firebase';
 import Paper from '@material-ui/core/Paper';
 import * as H from 'history';
@@ -70,18 +70,18 @@ class Sign extends React.Component<Props & RouterProps, State> {
 
     render() {
         return (
-            <div className={'sign-wrapper'}>
-                <div className={'space-item-a'}></div>
-                <div className={'space-item-c'}></div>
-                <div className={'space-item-d'}></div>
-                <div className={'space-item-e'}></div>
-                <div className={'sign-form'}>
-                    <Paper className={'error'}>{this.state.error}</Paper>
+            <div className={SignStyles.signWrapper}>
+                <div className={SignStyles.spaceItemA}></div>
+                <div className={SignStyles.spaceItemC}></div>
+                <div className={SignStyles.spaceItemD}></div>
+                <div className={SignStyles.spaceItemE}></div>
+                <div className={SignStyles.signForm}>
+                    <Paper className={AppStyles.error}>{this.state.error}</Paper>
                     <Typography variant="headline" gutterBottom align={'center'}>
                         Технопарк. Тестирование по курсу UX
                     </Typography>
                     <Button variant="contained"
-                            className={'github-button'}
+                            className={SignStyles.githubButton}
                             color="primary"
                             onClick={this.githubSignIn}
                             >

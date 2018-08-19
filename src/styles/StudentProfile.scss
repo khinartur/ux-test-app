@@ -1,4 +1,4 @@
-.profile-wrapper {
+.profileWrapper {
     position: absolute;
     top: 0;
     right: 0;
@@ -15,35 +15,35 @@
         'e e e e e e e e';
 }
 
-.space-item-a {
+.spaceItemA {
     grid-area: a;
 }
 
-.space-item-c {
+.spaceItemC {
     grid-area: c;
 }
 
-.space-item-d {
+.spaceItemD {
     grid-area: d;
 }
 
-.space-item-e {
+.spaceItemE {
     grid-area: e;
 }
 
-.user-profile-panel {
+.userProfilePanel {
     grid-area: b;
 }
 
-.br-div {
+.brDiv {
     min-height: 2%;
 }
 
-.profile-paper {
+.profilePaper {
     padding: 15px;
 }
 
-.test-button {
+.testButton {
     left: calc(50% - 64px);
     margin-top: 25px;
 }

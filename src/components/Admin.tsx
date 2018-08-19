@@ -3,7 +3,7 @@ import {withRouter} from 'react-router';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
-import '../styles/Admin.scss';
+import * as AdminStyles from '../styles/Admin.scss';
 
 interface Props {
     history: any;
@@ -23,19 +23,19 @@ class Admin extends React.Component<Props> {
 
     render() {
         return (
-            <div className={'admin-wrapper'}>
-                <div className={'space-item-a'}></div>
-                <div className={'space-item-c'}></div>
-                <div className={'space-item-d'}></div>
-                <div className={'space-item-e'}></div>
-                <div className={'admin-form'}>
+            <div className={AdminStyles.adminWrapper}>
+                <div className={AdminStyles.spaceItemA}></div>
+                <div className={AdminStyles.spaceItemC}></div>
+                <div className={AdminStyles.spaceItemD}></div>
+                <div className={AdminStyles.spaceItemE}></div>
+                <div className={AdminStyles.adminForm}>
                     <Typography variant="headline" gutterBottom align={'center'}>
                         Администратор
                     </Typography>
                     <Button variant="contained" color="primary" fullWidth={true} onClick={this.goToTestEdit}>
                         Редактировать тест
                     </Button>
-                    <div className={'br-div'}></div>
+                    <div className={AdminStyles.brDiv}></div>
                     <Button variant="contained" color="primary" fullWidth={true} onClick={this.goToStudentsResults}>
                         Результаты студентов
                     </Button>

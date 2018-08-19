@@ -8,10 +8,10 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 import CheckCircle from 'mdi-material-ui/CheckCircle';
 
-import '../styles/App.scss';
-import '../styles/TestEditForm.scss';
-import '../styles/ChooseRightQuestion.scss';
-import '../styles/Test.scss';
+import * as AppStyles from '../styles/App.scss';
+import * as TestEditFormStyles from '../styles/TestEditForm.scss';
+import * as ChooseRightQuestionStyles from '../styles/ChooseRightQuestion.scss';
+import * as TestStyles from '../styles/Test.scss';
 
 import {
     IChooseAnswer, IChooseRightData, IQuestionProps, IQuestionState,
@@ -249,16 +249,16 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
     render() {
         const {question, mode, count} = this.props;
-debugger;
+
         return (
             <div>
                 { //TODO: вынести общее в QuestionEditForm (заголовок, формулировку, количество баллов, картинки)
                     (mode === 'edit' || mode === 'create') &&
-                    <Paper className={'choose-right-edit-paper'}>
+                    <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
                         <Typography
                             variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
                         <br/>
-                        <Paper className={'error'}>{this.state.error}</Paper>
+                        <Paper className={AppStyles.error}>{this.state.error}</Paper>
                         <form autoComplete="off" onSubmit={this.onFormSubmit}>
                             <TextField label="Формулировка вопроса:"
                                        fullWidth={true}
@@ -277,7 +277,7 @@ debugger;
                             <div>
                                 <input
                                     accept="image/*"
-                                    className={'upload-file-button'}
+                                    className={TestEditFormStyles.uploadFileButton}
                                     id="raised-button-file"
                                     multiple
                                     type="file"
@@ -299,12 +299,12 @@ debugger;
                                 }
                             </div>
                             <br/>
-                            <div className={'answers'}>
+                            <div>
                                 {
                                     this.state.question.questionData.answers.length ?
                                         this.state.question.questionData.answers.map((answer: IChooseAnswer, index: number) => {
                                             return <Paper key={index}
-                                                          className={'answer-paper'}>
+                                                          className={ChooseRightQuestionStyles.answerPaper}>
                                                 {answer.text} {answer.isRight && <CheckCircle color={'secondary'}/>}
                                                 </Paper>;
                                         })
@@ -313,19 +313,21 @@ debugger;
                                 }
                             </div>
                             <br/>
-                            <div className={'answer-variant'}>
-                                <div className={'answer-variant__item'}>
-                                    <TextField className={'answer-variant-textfield'}
-                                               label='Ответ'
+                            <div className={ChooseRightQuestionStyles.answerVariant}>
+                                <div
+                                //    className={ChooseRightQuestionStyles.answerVariantItem}
+                                >
+                                    <TextField label='Ответ'
                                                fullWidth={true}
                                                margin={'dense'}
                                                onChange={this.onAnswerChange}
                                                value={this.state.answerVariantText}
                                     />
                                 </div>
-                                <div className={'answer-variant__item'}>
-                                    <FormGroup className={'answer-variant-checkbox'}
-                                               row>
+                                <div
+                                //    className={ChooseRightQuestionStyles.answerVariantItem}
+                                >
+                                    <FormGroup row>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -338,9 +340,10 @@ debugger;
                                         />
                                     </FormGroup>
                                 </div>
-                                <div className={'answer-variant__item'}>
-                                    <Button className={'answer-variant-button'}
-                                            variant="contained"
+                                <div
+                                //    className={ChooseRightQuestionStyles.answerVariantItem}
+                                >
+                                    <Button variant="contained"
                                             color="primary"
                                             onClick={this.onAnswerAdd}>
                                         Сохранить
@@ -349,14 +352,13 @@ debugger;
                             </div>
                             <div>
                                 <Button
-                                    className={'edit-question-button'}
+                                    className={TestEditFormStyles.editQuestionButton}
                                     variant="contained"
                                     color="primary"
                                     type="submit">
                                     {mode === 'edit' ? 'Сохранить' : 'Создать'}
                                 </Button>
                                 <Button
-                                    className={'cancel-edit-question-button'}
                                     variant="contained"
                                     style={{
                                         backgroundColor: '#b2102f',
@@ -372,12 +374,12 @@ debugger;
                 }
 
                 {mode === 'pass' && !this.state.loading &&
-                <Paper className={'question-paper'}
+                <Paper className={TestStyles.questionPaper}
                        elevation={10}>
                     <Typography variant="title"
                                 style={{paddingTop: '3px'}}>
-                        <div className={'question-number-div'}>
-                            <span className={'question-order-span'}>{' ' + question.order + '.'}</span>
+                        <div className={AppStyles.questionNumberDiv}>
+                            <span className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
                         </div>
                         {question.text}
                     </Typography>
@@ -397,7 +399,7 @@ debugger;
                     {
                         question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
                             return (
-                                <div key={i} className={'question-button'}>
+                                <div key={i} className={TestStyles.questionButton}>
                                     <Button variant="contained"
                                             color="primary"
                                             fullWidth={true}
@@ -408,7 +410,7 @@ debugger;
                             );
                         })
                     }
-                    <div className={'question-button__next'}>
+                    <div className={TestStyles.questionButtonNext}>
                         <Button variant="contained"
                                 color="primary"
                                 fullWidth={true}

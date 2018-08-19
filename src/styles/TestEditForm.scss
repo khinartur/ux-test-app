@@ -1,36 +1,34 @@
-.test-edit-form {
+.testEditForm {
     display: grid;
     grid-template-columns: 1fr 1fr;
-
-    &__item {
-        margin: 50px;
-    }
 }
 
-.upload-file-button {
+.testEditFormItem {
+    margin: 50px;
+}
+
+.uploadFileButton {
     display: none;
 }
 
-.question-choose-div {
+.questionChooseDiv {
     padding: 5px;
     margin: 5px;
     box-shadow: 0 0 4px 3px rgba(0,0,0,0.6);
-
-    &__active {
-        background-color: #00695f;
-        color: white;
-        padding: 5px;
-        margin: 5px;
-        box-shadow: 0 0 4px 3px rgba(0,0,0,0.6);
-    }
 }
 
-.question-choose-typo {
-    &__active {
-        color: white;
-    }
+.questionChooseDivActive {
+    background-color: #00695f;
+    color: white;
+    padding: 5px;
+    margin: 5px;
+    box-shadow: 0 0 4px 3px rgba(0,0,0,0.6);
 }
 
-.edit-question-button {
+.questionChooseTypoActive {
+    color: white;
+}
+
+.editQuestionButton {
     margin-top: 20px;
 }

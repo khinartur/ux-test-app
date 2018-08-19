@@ -13,6 +13,8 @@ import {ChangeEvent} from 'react';
 import {database} from '../modules/firebase';
 import {IUser} from '../interfaces/IUser';
 
+import * as StudentListStyles from '../styles/StudentsList.scss';
+
 let id = 0;
 
 function createData(name, surname, team, github, status, points) {
@@ -122,7 +124,7 @@ export default class StudentsList extends React.Component<{}, State> {
 
     render() {
         return (
-            <Paper className={'students-list-container'}>
+            <Paper>
                 <Table>
                     <TableHead>
                         <TableRow>

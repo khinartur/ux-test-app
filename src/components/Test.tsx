@@ -13,7 +13,7 @@ import {embedKey} from '../utils/key-embedding';
 import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 
-import '../styles/Test.scss';
+import * as TestStyles from '../styles/Test.scss';
 import Button from '@material-ui/core/Button';
 
 interface Props {
@@ -115,10 +115,10 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     render() {
         return (
-            <div className={'container'}>
+            <div className={TestStyles.container}>
                 <Button variant="contained"
                         color="primary"
-                        className={'done-test-button'}
+                        className={TestStyles.doneTestButton}
                         fullWidth={false}
                         onClick={this.onDone}>
                     Завершить тест
@@ -145,7 +145,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 }
                 {
                     !this.state.loading && this.state.done &&
-                    <Paper className={'test-done-paper'}>
+                    <Paper className={TestStyles.testDonePaper}>
                         <Typography variant="body1" align={'center'}>
                             Тест пройден. Следите за новостями портала.
                         </Typography>

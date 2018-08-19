@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import {IUser} from '../interfaces/IUser';
 import Button from '@material-ui/core/Button';
 
-import '../styles/StudentProfile.scss';
+import * as StudentProfileStyles from '../styles/StudentProfile.scss';
 import {database} from '../modules/firebase';
 
 interface Props {
@@ -47,13 +47,13 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
 
         return (
             !this.state.loading &&
-            <div className={'profile-wrapper'}>
-                <div className={'space-item-a'}></div>
-                <div className={'space-item-c'}></div>
-                <div className={'space-item-d'}></div>
-                <div className={'space-item-e'}></div>
-                <div className={'user-profile-panel'}>
-                    <Paper className={'profile-paper'}>
+            <div className={StudentProfileStyles.profileWrapper}>
+                <div className={StudentProfileStyles.spaceItemA}></div>
+                <div className={StudentProfileStyles.spaceItemC}></div>
+                <div className={StudentProfileStyles.spaceItemD}></div>
+                <div className={StudentProfileStyles.spaceItemE}></div>
+                <div className={StudentProfileStyles.userProfilePanel}>
+                    <Paper className={StudentProfileStyles.profilePaper}>
                         <Typography variant="title" gutterBottom align={'center'}>
                             Профиль студента
                         </Typography>
@@ -90,7 +90,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                                 (
                                     <Button variant="contained"
                                             color="primary"
-                                            className={'test-button'}
+                                            className={StudentProfileStyles.testButton}
                                             onClick={this.initTest}>
                                         Начать тест
                                     </Button>

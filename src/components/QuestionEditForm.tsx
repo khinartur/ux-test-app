@@ -5,7 +5,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 
-import '../styles/QuestionEditForm.scss';
+import * as QuestionEditFormStyles from '../styles/QuestionEditForm.scss';
 import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 import ChooseRightQuestion from './ChooseRightQuestion';
@@ -47,7 +47,7 @@ export default class QuestionEditForm extends React.Component<Props, State> {
         const {question, order} = this.props;
 
         return (
-            <Paper className={'question-edit-form'}>
+            <Paper className={QuestionEditFormStyles.questionEditForm}>
                 <FormControl>
                     <InputLabel htmlFor="type">Тип вопроса</InputLabel>
                     <Select
