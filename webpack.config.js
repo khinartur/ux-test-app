@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const devMode = process.env.NODE_ENV !== 'production'
+const devMode = process.env.NODE_ENV !== 'production';
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack');
 
 module.exports = {
@@ -29,16 +30,35 @@ module.exports = {
                 exclude: [/node_modules/],
                 use: [
                     {
-                        loader: 'ts-loader',
-                    },
+                        loader: 'awesome-typescript-loader',
+                        options: {
+                            forceIsolatedModules: true,
+                            useCache: true,
+                        }
+                    }
                 ],
             },
             {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
                     devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    // 'postcss-loader',
+                    {
+                        loader: "css-loader",
+                        options: {
+                            modules: true,
+                            importLoaders: 1,
+                            sourceMap: true
+                        }
+                    },
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            ident: 'postcss',
+                            plugins: [
+                                require('postcss-preset-env')(),
+                            ]
+                        }
+                    },
                     'sass-loader',
                 ],
             },
@@ -78,5 +98,6 @@ module.exports = {
             filename: devMode ? '[name].css' : '[name].[hash].css',
             chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
         }),
+        new BundleAnalyzerPlugin(),
     ]
 };

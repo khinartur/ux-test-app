@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {GithubCircle} from 'mdi-material-ui';
+import GithubCircle from 'mdi-material-ui/GithubCircle';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import {withRouter} from 'react-router-dom';
