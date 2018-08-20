@@ -45,6 +45,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         });
     };
     onAnswerAdd = () => {
+        console.dir(this.state);
+
         if (!this.state.answerVariantText) {
             this.setState({
                 ...this.state,
@@ -60,9 +62,10 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
         this.props.onAnswerAdd(newAnswer);
 
+        const currentAnswers = this.state.answers;
         this.setState({
             ...this.state,
-            answers: this.state.answers ? [...this.state.answers, newAnswer] : [newAnswer],
+            answers: currentAnswers && currentAnswers.length ? [...currentAnswers, newAnswer] : [newAnswer],
             answerVariantText: '',
             answerVariantChecked: false,
         });
@@ -95,7 +98,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            answers: this.props.question.questionData.answers,
+            answers: this.props.question ? this.props.question.questionData.answers : null,
+            answerVariantChecked: false,
         };
     }
 
@@ -109,7 +113,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
                         <div>
                             {
-                                this.state.answers.length ?
+                                this.state.answers && this.state.answers.length ?
                                     this.state.answers.map((answer: IChooseAnswer, index: number) => {
                                         return <Paper key={index}
                                                       className={ChooseRightQuestionStyles.answerPaper}>

@@ -165,6 +165,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         return (
             <React.Fragment>
+                <div>
+                    Вопрос {this.state.currentQNumber+'/'+this.state.questions.length}
+                </div>
                 <Button variant="contained"
                         color="primary"
                         className={TestStyles.doneTestButton}

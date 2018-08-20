@@ -4,7 +4,8 @@ const devMode = process.env.NODE_ENV !== 'production';
 const webpack = require('webpack');
 
 module.exports = {
-    devtool: 'cheap-source-map',
+    //devtool: 'cheap-source-map',
+    devtool: 'source-map',
     cache: true,
     entry: './src/index.tsx',
     resolve: {

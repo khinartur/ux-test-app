@@ -2,7 +2,8 @@ import * as React from 'react';
 import {database, storageRef} from '../modules/firebase';
 import Button from '@material-ui/core/Button';
 import {
-    AnyQuestionData, IChooseAnswer, IChooseRightData, IMatchColumnsData, IOpenQuestionData, IQuestion, QuestionAnswer,
+    AnyQuestionData, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IOpenQuestionData, IQuestion,
+    QuestionAnswer,
     QuestionType
 } from '../interfaces/IQuestion';
 
@@ -25,7 +26,6 @@ interface State {
     currentQuestion?: IQuestion<AnyQuestionData>;
     currentQuestionType: QuestionType;
     currentQuestionOrder?: number;
-    currentQuestionAnswers?: QuestionAnswer[];
 
     isOpenQuestionForm: boolean;
     questionsOrderMap?: { [key: number]: string };
@@ -80,12 +80,17 @@ export default class TestEditForm extends React.Component<{}, State> {
 
         return '';
     };
-    onAnswerAdd = (answer: QuestionAnswer) => {
-        const currentAnswers = this.state.currentQuestionAnswers;
+    onAnswerAdd = (answer: IChooseAnswer | IMatchAnswer) => {
+        const currentAnswers = (this.state.currentQuestion.questionData as IChooseRightData | IMatchColumnsData).answers;
 
         this.setState({
             ...this.state,
-            currentQuestionAnswers: currentAnswers ? [answer] : [...currentAnswers, answer],
+            currentQuestion: {
+                ...this.state.currentQuestion,
+                questionData: {
+                    answers: currentAnswers && currentAnswers.length ? [...currentAnswers, answer] : [answer],
+                },
+            },
         });
     };
     onQuestionChange = (evt) => {
@@ -293,7 +298,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                     <MenuItem value={QuestionType.open_question}>Открытый вопрос</MenuItem>
                                 </Select>
                             </FormControl>
-                            <Paper className={TestEditFormStyles.chooseRightEditPaper}>
+                            <Paper className={TestEditFormStyles.editPaper}>
                                 <Typography
                                     variant="title">{this.state.currentQuestion ?
                                     'Редактирование вопроса' : 'Создание нового вопроса'}
@@ -333,7 +338,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                     <br/>
                                     <div>
                                         {
-                                            this.state.currentQuestion.pictures &&
+                                            this.state.currentQuestion && this.state.currentQuestion.pictures &&
                                             this.state.currentQuestion.pictures.map((name: string, i: number) => {
                                                 return <div key={i}>{name}</div>;
                                             })

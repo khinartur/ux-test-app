@@ -109,7 +109,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         super(props);
 
         this.state = {
-            answers: this.props.question.questionData.answers,
+            answers: this.props.question ? this.props.question.questionData.answers : null,
         };
     }
 
@@ -142,7 +142,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
                         <div>
                             {
-                                this.state.answers.length ?
+                                this.state.answers && this.state.answers.length ?
                                     this.state.answers.map((answer: IMatchAnswer, index: number) => {
                                         return <Paper key={index}>
                                             {answer.left + '   =====>   ' + answer.right}
