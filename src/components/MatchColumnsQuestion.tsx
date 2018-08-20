@@ -39,12 +39,13 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                 ...this.state,
                 error: 'Ответ ни в каком из стобцов не должен быть пустым',
             });
+            return;
         }
 
         const newAnswer = {
             left: this.state.answerTextLeft,
             right: this.state.answerTextRight,
-            user_answer: null,
+            user_answer: '',
         };
 
         this.props.onAnswerAdd(newAnswer);
@@ -52,8 +53,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         this.setState({
             ...this.state,
             answers: this.state.answers ? [...this.state.answers, newAnswer] : [newAnswer],
-            answerTextLeft: null,
-            answerTextRight: null,
+            answerTextLeft: '',
+            answerTextRight: '',
         });
     };
 
@@ -159,7 +160,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                            fullWidth={true}
                                            margin={'dense'}
                                            inputProps={{
-                                               name: 'left',
+                                               name: 'answerTextLeft',
                                            }}
                                            onChange={this.onAnswerChange}
                                            value={this.state.answerTextLeft}
@@ -170,7 +171,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                            fullWidth={true}
                                            margin={'dense'}
                                            inputProps={{
-                                               name: 'right',
+                                               name: 'answerTextRight',
                                            }}
                                            onChange={this.onAnswerChange}
                                            value={this.state.answerTextRight}

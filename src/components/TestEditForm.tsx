@@ -26,6 +26,7 @@ interface State {
     currentQuestion?: IQuestion<AnyQuestionData>;
     currentQuestionType: QuestionType;
     currentQuestionOrder?: number;
+    isNewQuestion?: boolean;
 
     isOpenQuestionForm: boolean;
     questionsOrderMap?: { [key: number]: string };
@@ -37,25 +38,30 @@ interface State {
 }
 
 export default class TestEditForm extends React.Component<{}, State> {
-    onFormSubmit = () => {
+
+    onFormSubmit = (evt) => {
+        evt.preventDefault();
         const error = this.validateQuestion();
         if (error) {
             this.setState({
                 ...this.state,
                 error,
             });
+            return;
         }
 
-        const key = this.state.currentQuestion ?
+        const key = this.state.currentQuestion && this.state.currentQuestion.key ?
             this.state.currentQuestion.key :
             database.ref().child('/questions').push().key;
 
 
+        console.log('KEY:', key);
+        console.dir(this.state.currentQuestion);
         //TODO: save without key
         database.ref('questions/' + key).set({
             ...this.state.currentQuestion,
-            order: this.state.currentQuestion.order,
         }).then(() => {
+            console.log('questions order');
             database.ref('questions-order/' + this.state.currentQuestion.order).set(key).then(() => {
                 if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
                     this.uploadFiles(key, 0);
@@ -70,12 +76,18 @@ export default class TestEditForm extends React.Component<{}, State> {
             return 'Формулировка вопроса не может быть пустой';
         }
 
-        if (this.state.currentQuestionType == QuestionType.choose_right) {
+        if (this.state.currentQuestion.type == QuestionType.choose_right) {
             const q = this.state.currentQuestion as IQuestion<IChooseRightData>;
             const answers = q.questionData.answers;
             const rightAnswers = answers.filter((a: IChooseAnswer) => a.isRight);
 
             if (!rightAnswers.length) return 'Необходим хотя бы один правильный ответ';
+        }
+
+        if (this.state.currentQuestion.type == QuestionType.match_columns) {
+            const q = this.state.currentQuestion as IQuestion<IMatchColumnsData>;
+            const answers = q.questionData.answers;
+            if (answers.length <= 1) return 'Необходимо хотя бы 2 пары ответов';
         }
 
         return '';
@@ -89,7 +101,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                 ...this.state.currentQuestion,
                 questionData: {
                     answers: currentAnswers && currentAnswers.length ? [...currentAnswers, answer] : [answer],
-                },
+                } as IChooseRightData | IMatchColumnsData,
             },
         });
     };
@@ -126,9 +138,17 @@ export default class TestEditForm extends React.Component<{}, State> {
     };
     onSelectChange = (evt) => {
         console.log(evt.target.value);
+        const type = evt.target.value;
+
         this.setState({
             ...this.state,
-            currentQuestionType: evt.target.value,
+            currentQuestion: {
+                ...this.state.currentQuestion,
+                type: evt.target.value,
+                points: this.getPoints(type),
+                questionData: this.getDefaultQuestionData(type),
+            },
+            currentQuestionType: type,
         });
     };
 
@@ -143,12 +163,21 @@ export default class TestEditForm extends React.Component<{}, State> {
 
     showAddForm = () => {
         const questions = this.state.questions;
+        const currOrder = questions ? Object.keys(questions).length + 1 : 1;
+        const currType = this.state.currentQuestionType;
 
         this.setState({
             ...this.state,
-            currentQuestion: null,
-            currentQuestionOrder: questions ? Object.keys(questions).length + 1 : 1,
+            currentQuestion: {
+                text: null,
+                points: this.getPoints(currType),
+                order: currOrder,
+                type: currType,
+                questionData: this.getDefaultQuestionData(currType),
+            },
+            currentQuestionOrder: currOrder,
             isOpenQuestionForm: true,
+            isNewQuestion: true,
         });
     };
 
@@ -172,6 +201,8 @@ export default class TestEditForm extends React.Component<{}, State> {
             ...this.state,
             isOpenQuestionForm: false,
             loading: true,
+            error: null,
+            isNewQuestion: false,
         });
     };
 
@@ -184,6 +215,7 @@ export default class TestEditForm extends React.Component<{}, State> {
             currentQuestionOrder: questions ? Object.keys(questions).length + 1 : 1,
             currentQuestionType: QuestionType.choose_right,
             isOpenQuestionForm: false,
+            isNewQuestion: false,
         });
     };
 
@@ -195,14 +227,34 @@ export default class TestEditForm extends React.Component<{}, State> {
         if (this.state.isOpenQuestionForm) return;
         evt.target.className = TestEditFormStyles.questionChooseDiv;
     };
-    getPoints = () => {
-        switch (this.state.currentQuestionType) {
+    getPoints = (type) => {
+        console.log('GET POINTS:', type);
+        switch (type) {
             case QuestionType.choose_right:
+                console.log('choose right points');
                 return CHOOSE_RIGHT_POINTS;
             case QuestionType.match_columns:
+                console.log('match columns points');
                 return MATCH_COLUMNS_POINTS;
             case QuestionType.open_question:
+                console.log('open question points');
                 return OPEN_QUESTIONS_POINTS;
+        }
+    };
+    getDefaultQuestionData = (type) => {
+        switch (type) {
+            case QuestionType.choose_right:
+                return {
+                    answers: [],
+                };
+            case QuestionType.match_columns:
+                return {
+                    answers: [],
+                };
+            case QuestionType.open_question:
+                return {
+                    answer: null,
+                };
         }
     };
     updateQuestions = () => {
@@ -243,7 +295,6 @@ export default class TestEditForm extends React.Component<{}, State> {
     render() {
         const questions = this.state.questions;
         const qMap = this.state.questionsOrderMap;
-        const qToEdit = this.state.currentQuestion;
         const qCount = questions ? Object.keys(questions).length : 0;
         const isEditFormShown = this.state.isOpenQuestionForm;
         console.log('ORDER TO PROPS:', this.state.currentQuestionOrder);
@@ -287,7 +338,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                             <FormControl>
                                 <InputLabel htmlFor="type">Тип вопроса</InputLabel>
                                 <Select
-                                    value={this.state.currentQuestionType}
+                                    value={this.state.currentQuestion.type}
                                     inputProps={{
                                         id: 'type',
                                     }}
@@ -300,24 +351,24 @@ export default class TestEditForm extends React.Component<{}, State> {
                             </FormControl>
                             <Paper className={TestEditFormStyles.editPaper}>
                                 <Typography
-                                    variant="title">{this.state.currentQuestion ?
-                                    'Редактирование вопроса' : 'Создание нового вопроса'}
+                                    variant="title">{this.state.isNewQuestion ?
+                                    'Создание нового вопроса' : 'Редактирование вопроса'}
                                 </Typography>
                                 <br/>
                                 <Paper className={AppStyles.error}>{this.state.error}</Paper>
-                                <form autoComplete="off" onSubmit={this.onFormSubmit}>
+                                <form autoComplete="off" onSubmit={(evt) => this.onFormSubmit(evt)}>
                                     <TextField label="Формулировка вопроса:"
                                                fullWidth={true}
                                                margin={'dense'}
                                                onChange={this.onQuestionChange}
-                                               defaultValue={this.state.currentQuestion ? this.state.currentQuestion.text : null}>
+                                               defaultValue={this.state.currentQuestion.text}>
                                     </TextField>
                                     <br/>
                                     <TextField label="Количество баллов:"
                                                fullWidth={true}
                                                margin={'dense'}
                                                onChange={this.onPointsChange}
-                                               defaultValue={this.state.currentQuestion ? this.state.currentQuestion.points : this.getPoints()}>
+                                               defaultValue={this.state.currentQuestion.points}>
                                     </TextField>
                                     <br/>
                                     <div>
