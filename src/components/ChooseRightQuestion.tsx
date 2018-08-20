@@ -33,24 +33,6 @@ interface State extends IQuestionState<IChooseRightData, IChooseAnswer> {
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
 
-    onQuestionChange = (evt) => {
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                text: evt.target.value,
-            }
-        });
-    };
-    onPointsChange = (evt) => {
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                points: evt.target.value,
-            }
-        });
-    };
     onAnswerChange = (evt) => {
         this.setState({
             ...this.state,
@@ -87,63 +69,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             answerVariantChecked: false,
         });
     };
-    onFilesUpload = (evt) => {
-        const files = evt.target.files;
-
-        const filenames = Array.prototype.map.call(files, file => file.name);
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                pictures: filenames,
-            },
-            uploadedFiles: files,
-        });
-    };
-    onFormSubmit = (evt) => {
-        evt.preventDefault();
-        console.log('SUBMIT');
-
-        const qText = this.state.question.text;
-        if (!qText) {
-            this.setState({
-                ...this.state,
-                error: 'Формулировка вопроса не может быть пустой',
-            });
-
-            return;
-        }
-
-        const qAnswers = this.state.question.questionData.answers;
-        const rightAnswers = qAnswers.filter((a: IChooseAnswer) => a.isRight);
-        if (!rightAnswers.length) {
-            this.setState({
-                ...this.state,
-                error: 'Необходим хотя бы один правильный ответ',
-            });
-
-            return;
-        }
 
 
-        const key = this.props.mode === 'create' ?
-            database.ref().child('/questions').push().key :
-            this.state.question.key;
-
-        //TODO: save without key
-        database.ref('questions/' + key).set({
-            ...this.state.question,
-            order: this.props.order,
-        }).then(() => {
-            database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
-                if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
-                    this.uploadFiles(key, 0);
-                } else {
-                    this.props.onSuccess();
-                }
-            });
-        });
-    };
     onAnswerClick = (evt) => {
         console.log(evt.target.textContent);
 
@@ -205,7 +132,6 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 questionData: {answers: []},
                 points: CHOOSE_RIGHT_POINTS,
             },
-            uploadedFiles: [],
             downloadedFiles: [],
             passMode: this.props.mode === 'pass' ?
                 {isAnswered: false} : null,
@@ -214,18 +140,6 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
         this.loadPictures();
     }
-
-    uploadFiles(key: string, fileIndex: number) {
-        const file = this.state.uploadedFiles[fileIndex];
-        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
-            if (this.state.uploadedFiles.length == fileIndex + 1) {
-                console.log('On success add question');
-                this.props.onSuccess();
-            } else {
-                this.uploadFiles(key, fileIndex + 1);
-            }
-        });
-    };
 
     loadPictures = () => {
         if (this.props.mode === 'pass' && this.state.question.pictures) {
@@ -252,52 +166,9 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
         return (
             <div>
-                { //TODO: вынести общее в QuestionEditForm (заголовок, формулировку, количество баллов, картинки)
+                {
                     (mode === 'edit' || mode === 'create') &&
                     <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
-                        <Typography
-                            variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
-                        <br/>
-                        <Paper className={AppStyles.error}>{this.state.error}</Paper>
-                        <form autoComplete="off" onSubmit={this.onFormSubmit}>
-                            <TextField label="Формулировка вопроса:"
-                                       fullWidth={true}
-                                       margin={'dense'}
-                                       onChange={this.onQuestionChange}
-                                       defaultValue={mode === 'edit' ? question.text : null}>
-                            </TextField>
-                            <br/>
-                            <TextField label="Количество баллов:"
-                                       fullWidth={true}
-                                       margin={'dense'}
-                                       onChange={this.onPointsChange}
-                                       defaultValue={mode === 'edit' ? question.points : 2}>
-                            </TextField>
-                            <br/>
-                            <div>
-                                <input
-                                    accept="image/*"
-                                    className={TestEditFormStyles.uploadFileButton}
-                                    id="raised-button-file"
-                                    multiple
-                                    type="file"
-                                    onChange={(evt) => this.onFilesUpload(evt)}
-                                />
-                                <label htmlFor="raised-button-file">
-                                    <Button variant="contained" color="primary" component="span">
-                                        Добавить картинки
-                                    </Button>
-                                </label>
-                            </div>
-                            <br/>
-                            <div>
-                                {
-                                    this.state.question.pictures &&
-                                    this.state.question.pictures.map((name: string, i: number) => {
-                                        return <div key={i}>{name}</div>;
-                                    })
-                                }
-                            </div>
                             <br/>
                             <div>
                                 {
@@ -314,9 +185,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             </div>
                             <br/>
                             <div className={ChooseRightQuestionStyles.answerVariant}>
-                                <div
-                                //    className={ChooseRightQuestionStyles.answerVariantItem}
-                                >
+                                <div>
                                     <TextField label='Ответ'
                                                fullWidth={true}
                                                margin={'dense'}
@@ -324,9 +193,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                                value={this.state.answerVariantText}
                                     />
                                 </div>
-                                <div
-                                //    className={ChooseRightQuestionStyles.answerVariantItem}
-                                >
+                                <div>
                                     <FormGroup row>
                                         <FormControlLabel
                                             control={
@@ -369,7 +236,6 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                     Отмена
                                 </Button>
                             </div>
-                        </form>
                     </Paper>
                 }
 

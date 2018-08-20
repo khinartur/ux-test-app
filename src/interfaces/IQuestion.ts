@@ -64,6 +64,5 @@ export interface IQuestionState<T extends AnyQuestionData, P extends QuestionAns
     question: IQuestion<T>;
     addingAnswer?: P;
     passMode?: IPassMode;
-    uploadedFiles?: File[];
     downloadedFiles?: string[];
 }

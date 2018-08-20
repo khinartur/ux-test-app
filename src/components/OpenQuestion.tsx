@@ -53,7 +53,6 @@ export default class OpenQuestion extends React.Component<Props, State> {
                 ...this.state.question,
                 pictures: filenames,
             },
-            uploadedFiles: files,
         });
     };
     onCancelEdit = () => {
@@ -75,58 +74,12 @@ export default class OpenQuestion extends React.Component<Props, State> {
                 questionData: {answer: null},
                 points: OPEN_QUESTIONS_POINTS,
             },
-            uploadedFiles: [],
             downloadedFiles: [],
             passMode: this.props.mode === 'pass' ?
                 {isAnswered: false} : null,
             loading: true,
         };
     }
-
-    onFormSubmit = (evt) => {
-        evt.preventDefault();
-        console.log('SUBMIT');
-
-        const qText = this.state.question.text;
-        if (!qText) {
-            this.setState({
-                ...this.state,
-                error: 'Формулировка вопроса не может быть пустой',
-            });
-
-            return;
-        }
-
-        const key = this.props.mode === 'create' ?
-            database.ref().child('/questions').push().key :
-            this.state.question.key;
-
-        //TODO: save without key
-        database.ref('questions/' + key).set({
-            ...this.state.question,
-            order: this.props.order,
-        }).then(() => {
-            database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
-                if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
-                    this.uploadFiles(key, 0);
-                } else {
-                    this.props.onSuccess();
-                }
-            });
-        });
-    };
-
-    uploadFiles(key: string, fileIndex: number) {
-        const file = this.state.uploadedFiles[fileIndex];
-        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
-            if (this.state.uploadedFiles.length == fileIndex + 1) {
-                console.log('On success add question');
-                this.props.onSuccess();
-            } else {
-                this.uploadFiles(key, fileIndex + 1);
-            }
-        });
-    };
 
     componentDidMount() {
         if (this.props.mode === 'pass' && this.state.question.pictures) {
@@ -186,49 +139,6 @@ export default class OpenQuestion extends React.Component<Props, State> {
                 {
                     (mode === 'edit' || mode === 'create') &&
                     <Paper className={OpenQuestionStyles.openQuestionEditPaper}>
-                        <Typography
-                            variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
-                        <br/>
-                        <Paper className={'error'}>{this.state.error}</Paper>
-                        <form autoComplete="off" onSubmit={this.onFormSubmit}>
-                            <TextField label="Формулировка вопроса:"
-                                       fullWidth={true}
-                                       margin={'dense'}
-                                       onChange={this.onQuestionChange}
-                                       defaultValue={mode === 'edit' ? question.text : null}>
-                            </TextField>
-                            <br/>
-                            <TextField label="Количество баллов:"
-                                       fullWidth={true}
-                                       margin={'dense'}
-                                       onChange={this.onPointsChange}
-                                       defaultValue={mode === 'edit' ? question.points : this.state.question.points}>
-                            </TextField>
-                            <br/>
-                            <div>
-                                <input
-                                    accept="image/*"
-                                    className={TestEditFormStyles.uploadFileButton}
-                                    id="raised-button-file"
-                                    multiple
-                                    type="file"
-                                    onChange={(evt) => this.onFilesUpload(evt)}
-                                />
-                                <label htmlFor="raised-button-file">
-                                    <Button variant="contained" color="primary" component="span">
-                                        Добавить картинки
-                                    </Button>
-                                </label>
-                            </div>
-                            <br/>
-                            <div>
-                                {
-                                    pictutes &&
-                                    pictutes.map((name: string, i: number) => {
-                                        return <div key={i}>{name}</div>;
-                                    })
-                                }
-                            </div>
                             <br/>
                             <div>
                                 <Button
@@ -249,7 +159,6 @@ export default class OpenQuestion extends React.Component<Props, State> {
                                     Отмена
                                 </Button>
                             </div>
-                        </form>
                     </Paper>
                 }
                 {mode === 'pass' && !this.state.loading &&

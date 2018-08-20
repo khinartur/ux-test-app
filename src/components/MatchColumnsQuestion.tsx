@@ -44,37 +44,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             addingAnswer: null,
         });
     };
-    onQuestionChange = (evt) => {
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                text: evt.target.value,
-            }
-        });
-    };
-    onPointsChange = (evt) => {
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                points: evt.target.value,
-            }
-        });
-    };
-    onFilesUpload = (evt) => {
-        const files = evt.target.files;
 
-        const filenames = Array.prototype.map.call(files, file => file.name);
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                pictures: filenames,
-            },
-            uploadedFiles: files,
-        });
-    };
     onCancelEdit = () => {
         this.props.onCancel();
         this.setState({
@@ -96,7 +66,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                 questionData: {answers: []},
                 points: MATCH_COLUMNS_POINTS,
             },
-            uploadedFiles: [],
             downloadedFiles: [],
             passMode: this.props.mode === 'pass' ?
                 {isAnswered: false} : null,
@@ -104,61 +73,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         };
     }
 
-    onFormSubmit = (evt) => {
-        evt.preventDefault();
-        console.log('SUBMIT');
-
-        const qText = this.state.question.text;
-        if (!qText) {
-            this.setState({
-                ...this.state,
-                error: 'Формулировка вопроса не может быть пустой',
-            });
-
-            return;
-        }
-
-        const qAnswers = this.state.question.questionData.answers;
-        if (!qAnswers.length || qAnswers.length == 1) {
-            this.setState({
-                ...this.state,
-                error: 'Необходимо хотя бы 2 пары ответов',
-            });
-
-            return;
-        }
-
-
-        const key = this.props.mode === 'create' ?
-            database.ref().child('/questions').push().key :
-            this.state.question.key;
-
-        //TODO: save without key
-        database.ref('questions/' + key).set({
-            ...this.state.question,
-            order: this.props.order,
-        }).then(() => {
-            database.ref('questions-order/' + this.state.question.order).set(key).then(() => {
-                if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
-                    this.uploadFiles(key, 0);
-                } else {
-                    this.props.onSuccess();
-                }
-            });
-        });
-    };
-
-    uploadFiles(key: string, fileIndex: number) {
-        const file = this.state.uploadedFiles[fileIndex];
-        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
-            if (this.state.uploadedFiles.length == fileIndex + 1) {
-                console.log('On success add question');
-                this.props.onSuccess();
-            } else {
-                this.uploadFiles(key, fileIndex + 1);
-            }
-        });
-    };
 
     componentDidMount() {
         if (this.props.mode === 'pass' && this.state.question.pictures) {
@@ -277,50 +191,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                 {
                     (mode === 'edit' || mode === 'create') &&
                     <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
-                        <Typography
-                            variant="title">{mode === 'edit' ? 'Редактирование вопроса' : 'Создание нового вопроса'}</Typography>
-                        <br/>
-                        <Paper className={AppStyles.error}>{this.state.error}</Paper>
-                        <form autoComplete="off" onSubmit={this.onFormSubmit}>
-                            <TextField label="Формулировка вопроса:"
-                                       fullWidth={true}
-                                       margin={'dense'}
-                                       onChange={this.onQuestionChange}
-                                       defaultValue={mode === 'edit' ? question.text : null}>
-                            </TextField>
-                            <br/>
-                            <TextField label="Количество баллов:"
-                                       fullWidth={true}
-                                       margin={'dense'}
-                                       onChange={this.onPointsChange}
-                                       defaultValue={mode === 'edit' ? question.points : this.state.question.points}>
-                            </TextField>
-                            <br/>
-                            <div>
-                                <input
-                                    accept="image/*"
-                                    className={TestEditFormStyles.uploadFileButton}
-                                    id="raised-button-file"
-                                    multiple
-                                    type="file"
-                                    onChange={(evt) => this.onFilesUpload(evt)}
-                                />
-                                <label htmlFor="raised-button-file">
-                                    <Button variant="contained" color="primary" component="span">
-                                        Добавить картинки
-                                    </Button>
-                                </label>
-                            </div>
-                            <br/>
-                            <div>
-                                {
-                                    pictutes &&
-                                    pictutes.map((name: string, i: number) => {
-                                        return <div key={i}>{name}</div>;
-                                    })
-                                }
-                            </div>
-                            <br/>
                             <div>
                                 {
                                     answers.length ?
@@ -335,9 +205,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             </div>
                             <br/>
                             <div className={MatchColumnsQuestionStyles.matchAnswerVariant}>
-                                <div
-                                //    className={MatchColumnsQuestionStyles.matchAnswerVariantItem}
-                                >
+                                <div>
                                     <TextField label='Левый столбец'
                                                fullWidth={true}
                                                margin={'dense'}
@@ -348,9 +216,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                value={this.state.answerTextLeft}
                                     />
                                 </div>
-                                <div
-                                //    className={MatchColumnsQuestionStyles.matchAnswerVariantItem}
-                                >
+                                <div>
                                     <TextField label='Правый столбец'
                                                fullWidth={true}
                                                margin={'dense'}
@@ -361,9 +227,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                value={this.state.answerTextRight}
                                     />
                                 </div>
-                                <div
-                                //    className={MatchColumnsQuestionStyles.matchAnswerVariantItem}
-                                >
+                                <div>
                                     <Button variant="contained"
                                             color="primary"
                                             onClick={this.onAnswerAdd}>
@@ -390,7 +254,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                     Отмена
                                 </Button>
                             </div>
-                        </form>
                     </Paper>
                 }
                 {mode === 'pass' && !this.state.loading &&
@@ -420,9 +283,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                         new Array(this.state.question.questionData.answers.length).fill(true).map((n: boolean, i: number) => {
                             return (
                                 <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
-                                    <div
-                                    //    className={MatchColumnsQuestionStyles.matchRowItem}
-                                    >
+                                    <div>
                                         <Button variant="contained"
                                                 color="primary"
                                                 fullWidth={true}
@@ -431,9 +292,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                             {this.state.passMode.leftAnswers[i]}
                                         </Button>
                                     </div>
-                                    <div
-                                    //    className={MatchColumnsQuestionStyles.matchRowItem}
-                                    >
+                                    <div>
                                         <Button variant="contained"
                                                 color="primary"
                                                 fullWidth={true}
