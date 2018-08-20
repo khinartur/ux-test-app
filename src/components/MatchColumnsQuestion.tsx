@@ -19,9 +19,8 @@ import {shuffle} from '../utils/key-embedding';
 interface Props extends IQuestionProps<IMatchColumnsData> {
 }
 
-interface State extends IQuestionState<IMatchColumnsData, IMatchAnswer> {
+interface State extends IQuestionState<IMatchAnswer> {
     error?: string;
-    loading: boolean;
     answerTextLeft?: string;
     answerTextRight?: string;
 }
@@ -31,10 +30,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
     onAnswerChange = (evt) => {
         this.setState({
             ...this.state,
-            addingAnswer: {
-                ...this.state.addingAnswer,
-                [evt.target.name]: evt.target.value,
-            }
+            [evt.target.name]: evt.target.value,
         });
     };
     onAnswerAdd = () => {
@@ -45,72 +41,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         });
     };
 
-    onCancelEdit = () => {
-        this.props.onCancel();
-        this.setState({
-            ...this.state,
-            addingAnswer: null,
-            answerTextLeft: null,
-            answerTextRight: null,
-        });
-    };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            question: this.props.question || {
-                text: null,
-                order: this.props.order,
-                type: QuestionType.match_columns,
-                questionData: {answers: []},
-                points: MATCH_COLUMNS_POINTS,
-            },
-            downloadedFiles: [],
-            passMode: this.props.mode === 'pass' ?
-                {isAnswered: false} : null,
-            loading: true,
-        };
-    }
-
-
-    componentDidMount() {
-        if (this.props.mode === 'pass' && this.state.question.pictures) {
-            if (this.state.question.pictures) {
-                this.state.question.pictures.map((filename: string) => {
-                    storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
-                        const downloadedCount = this.state.downloadedFiles.length;
-                        this.setState({
-                            ...this.state,
-                            downloadedFiles: [...this.state.downloadedFiles, url],
-                            loading: this.state.question.pictures.length !== downloadedCount + 1,
-                        });
-                    });
-                });
-            }
-
-            let [leftAnswers, rightAnswers] = [[], []];
-            this.state.question.questionData.answers.map((answer: IMatchAnswer) => {
-                leftAnswers.push(answer.left);
-                rightAnswers.push(answer.right);
-            });
-
-            this.setState({
-                ...this.state,
-                passMode: {
-                    ...this.state.passMode,
-                    leftAnswers: shuffle(leftAnswers),
-                    rightAnswers: shuffle(rightAnswers),
-                }
-            });
-        } else {
-            this.setState({
-                ...this.state,
-                loading: false,
-            });
-        }
-    }
-    onAnswerClick = (evt) => {
+    onAnswer = (evt) => {
         console.log(evt.target.textContent);
         const answerText = evt.target.textContent;
         const answers = this.state.question.questionData.answers;
@@ -171,149 +102,139 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             },
         });
     };
-    onNextQuestion = () => {
-        const question = this.state.question;
 
-        this.state.passMode.isAnswered ?
-            this.props.onPass(question) :
-            this.props.onSkip(question);
-    };
+    constructor(props) {
+        super(props);
 
+        this.state = {
+            answers: this.props.question.questionData.answers,
+            passMode: this.props.mode === 'pass' ?
+                {isAnswered: false} : null,
+            loading: true,
+        };
+    }
+
+    componentDidMount() {
+        if (this.props.mode === 'pass' && this.state.question.pictures) {
+            if (this.state.question.pictures) {
+                this.state.question.pictures.map((filename: string) => {
+                    storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
+                        const downloadedCount = this.state.downloadedFiles.length;
+                        this.setState({
+                            ...this.state,
+                            downloadedFiles: [...this.state.downloadedFiles, url],
+                            loading: this.state.question.pictures.length !== downloadedCount + 1,
+                        });
+                    });
+                });
+            }
+
+            let [leftAnswers, rightAnswers] = [[], []];
+            this.state.question.questionData.answers.map((answer: IMatchAnswer) => {
+                leftAnswers.push(answer.left);
+                rightAnswers.push(answer.right);
+            });
+
+            this.setState({
+                ...this.state,
+                passMode: {
+                    ...this.state.passMode,
+                    leftAnswers: shuffle(leftAnswers),
+                    rightAnswers: shuffle(rightAnswers),
+                }
+            });
+        } else {
+            this.setState({
+                ...this.state,
+                loading: false,
+            });
+        }
+    }
 
     render() {
-        const {question, mode, count} = this.props;
-
-        const answers = this.state.question.questionData.answers;
-        const pictutes = this.state.question.pictures;
+        const {mode} = this.props;
 
         return (
             <div>
                 {
-                    (mode === 'edit' || mode === 'create') &&
+                    mode === 'edit' &&
                     <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
+                        <div>
+                            {
+                                answers.length ?
+                                    answers.map((answer: IMatchAnswer, index: number) => {
+                                        return <Paper key={index}>
+                                            {answer.left + '   =====>   ' + answer.right}
+                                        </Paper>;
+                                    })
+                                    :
+                                    <div>Нет вариантов ответа.</div>
+                            }
+                        </div>
+                        <br/>
+                        <div className={MatchColumnsQuestionStyles.matchAnswerVariant}>
                             <div>
-                                {
-                                    answers.length ?
-                                        answers.map((answer: IMatchAnswer, index: number) => {
-                                            return <Paper key={index}>
-                                                {answer.left + '   =====>   ' + answer.right}
-                                            </Paper>;
-                                        })
-                                        :
-                                        <div>Нет вариантов ответа.</div>
-                                }
-                            </div>
-                            <br/>
-                            <div className={MatchColumnsQuestionStyles.matchAnswerVariant}>
-                                <div>
-                                    <TextField label='Левый столбец'
-                                               fullWidth={true}
-                                               margin={'dense'}
-                                               inputProps={{
-                                                   name: 'left',
-                                               }}
-                                               onChange={this.onAnswerChange}
-                                               value={this.state.answerTextLeft}
-                                    />
-                                </div>
-                                <div>
-                                    <TextField label='Правый столбец'
-                                               fullWidth={true}
-                                               margin={'dense'}
-                                               inputProps={{
-                                                   name: 'right',
-                                               }}
-                                               onChange={this.onAnswerChange}
-                                               value={this.state.answerTextRight}
-                                    />
-                                </div>
-                                <div>
-                                    <Button variant="contained"
-                                            color="primary"
-                                            onClick={this.onAnswerAdd}>
-                                        Сохранить
-                                    </Button>
-                                </div>
+                                <TextField label='Левый столбец'
+                                           fullWidth={true}
+                                           margin={'dense'}
+                                           inputProps={{
+                                               name: 'left',
+                                           }}
+                                           onChange={this.onAnswerChange}
+                                           value={this.state.answerTextLeft}
+                                />
                             </div>
                             <div>
-                                <Button
-                                    className={TestEditFormStyles.editQuestionButton}
-                                    variant="contained"
-                                    color="primary"
-                                    type="submit">
-                                    {mode === 'edit' ? 'Сохранить' : 'Создать'}
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    style={{
-                                        backgroundColor: '#b2102f',
-                                        marginLeft: '10px',
-                                        color: 'white',
-                                    }}
-                                    onClick={this.onCancelEdit}>
-                                    Отмена
+                                <TextField label='Правый столбец'
+                                           fullWidth={true}
+                                           margin={'dense'}
+                                           inputProps={{
+                                               name: 'right',
+                                           }}
+                                           onChange={this.onAnswerChange}
+                                           value={this.state.answerTextRight}
+                                />
+                            </div>
+                            <div>
+                                <Button variant="contained"
+                                        color="primary"
+                                        onClick={this.onAnswerAdd}>
+                                    Сохранить
                                 </Button>
                             </div>
+                        </div>
                     </Paper>
                 }
-                {mode === 'pass' && !this.state.loading &&
-                <Paper className={TestStyles.questionPaper}
-                       elevation={10}>
-                    <Typography variant="title"
-                                style={{paddingTop: '3px'}}>
-                        <div className={AppStyles.questionNumberDiv}>
-                            <span className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
-                        </div>
-                        {question.text}
-                    </Typography>
-                    <br/>
-                    {
-                        this.state.downloadedFiles &&
-                        this.state.downloadedFiles.map((url: string, i: number) => {
-                            return <img key={i}
-                                        src={url}
-                                        style={{
-                                            height: '180px',
-                                            display: 'inline-block',
-                                        }}/>;
-                        })
-                    }
-                    <br/>
-                    {
-                        new Array(this.state.question.questionData.answers.length).fill(true).map((n: boolean, i: number) => {
-                            return (
-                                <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
-                                    <div>
-                                        <Button variant="contained"
-                                                color="primary"
-                                                fullWidth={true}
-                                                name={'left'}
-                                                onClick={(evt) => this.onAnswerClick(evt)}>
-                                            {this.state.passMode.leftAnswers[i]}
-                                        </Button>
+                {
+                    mode === 'pass' &&
+                    <div>
+                        {
+                            new Array(this.state.answers.length).fill(true).map((n: boolean, i: number) => {
+                                return (
+                                    <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
+                                        <div>
+                                            <Button variant="contained"
+                                                    color="primary"
+                                                    fullWidth={true}
+                                                    name={'left'}
+                                                    onClick={(evt) => this.onAnswer(evt)}>
+                                                {this.state.passMode.leftAnswers[i]}
+                                            </Button>
+                                        </div>
+                                        <div>
+                                            <Button variant="contained"
+                                                    color="primary"
+                                                    fullWidth={true}
+                                                    name={'right'}
+                                                    onClick={(evt) => this.onAnswer(evt)}>
+                                                {this.state.passMode.rightAnswers[i]}
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <Button variant="contained"
-                                                color="primary"
-                                                fullWidth={true}
-                                                name={'right'}
-                                                onClick={(evt) => this.onAnswerClick(evt)}>
-                                            {this.state.passMode.rightAnswers[i]}
-                                        </Button>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    }
-                    <div className={TestStyles.questionButtonNext}>
-                        <Button variant="contained"
-                                color="primary"
-                                fullWidth={true}
-                                onClick={this.onNextQuestion}>
-                            {this.state.passMode.isAnswered ? 'Ответить' : 'Дальше'}
-                        </Button>
+                                );
+                            })
+                        }
                     </div>
-                </Paper>
                 }
             </div>
         );

@@ -14,6 +14,7 @@ export interface IQuestion<T extends AnyQuestionData> {
     type: QuestionType;
     questionData: T;
     points: number;
+    isAnswered?: boolean;
 }
 
 export interface IChooseRightData {
@@ -22,8 +23,8 @@ export interface IChooseRightData {
 
 export interface IChooseAnswer {
     text: string;
-    isRight: boolean;
-    isAnswered: boolean;
+    isRight?: boolean;
+    isAnswered?: boolean;
 }
 
 export interface IMatchColumnsData {
@@ -33,7 +34,7 @@ export interface IMatchColumnsData {
 export interface IMatchAnswer {
     left: string;
     right: string;
-    user_answer: string;
+    user_answer?: string;
 }
 
 export interface IOpenQuestionData {
@@ -42,27 +43,20 @@ export interface IOpenQuestionData {
 
 export interface IQuestionProps<T extends AnyQuestionData>{
     question: IQuestion<T>;
-    count?: number;
-    order?: number;
-    onSuccess?: any;
-    onCancel?: any;
-    onPass?: any;
-    onSkip?: any;
+    onAnswerAdd?: any;
+    onAnswer?: any;
     mode: string;
 }
 
 export type QuestionAnswer = IChooseAnswer | IMatchAnswer | string;
 
 interface IPassMode {
-    isAnswered: boolean;
     leftAnswers?: string[];
     rightAnswers?: string[];
     answer?: any;
 }
 
-export interface IQuestionState<T extends AnyQuestionData, P extends QuestionAnswer> {
-    question: IQuestion<T>;
-    addingAnswer?: P;
+export interface IQuestionState<P extends QuestionAnswer> {
+    answers?: P[];
     passMode?: IPassMode;
-    downloadedFiles?: string[];
 }
