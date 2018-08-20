@@ -58,73 +58,136 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     loadPictures = (qNumber: number) => {
+        if (qNumber >= this.state.questions.length) {
+            this.setState({
+                ...this.state,
+                isNextPicturesLoaded: true,
+                loading: false,
+            });
+            return;
+        }
         const isNextQuestion = qNumber !== this.state.currentQNumber;
 
         const question = this.state.questions[qNumber];
+
+        if (isNextQuestion) {
+            this.nextQuestionImages = [];
+        } else {
+            this.currentQuestionImages = [];
+        }
+
         const pictures = question.pictures;
 
-        if (isNextQuestion) this.nextQuestionImages = [];
-
-        pictures.map((filename: string, i: number) => {
-            storageRef.child(`${question.key}/${filename}`).getDownloadURL().then(url => {
-                let xhr = new XMLHttpRequest();
-                xhr.responseType = 'blob';
-                xhr.onload = function () {
-                    const blob = xhr.response;
-                    const objectURL = URL.createObjectURL(blob);
-                    if (isNextQuestion) {
-                        this.nextQuestionImages.push(objectURL);
-                        if (i == pictures.length) {
-                            this.setState({
-                                ...this.state,
-                                isNextPicturesLoaded: true,
-                                loading: !this.state.isCurrentPicturesLoaded,
-                            });
+        if (pictures) {
+            pictures.map((filename: string, i: number) => {
+                storageRef.child(`${question.key}/${filename}`).getDownloadURL().then(url => {
+                    let xhr = new XMLHttpRequest();
+                    xhr.responseType = 'blob';
+                    xhr.onload = function () {
+                        const blob = xhr.response;
+                        const objectURL = URL.createObjectURL(blob);
+                        if (isNextQuestion) {
+                            this.nextQuestionImages.push(objectURL);
+                            if (i == pictures.length - 1) {
+                                this.setState({
+                                    ...this.state,
+                                    isNextPicturesLoaded: true,
+                                    loading: !this.state.isCurrentPicturesLoaded,
+                                });
+                            }
+                        } else {
+                            this.currentQuestionImages.push(objectURL);
+                            if (i == pictures.length - 1) {
+                                this.setState({
+                                    ...this.state,
+                                    isCurrentPicturesLoaded: true,
+                                    loading: !this.state.isNextPicturesLoaded,
+                                });
+                            }
                         }
-                    } else {
-                        this.currentQuestionImages.push(objectURL);
-                        if (i == pictures.length) {
-                            this.setState({
-                                ...this.state,
-                                isCurrentPicturesLoaded: true,
-                                loading: !this.state.isNextPicturesLoaded,
-                            });
-                        }
-                    }
-                }.bind(this);
-                xhr.open('GET', url);
-                xhr.send();
+                    }.bind(this);
+                    xhr.open('GET', url);
+                    xhr.send();
+                });
             });
-        });
+        } else {
+            if (isNextQuestion) {
+                console.log('no pictures in next question');
+                this.setState({
+                    ...this.state,
+                    isNextPicturesLoaded: true,
+                    loading: !this.state.isCurrentPicturesLoaded,
+                });
+            } else {
+                console.log('no pictures in current question');
+                this.setState({
+                    ...this.state,
+                    isCurrentPicturesLoaded: true,
+                    loading: !this.state.isNextPicturesLoaded,
+                });
+            }
+        }
     };
     onAnswer = (answer: QuestionAnswer) => {
-        //CHECK IS ANSWERED
+        debugger;
 
         const question = this.state.currentQuestion;
         switch (question.type) {
             case QuestionType.choose_right:
                 const chData = question.questionData as IChooseRightData;
-                const ch = chData.answers.filter((v: IChooseAnswer) => v.text == (answer as IChooseAnswer).text)[0];
-                (ch as IChooseAnswer).isAnswered = !ch.isAnswered;
+                const answeredChAnswers = chData.answers.filter((v: IChooseAnswer) => v.isAnswered);
+                this.setState({
+                    ...this.state,
+                    currentQuestion: {
+                        ...this.state.currentQuestion,
+                        isAnswered: !!answeredChAnswers.length,
+                    },
+                });
                 break;
+
             case QuestionType.match_columns:
                 const mData = question.questionData as IMatchColumnsData;
                 const m = mData.answers.filter((v: IMatchAnswer) => v.left == (answer as IMatchAnswer).left)[0];
-                (m as IMatchAnswer).user_answer = (answer as IMatchAnswer).right;
+                const answeredMAnswers = mData.answers.filter((v: IMatchAnswer) => v.user_answer);
+                this.setState({
+                    ...this.state,
+                    currentQuestion: {
+                        ...this.state.currentQuestion,
+                        isAnswered: answeredMAnswers.length == mData.answers.length,
+                    },
+                });
                 break;
+
             case QuestionType.open_question:
-                (question.questionData as IOpenQuestionData).answer = answer as string;
+                this.setState({
+                    ...this.state,
+                    currentQuestion: {
+                        ...this.state.currentQuestion,
+                        questionData: {
+                            answer: answer,
+                        } as IOpenQuestionData,
+                        isAnswered: !!answer,
+                    },
+                });
         }
     };
     onNext = () => {
+        debugger;
+        const currNumber = this.state.currentQNumber;
         this.currentQuestionImages = this.nextQuestionImages;
         this.nextQuestionImages = [];
-        this.loadPictures(this.state.currentQNumber + 2);
 
+        //TODO: make async
+        this.loadPictures(currNumber + 2);
+
+        const questions = this.state.questions;
+        const isNewRound = currNumber == questions.length - 1;
         this.setState({
             ...this.state,
+            currentQuestion: isNewRound ? questions[0] : questions[currNumber + 1],
+            currentQNumber: currNumber + 1,
             isNextPicturesLoaded: false,
-            loading: true,
+            loading: false,
         });
     };
     private nextQuestionImages: any[];
@@ -147,16 +210,16 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     componentDidMount() {
         Test.getTestQuestions().then(snapshot => {
             const dbQuestions = Object.entries(embedKey(snapshot.val())).map((q) => q[1]);
-            this.loadPictures(0);
-            this.loadPictures(1);
 
             this.setState({
                 ...this.state,
                 questions: dbQuestions as IQuestion<AnyQuestionData>[],
                 currentQNumber: 0,
                 currentQuestion: dbQuestions[0] as IQuestion<AnyQuestionData>,
-                loading: true,
             });
+
+            this.loadPictures(0);
+            this.loadPictures(1);
         });
     }
 
@@ -164,17 +227,19 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         const question = this.state.currentQuestion;
 
         return (
+            !this.state.loading &&
             <React.Fragment>
                 <div>
-                    Вопрос {this.state.currentQNumber+'/'+this.state.questions.length}
+                    Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
                 </div>
-                <Button variant="contained"
-                        color="primary"
-                        className={TestStyles.doneTestButton}
-                        fullWidth={false}
-                        onClick={this.onDone}>
-                    Завершить тест
-                </Button>
+                <div className={TestStyles.doneTestButton}>
+                    <Button variant='contained'
+                            color='primary'
+                            fullWidth={false}
+                            onClick={this.onDone}>
+                        Завершить тест
+                    </Button>
+                </div>
                 <div className={TestStyles.container}>
                     {
                         !this.state.loading && !this.state.done &&
@@ -183,7 +248,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             <Typography variant="title"
                                         style={{paddingTop: '3px'}}>
                                 <div className={TestStyles.questionNumberDiv}>
-                                    <span className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
+                                            <span
+                                                className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
                                 </div>
                                 {question.text}
                             </Typography>
@@ -217,8 +283,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                         color="primary"
                                         fullWidth={true}
                                         onClick={this.onNext}>
-                                    Дальше
+                                    {this.state.currentQuestion.isAnswered ? 'Дальше' : 'Пропустить'}
                                 </Button>
+
                             </div>
                         </Paper>
                     }

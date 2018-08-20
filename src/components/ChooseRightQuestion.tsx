@@ -73,19 +73,13 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
 
     onAnswerClick = (evt) => {
-        console.log(evt.target.textContent);
+        console.log(evt.target.value);
 
-        let userAnswer = evt.target.textContent;
+        let userAnswer = evt.target.value;
         let answers = this.state.answers;
         answers.map((ans: IChooseAnswer) => {
             if (ans.text == userAnswer) {
-                if (ans.isAnswered) {
-                    ans.isAnswered = false;
-                    evt.currentTarget.style.backgroundColor = '#000000';
-                } else {
-                    ans.isAnswered = true;
-                    evt.currentTarget.style.backgroundColor = '#009688';
-                }
+                ans.isAnswered = !ans.isAnswered;
             }
         });
 
@@ -165,14 +159,18 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                         {
                             this.state.answers.map((answer: IChooseAnswer, i: number) => {
                                 return (
-                                    <div key={i} className={TestStyles.questionButton}>
-                                        <Button variant="contained"
-                                                color="primary"
-                                                fullWidth={true}
-                                                onClick={(evt) => this.onAnswerClick(evt)}>
-                                            {answer.text}
-                                        </Button>
-                                    </div>
+                                    <FormGroup row key={i}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    color="primary"
+                                                    onChange={(evt) => this.onAnswerClick(evt)}
+                                                    value={answer.text}
+                                                />
+                                            }
+                                            label={answer.text}
+                                        />
+                                    </FormGroup>
                                 );
                             })
                         }

@@ -15,6 +15,7 @@ import {
 import {MATCH_COLUMNS_POINTS} from '../constants/points';
 import {database, storageRef} from '../modules/firebase';
 import {shuffle} from '../utils/key-embedding';
+import {Req} from 'awesome-typescript-loader/dist/checker/protocol';
 
 interface Props extends IQuestionProps<IMatchColumnsData> {
 }
@@ -26,6 +27,11 @@ interface State extends IQuestionState<IMatchAnswer> {
 }
 
 export default class MatchColumnsQuestion extends React.Component<Props, State> {
+    private answerNumber = 0;
+    private materialColors = ['#aa2e25', '#2c387e', '#00695f', '#1769aa', '#357a38', '#482880', '#8f9a27',
+                                '#b23c17', '#b26a00'];
+    private previousAnswerButton;
+    private allAnswersButtons = [];
 
     onAnswerChange = (evt) => {
         this.setState({
@@ -57,53 +63,100 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             answerTextRight: '',
         });
     };
+    onReset = () => {
+        this.allAnswersButtons.map((ref: any) => {
+            ref.current.style.backgroundColor = '#000000';
+        });
+
+        let resetAnswers = [];
+        this.state.answers.map((answer: IMatchAnswer) => {
+            resetAnswers.push({
+                ...answer,
+                user_answer: '',
+            });
+        });
+
+        this.setState({
+            ...this.state,
+            answers: resetAnswers,
+        });
+    };
 
     onAnswer = (evt) => {
         console.log(evt.target.textContent);
         const answerText = evt.target.textContent;
         const answers = this.state.answers;
 
-        // const currentAnswer = this.state.passMode.answer || {};
-        // switch (evt.target.name) {
-        //     case 'left':
-        //         currentAnswer.left = answerText;
-        //         if (currentAnswer.right) {
-        //             let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
-        //             dbAnswer.user_answer = currentAnswer.right;
-        //             evt.currentTarget.style.display = 'none';
-        //             this.setState({
-        //                 ...this.state,
-        //                 passMode: {
-        //                     ...this.state.passMode,
-        //                     answer: null,
-        //                 }
-        //             });
-        //         } else {
-        //             evt.currentTarget.style.backgroundColor = '#009688';
-        //         }
-        //         break;
-        //     case 'right':
-        //         currentAnswer.right = answerText;
-        //         if (currentAnswer.left) {
-        //             let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
-        //             dbAnswer.user_answer = currentAnswer.right;
-        //             evt.currentTarget.style.display = 'none';
-        //             this.setState({
-        //                 ...this.state,
-        //                 passMode: {
-        //                     ...this.state.passMode,
-        //                     answer: null,
-        //                 }
-        //             });
-        //         } else {
-        //             evt.currentTarget.style.backgroundColor = '#009688';
-        //         }
-        //         break;
-        // }
-		//
-		//
-        // console.log('MATCH COLUMNS ANSWERS:');
-        // console.dir(answers);
+        const currentAnswer = this.state.passMode.answer || {};
+
+        switch (evt.currentTarget.name) {
+            case 'left':
+                if (currentAnswer.right) {
+                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
+                    dbAnswer.user_answer = currentAnswer.right;
+                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
+                    this.answerNumber += 1;
+                    this.setState({
+                        ...this.state,
+                        passMode: {
+                            ...this.state.passMode,
+                            answer: null,
+                        }
+                    });
+                    this.props.onAnswer(dbAnswer);
+                } else {
+                    if (this.previousAnswerButton) {
+                        this.previousAnswerButton.style.backgroundColor = '#000000';
+                        this.previousAnswerButton = evt.currentTarget;
+                    }
+                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
+                    this.setState({
+                        ...this.state,
+                        passMode: {
+                            ...this.state.passMode,
+                            answer: {
+                                left: answerText,
+                            },
+                        }
+                    });
+                }
+                break;
+            case 'right':
+                if (currentAnswer.left) {
+                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
+                    dbAnswer.user_answer = answerText;
+                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
+                    this.answerNumber += 1;
+                    this.setState({
+                        ...this.state,
+                        passMode: {
+                            ...this.state.passMode,
+                            answer: null,
+                        }
+                    });
+                    this.props.onAnswer(dbAnswer);
+                } else {
+                    if (this.previousAnswerButton) {
+                        this.previousAnswerButton.style.backgroundColor = '#000000';
+                        this.previousAnswerButton = evt.currentTarget;
+                    }
+                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
+                    this.setState({
+                        ...this.state,
+                        passMode: {
+                            ...this.state.passMode,
+                            answer: {
+                                right: answerText,
+                            },
+                        }
+                    });
+                }
+                break;
+        }
+
+
+        console.log('MATCH COLUMNS ANSWERS:');
+        console.dir(answers);
     };
 
     constructor(props) {
@@ -114,7 +167,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         };
     }
 
-    componentDidMount() {
+    componentWillMount() {
         if (this.props.mode === 'pass') {
             let [leftAnswers, rightAnswers] = [[], []];
             this.state.answers.map((answer: IMatchAnswer) => {
@@ -135,6 +188,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
 
     render() {
         const {mode} = this.props;
+        this.allAnswersButtons = [];
 
         return (
             <div>
@@ -192,20 +246,25 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     <div>
                         {
                             new Array(this.state.answers.length).fill(true).map((n: boolean, i: number) => {
+                                const ref1 = React.createRef();
+                                const ref2 = React.createRef();
+                                this.allAnswersButtons.push(ref1, ref2);
                                 return (
                                     <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
-                                        <div>
+                                        <div className={MatchColumnsQuestionStyles.answerButton}>
                                             <Button variant="contained"
                                                     color="primary"
+                                                    buttonRef={ref1}
                                                     fullWidth={true}
                                                     name={'left'}
                                                     onClick={(evt) => this.onAnswer(evt)}>
                                                 {this.state.passMode.leftAnswers[i]}
                                             </Button>
                                         </div>
-                                        <div>
+                                        <div className={MatchColumnsQuestionStyles.answerButton}>
                                             <Button variant="contained"
                                                     color="primary"
+                                                    buttonRef={ref2}
                                                     fullWidth={true}
                                                     name={'right'}
                                                     onClick={(evt) => this.onAnswer(evt)}>
@@ -216,6 +275,15 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 );
                             })
                         }
+                        <div className={MatchColumnsQuestionStyles.resetButton}>
+                            <Button variant="contained"
+                                    color="primary"
+                                    fullWidth={true}
+                                    name={'left'}
+                                    onClick={this.onReset}>
+                                Сбросить
+                            </Button>
+                        </div>
                     </div>
                 }
             </div>

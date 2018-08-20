@@ -25,17 +25,17 @@ interface State extends IQuestionState<string> {
 export default class OpenQuestion extends React.Component<Props, State> {
 
     onAnswerTextareaChange = (evt) => {
-        console.log(evt.target.textContent);
-
-        let userAnswer = evt.target.textContent;
+        console.log(evt.target.value);
+        let userAnswer = evt.target.value;
 
         this.setState({
             ...this.state,
             passMode: {
-                ...this.state.passMode,
                 answer: userAnswer,
             },
         });
+
+        this.props.onAnswer(userAnswer);
     };
 
     constructor(props) {
