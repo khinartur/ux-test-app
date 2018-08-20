@@ -52,14 +52,17 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             });
         }
 
-        this.props.onAnswerAdd({
+        const newAnswer = {
             text: this.state.answerVariantText,
             isRight: this.state.answerVariantChecked,
             isAnswered: false,
-        });
+        };
+
+        this.props.onAnswerAdd(newAnswer);
 
         this.setState({
             ...this.state,
+            answers: this.state.answers ? [...this.state.answers, newAnswer] : [newAnswer],
             answerVariantText: '',
             answerVariantChecked: false,
         });

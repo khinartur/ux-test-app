@@ -34,73 +34,75 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         });
     };
     onAnswerAdd = () => {
-        this.state.question.questionData.answers.push(this.state.addingAnswer);
+        if (!this.state.answerTextLeft || !this.state.answerTextRight) {
+            this.setState({
+                ...this.state,
+                error: 'Ответ ни в каком из стобцов не должен быть пустым',
+            });
+        }
+
+        const newAnswer = {
+            left: this.state.answerTextLeft,
+            right: this.state.answerTextRight,
+            user_answer: null,
+        };
+
+        this.props.onAnswerAdd(newAnswer);
+
         this.setState({
             ...this.state,
-            addingAnswer: null,
+            answers: this.state.answers ? [...this.state.answers, newAnswer] : [newAnswer],
+            answerTextLeft: null,
+            answerTextRight: null,
         });
     };
 
     onAnswer = (evt) => {
         console.log(evt.target.textContent);
         const answerText = evt.target.textContent;
-        const answers = this.state.question.questionData.answers;
+        const answers = this.state.answers;
 
-        const currentAnswer = this.state.passMode.answer || {};
-        switch (evt.target.name) {
-            case 'left':
-                currentAnswer.left = answerText;
-                if (currentAnswer.right) {
-                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
-                    dbAnswer.user_answer = currentAnswer.right;
-                    evt.currentTarget.style.display = 'none';
-                    this.setState({
-                        ...this.state,
-                        passMode: {
-                            ...this.state.passMode,
-                            answer: null,
-                        }
-                    });
-                } else {
-                    evt.currentTarget.style.backgroundColor = '#009688';
-                }
-                break;
-            case 'right':
-                currentAnswer.right = answerText;
-                if (currentAnswer.left) {
-                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
-                    dbAnswer.user_answer = currentAnswer.right;
-                    evt.currentTarget.style.display = 'none';
-                    this.setState({
-                        ...this.state,
-                        passMode: {
-                            ...this.state.passMode,
-                            answer: null,
-                        }
-                    });
-                } else {
-                    evt.currentTarget.style.backgroundColor = '#009688';
-                }
-                break;
-        }
-
-        const isQAnswered = answers.filter((ans: IMatchAnswer) => ans.user_answer).length == answers.length;
-
-        console.log('MATCH COLUMNS ANSWERS:');
-        console.dir(answers);
-
-        this.setState({
-            ...this.state,
-            question: {
-                ...this.state.question,
-                questionData: {
-                    answers: answers,
-                },
-            },
-            passMode: {
-                isAnswered: isQAnswered,
-            },
-        });
+        // const currentAnswer = this.state.passMode.answer || {};
+        // switch (evt.target.name) {
+        //     case 'left':
+        //         currentAnswer.left = answerText;
+        //         if (currentAnswer.right) {
+        //             let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
+        //             dbAnswer.user_answer = currentAnswer.right;
+        //             evt.currentTarget.style.display = 'none';
+        //             this.setState({
+        //                 ...this.state,
+        //                 passMode: {
+        //                     ...this.state.passMode,
+        //                     answer: null,
+        //                 }
+        //             });
+        //         } else {
+        //             evt.currentTarget.style.backgroundColor = '#009688';
+        //         }
+        //         break;
+        //     case 'right':
+        //         currentAnswer.right = answerText;
+        //         if (currentAnswer.left) {
+        //             let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
+        //             dbAnswer.user_answer = currentAnswer.right;
+        //             evt.currentTarget.style.display = 'none';
+        //             this.setState({
+        //                 ...this.state,
+        //                 passMode: {
+        //                     ...this.state.passMode,
+        //                     answer: null,
+        //                 }
+        //             });
+        //         } else {
+        //             evt.currentTarget.style.backgroundColor = '#009688';
+        //         }
+        //         break;
+        // }
+		//
+		//
+        // console.log('MATCH COLUMNS ANSWERS:');
+        // console.dir(answers);
     };
 
     constructor(props) {
@@ -108,29 +110,13 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
 
         this.state = {
             answers: this.props.question.questionData.answers,
-            passMode: this.props.mode === 'pass' ?
-                {isAnswered: false} : null,
-            loading: true,
         };
     }
 
     componentDidMount() {
-        if (this.props.mode === 'pass' && this.state.question.pictures) {
-            if (this.state.question.pictures) {
-                this.state.question.pictures.map((filename: string) => {
-                    storageRef.child(`${this.state.question.key}/${filename}`).getDownloadURL().then(url => {
-                        const downloadedCount = this.state.downloadedFiles.length;
-                        this.setState({
-                            ...this.state,
-                            downloadedFiles: [...this.state.downloadedFiles, url],
-                            loading: this.state.question.pictures.length !== downloadedCount + 1,
-                        });
-                    });
-                });
-            }
-
+        if (this.props.mode === 'pass') {
             let [leftAnswers, rightAnswers] = [[], []];
-            this.state.question.questionData.answers.map((answer: IMatchAnswer) => {
+            this.state.answers.map((answer: IMatchAnswer) => {
                 leftAnswers.push(answer.left);
                 rightAnswers.push(answer.right);
             });
@@ -142,11 +128,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     leftAnswers: shuffle(leftAnswers),
                     rightAnswers: shuffle(rightAnswers),
                 }
-            });
-        } else {
-            this.setState({
-                ...this.state,
-                loading: false,
             });
         }
     }
@@ -161,8 +142,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
                         <div>
                             {
-                                answers.length ?
-                                    answers.map((answer: IMatchAnswer, index: number) => {
+                                this.state.answers.length ?
+                                    this.state.answers.map((answer: IMatchAnswer, index: number) => {
                                         return <Paper key={index}>
                                             {answer.left + '   =====>   ' + answer.right}
                                         </Paper>;

@@ -16,7 +16,6 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import MatchColumnsQuestion from './MatchColumnsQuestion';
-import OpenQuestion from './OpenQuestion';
 import * as AppStyles from '../styles/App.scss';
 import TextField from '@material-ui/core/TextField';
 import {CHOOSE_RIGHT_POINTS, MATCH_COLUMNS_POINTS, OPEN_QUESTIONS_POINTS} from '../constants/points';
@@ -52,19 +51,19 @@ export default class TestEditForm extends React.Component<{}, State> {
             database.ref().child('/questions').push().key;
 
 
-        // //TODO: save without key
-        // database.ref('questions/' + key).set({
-        //     ...this.state.currentQuestion,
-        //     order: this.state.currentQuestion.order,
-        // }).then(() => {
-        //     database.ref('questions-order/' + this.state.currentQuestion.order).set(key).then(() => {
-        //         if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
-        //             this.uploadFiles(key, 0);
-        //         } else {
-        //             this.props.onSuccess();
-        //         }
-        //     });
-        // });
+        //TODO: save without key
+        database.ref('questions/' + key).set({
+            ...this.state.currentQuestion,
+            order: this.state.currentQuestion.order,
+        }).then(() => {
+            database.ref('questions-order/' + this.state.currentQuestion.order).set(key).then(() => {
+                if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
+                    this.uploadFiles(key, 0);
+                } else {
+                    this.onSuccess();
+                }
+            });
+        });
     };
     validateQuestion = () => {
         if (!this.state.currentQuestion.text) {
@@ -161,15 +160,15 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
 
-    // onSuccess = () => {
-    //     this.updateQuestions();
-	//
-    //     this.setState({
-    //         ...this.state,
-    //         isOpenQuestionForm: false,
-    //         loading: true,
-    //     });
-    // };
+    onSuccess = () => {
+        this.updateQuestions();
+
+        this.setState({
+            ...this.state,
+            isOpenQuestionForm: false,
+            loading: true,
+        });
+    };
 
     onCancel = () => {
         const questions = this.state.questions;
@@ -225,7 +224,7 @@ export default class TestEditForm extends React.Component<{}, State> {
         storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
             if (this.state.uploadedFiles.length == fileIndex + 1) {
                 console.log('On success add question');
-                this.props.onSuccess();
+                this.onSuccess();
             } else {
                 this.uploadFiles(key, fileIndex + 1);
             }
