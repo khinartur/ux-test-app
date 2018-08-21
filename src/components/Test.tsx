@@ -19,6 +19,7 @@ import Button from '@material-ui/core/Button';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import TextField from '@material-ui/core/TextField';
+import QuestionsList, {EQuestionsListMode} from './QuestionsList';
 
 interface Props {
     user: IUser;
@@ -32,8 +33,8 @@ interface State {
     currentQuestion?: IQuestion<AnyQuestionData>;
     currentQNumber?: number;
 
-    done?: boolean;
     loading: boolean;
+    showQuestionsList: boolean;
 
     pointsToAdd?: number;
 }
@@ -88,7 +89,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     this.setState({
                         ...this.state,
                         loading: false,
-                        done: true,
                     });
                 });
             });
@@ -135,74 +135,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 }
             }
         });
-
-        // if (this.state.loading && )
-		//
-        // const isNextQuestion = qNumber !== this.state.currentQNumber;
-        // debugger;
-        // const question = this.state.questions[qNumber];
-		//
-        // if (isNextQuestion) {
-        //     this.nextQuestionImages = [];
-        // } else {
-        //     this.currentQuestionImages = [];
-        // }
-		//
-        // const pictures = question.pictures;
-		//
-        // //TODO: i don't like it
-        // if (pictures) {
-        //     pictures.map((filename: string, i: number) => {
-        //         storageRef.child(`${question.key}/${filename}`).getDownloadURL().then(url => {
-        //             let xhr = new XMLHttpRequest();
-        //             xhr.responseType = 'blob';
-        //             xhr.onload = function () {
-        //                 const blob = xhr.response;
-        //                 const objectURL = URL.createObjectURL(blob);
-        //                 if (isNextQuestion) {
-        //                     this.nextQuestionImages.push(objectURL);
-        //                     if (i == pictures.length - 1) {
-        //                         this.setState({
-        //                             ...this.state,
-        //                             isNextPicturesLoaded: true,
-        //                             loading: !this.state.isCurrentPicturesLoaded,
-        //                         });
-        //                     }
-        //                 } else {
-        //                     this.currentQuestionImages.push(objectURL);
-        //                     if (i == pictures.length - 1) {
-        //                         this.setState({
-        //                             ...this.state,
-        //                             isCurrentPicturesLoaded: true,
-        //                             loading: !this.state.isNextPicturesLoaded,
-        //                         });
-        //                     }
-        //                 }
-        //             }.bind(this);
-        //             xhr.open('GET', url);
-        //             xhr.send();
-        //         });
-        //     });
-        // } else {
-        //     if (isNextQuestion) {
-        //         console.log('no pictures in next question');
-        //         this.setState({
-        //             ...this.state,
-        //             isNextPicturesLoaded: true,
-        //             loading: !this.state.isCurrentPicturesLoaded,
-        //         });
-        //     } else {
-        //         console.log('no pictures in current question');
-        //         this.setState({
-        //             ...this.state,
-        //             isCurrentPicturesLoaded: true,
-        //             loading: !this.state.isNextPicturesLoaded,
-        //         });
-        //     }
-        // }
     };
     onAnswer = (answer: QuestionAnswer) => {
-
         const question = this.state.currentQuestion;
         switch (question.type) {
             case QuestionType.choose_right:
@@ -290,16 +224,12 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             },
         });
     };
-    private localStorage: any;
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            loading: true,
-        };
-    }
-
+    toList = () => {
+        this.setState({
+            ...this.state,
+            showQuestionsList: true,
+        });
+    };
     getTestQuestions = () => {
         if (this.props.checkMode) {
             return database.ref(`/passed-questions/${this.props.user.github}`).once('value');
@@ -327,6 +257,20 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             },
         });
     };
+
+    onQuestionsListClick = (evt, key) => {
+
+    };
+    private localStorage: any;
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            loading: true,
+            showQuestionsList: true,
+        };
+    }
 
     componentDidMount() {
         this.getTestQuestions().then(snapshot => {
@@ -357,21 +301,39 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 </div>
                 }
                 {
-                    !this.state.loading &&
+                    !this.state.loading && this.state.showQuestionsList &&
+                    <QuestionsList
+                        mode={EQuestionsListMode.pass}
+                        questions={this.state.questions}
+                        onClick={this.onQuestionsListClick}
+                    />
+                }
+                {
+                    !this.state.loading && !this.state.showQuestionsList &&
                     <React.Fragment>
-                        {!this.state.done && !checkMode &&
+                        {!checkMode &&
                             <Typography variant="body2"
                                         className={TestStyles.questionNumberHeader}>
                                 Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
                             </Typography>
                         }
-                        {!this.state.done &&
+                        {!checkMode &&
+                            <div className={TestStyles.toQuestionsButton}>
+                                <Button variant='contained'
+                                        color='primary'
+                                        fullWidth={false}
+                                        onClick={this.toList}>
+                                    К списку вопросов
+                                </Button>
+                            </div>
+                        }
+                        {!checkMode &&
                             <div className={TestStyles.doneTestButton}>
                                 <Button variant='contained'
                                         color='primary'
                                         fullWidth={false}
                                         onClick={this.onDone}>
-                                    {checkMode ? 'Завершить проверку' : 'Завершить тест'}
+                                    Завершить тест
                                 </Button>
                             </div>
                         }

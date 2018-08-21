@@ -8,37 +8,36 @@ import TableRow from '@material-ui/core/TableRow';
 import CheckCircleOutline from 'mdi-material-ui/CheckCircleOutline';
 import CheckBlankCircleOutline from 'mdi-material-ui/CheckboxBlankCircleOutline';
 
-import {database} from '../modules/firebase';
-
-import * as QuestionsListStyles from '../styles/StudentsList.scss';
+import * as QuestionsListStyles from '../styles/QuestionsList.scss';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {AnyQuestionData, IQuestion} from '../interfaces/IQuestion';
-import {embedKey, getTypeName} from '../utils/key-embedding';
+import {getTypeName} from '../utils/key-embedding';
 
-enum EMode {
-    student = 'student',
-    admin = 'admin',
+export enum EQuestionsListMode {
+    edit = 'edit',
+    check = 'check',
+    pass = 'pass',
 }
 
 interface Props {
-    onClick: () => void;
-    mode: EMode;
+    onClick: (evt: any, key: string) => void;
+    mode: EQuestionsListMode;
+    questions: IQuestion<AnyQuestionData>[];
 }
 
 interface State {
     loading: boolean;
-    questions?: IQuestion<AnyQuestionData>[];
 }
 
 export default class QuestionsList extends React.Component<Props, State> {
 
-    updateQuestionsList = (questions) => {
-        this.setState({
-            ...this.state,
-            questions: embedKey(questions),
-        });
-    };
+    // updateQuestionsList = (questions) => {
+    //     this.setState({
+    //         ...this.state,
+    //         questions: embedKey(questions),
+    //     });
+    // };
 
     constructor(props) {
         super(props);
@@ -49,13 +48,13 @@ export default class QuestionsList extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        database.ref('users/').on('value', function (snapshot) {
-            this.updateQuestionsList(snapshot.val());
-        }.bind(this));
+        // database.ref('users/').on('value', function (snapshot) {
+        //     this.updateQuestionsList(snapshot.val());
+        // }.bind(this));
     }
 
     render() {
-        const {onClick, mode} = this.props;
+        const {questions, onClick, mode} = this.props;
 
         return (
             <React.Fragment>
@@ -71,15 +70,20 @@ export default class QuestionsList extends React.Component<Props, State> {
                             <TableRow>
                                 <TableCell>Вопрос</TableCell>
                                 <TableCell>Тип</TableCell>
-                                <TableCell>Статус</TableCell>
                                 {
-                                    mode == EMode.admin &&
-                                    <TableCell>Статус проверки</TableCell>
+                                    mode !== EQuestionsListMode.edit &&
+                                    <React.Fragment>
+                                        <TableCell>Статус</TableCell>
+                                        {
+                                            mode == EQuestionsListMode.check &&
+                                            <TableCell>Статус проверки</TableCell>
+                                        }
+                                    </React.Fragment>
                                 }
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
+                            {questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
                                 return (
                                     <TableRow key={i}
                                               onClick={(evt) => onClick(evt, q.key)}>
@@ -87,19 +91,24 @@ export default class QuestionsList extends React.Component<Props, State> {
                                             {q.text}
                                         </TableCell>
                                         <TableCell>{getTypeName(q)}</TableCell>
-                                        <TableCell>
-                                            {
-                                                q.isAnswered ? <CheckCircleOutline color={'secondary'}/> :
-                                                    <CheckBlankCircleOutline color={'error'}/>
-                                            }
-                                        </TableCell>
                                         {
-                                            this.props.mode == EMode.admin &&
-                                            <TableCell>
-                                                {q.isChecked ?
-                                                    <span style={{color: '#00695f'}}>проверен</span> :
-                                                    <span style={{color: '#b2102f'}}>не проверен</span>}
-                                            </TableCell>
+                                            mode !== EQuestionsListMode.edit &&
+                                            <React.Fragment>
+                                                <TableCell>
+                                                    {
+                                                        q.isAnswered ? <CheckCircleOutline color={'secondary'}/> :
+                                                            <CheckBlankCircleOutline color={'error'}/>
+                                                    }
+                                                </TableCell>
+                                                {
+                                                    mode == EQuestionsListMode.check &&
+                                                    <TableCell>
+                                                        {q.isChecked ?
+                                                            <span style={{color: '#00695f'}}>проверен</span> :
+                                                            <span style={{color: '#b2102f'}}>не проверен</span>}
+                                                    </TableCell>
+                                                }
+                                            </React.Fragment>
                                         }
                                     </TableRow>
                                 );
