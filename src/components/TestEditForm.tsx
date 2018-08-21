@@ -41,6 +41,10 @@ interface State {
 export default class TestEditForm extends React.Component<{}, State> {
 
     onFormSubmit = (evt) => {
+        this.setState({
+            ...this.state,
+            loading: true,
+        });
         evt.preventDefault();
         const error = this.validateQuestion();
         if (error) {
@@ -191,6 +195,7 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             currentQuestion: qToEdit,
+            currentQuestionType: QuestionType.open_question,
             isOpenQuestionForm: true,
         });
     };

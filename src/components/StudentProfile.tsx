@@ -90,9 +90,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                                 user.test_passed ?
                                     (
                                         <Typography variant="body2" gutterBottom>
-                                            Вы уже прошли тест. Ваш результат: {user.points}
-                                            (Задание на
-                                            листочках {user.test_is_checked ? 'проверены' : 'не проверены'})
+                                            Вы уже прошли тест. Следите за новостями на портале.
                                         </Typography>
                                     )
                                     :

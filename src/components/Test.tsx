@@ -10,7 +10,7 @@ import {database, storageRef} from '../modules/firebase';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import {embedKey} from '../utils/key-embedding';
+import {ejectKey, embedKey} from '../utils/key-embedding';
 import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 
@@ -34,8 +34,6 @@ interface State {
 
     done?: boolean;
     loading: boolean;
-    isNextPicturesLoaded: boolean;
-    isCurrentPicturesLoaded: boolean;
 
     pointsToAdd?: number;
 }
@@ -75,7 +73,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             });
 
             database.ref('passed-questions/' + this.props.user.github).set({
-                ...this.state.questions,
+                ...ejectKey(this.state.questions),
             }).then(() => {
                 database.ref('users/' + this.props.user.github).set({
                     ...this.props.user,
@@ -96,69 +94,112 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             });
         });
     };
-    loadPictures = (qNumber: number) => {
-        const isNextQuestion = qNumber !== this.state.currentQNumber;
+    loadPictures = () => {
+        this.localStorage = new Array(this.state.questions.length);
         //debugger;
-        const question = this.state.questions[qNumber];
+        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
+            const pictures = q.pictures;
 
-        if (isNextQuestion) {
-            this.nextQuestionImages = [];
-        } else {
-            this.currentQuestionImages = [];
-        }
+            if (pictures) {
+                pictures.map((filename: string) => {
+                    storageRef.child(`${q.key}/${filename}`).getDownloadURL().then(url => {
+                        let xhr = new XMLHttpRequest();
+                        xhr.responseType = 'blob';
+                        xhr.onload = function () {
+                            const blob = xhr.response;
+                            const objectURL = URL.createObjectURL(blob);
+                            if (this.localStorage[q.key]) {
+                                this.localStorage[q.key].push(objectURL);
+                            } else {
+                                this.localStorage[q.key] = [objectURL];
+                            }
 
-        const pictures = question.pictures;
-
-        //TODO: i don't like it
-        if (pictures) {
-            pictures.map((filename: string, i: number) => {
-                storageRef.child(`${question.key}/${filename}`).getDownloadURL().then(url => {
-                    let xhr = new XMLHttpRequest();
-                    xhr.responseType = 'blob';
-                    xhr.onload = function () {
-                        const blob = xhr.response;
-                        const objectURL = URL.createObjectURL(blob);
-                        if (isNextQuestion) {
-                            this.nextQuestionImages.push(objectURL);
-                            if (i == pictures.length - 1) {
+                            if (this.state.loading && q.order == this.state.currentQNumber + 1) {
                                 this.setState({
                                     ...this.state,
-                                    isNextPicturesLoaded: true,
-                                    loading: !this.state.isCurrentPicturesLoaded,
+                                    loading: false,
                                 });
                             }
-                        } else {
-                            this.currentQuestionImages.push(objectURL);
-                            if (i == pictures.length - 1) {
-                                this.setState({
-                                    ...this.state,
-                                    isCurrentPicturesLoaded: true,
-                                    loading: !this.state.isNextPicturesLoaded,
-                                });
-                            }
-                        }
-                    }.bind(this);
-                    xhr.open('GET', url);
-                    xhr.send();
-                });
-            });
-        } else {
-            if (isNextQuestion) {
-                console.log('no pictures in next question');
-                this.setState({
-                    ...this.state,
-                    isNextPicturesLoaded: true,
-                    loading: !this.state.isCurrentPicturesLoaded,
+                        }.bind(this);
+                        xhr.open('GET', url);
+                        xhr.send();
+                    });
                 });
             } else {
-                console.log('no pictures in current question');
-                this.setState({
-                    ...this.state,
-                    isCurrentPicturesLoaded: true,
-                    loading: !this.state.isNextPicturesLoaded,
-                });
+                this.localStorage[q.key] = [];
+                if (this.state.loading && q.order == this.state.currentQNumber) {
+                    this.setState({
+                        ...this.state,
+                        loading: false,
+                    });
+                }
             }
-        }
+        });
+
+        // if (this.state.loading && )
+		//
+        // const isNextQuestion = qNumber !== this.state.currentQNumber;
+        // debugger;
+        // const question = this.state.questions[qNumber];
+		//
+        // if (isNextQuestion) {
+        //     this.nextQuestionImages = [];
+        // } else {
+        //     this.currentQuestionImages = [];
+        // }
+		//
+        // const pictures = question.pictures;
+		//
+        // //TODO: i don't like it
+        // if (pictures) {
+        //     pictures.map((filename: string, i: number) => {
+        //         storageRef.child(`${question.key}/${filename}`).getDownloadURL().then(url => {
+        //             let xhr = new XMLHttpRequest();
+        //             xhr.responseType = 'blob';
+        //             xhr.onload = function () {
+        //                 const blob = xhr.response;
+        //                 const objectURL = URL.createObjectURL(blob);
+        //                 if (isNextQuestion) {
+        //                     this.nextQuestionImages.push(objectURL);
+        //                     if (i == pictures.length - 1) {
+        //                         this.setState({
+        //                             ...this.state,
+        //                             isNextPicturesLoaded: true,
+        //                             loading: !this.state.isCurrentPicturesLoaded,
+        //                         });
+        //                     }
+        //                 } else {
+        //                     this.currentQuestionImages.push(objectURL);
+        //                     if (i == pictures.length - 1) {
+        //                         this.setState({
+        //                             ...this.state,
+        //                             isCurrentPicturesLoaded: true,
+        //                             loading: !this.state.isNextPicturesLoaded,
+        //                         });
+        //                     }
+        //                 }
+        //             }.bind(this);
+        //             xhr.open('GET', url);
+        //             xhr.send();
+        //         });
+        //     });
+        // } else {
+        //     if (isNextQuestion) {
+        //         console.log('no pictures in next question');
+        //         this.setState({
+        //             ...this.state,
+        //             isNextPicturesLoaded: true,
+        //             loading: !this.state.isCurrentPicturesLoaded,
+        //         });
+        //     } else {
+        //         console.log('no pictures in current question');
+        //         this.setState({
+        //             ...this.state,
+        //             isCurrentPicturesLoaded: true,
+        //             loading: !this.state.isNextPicturesLoaded,
+        //         });
+        //     }
+        // }
     };
     onAnswer = (answer: QuestionAnswer) => {
 
@@ -205,8 +246,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     };
     onNext = () => {
         const currNumber = this.state.currentQNumber;
-        this.currentQuestionImages = this.nextQuestionImages;
-        this.nextQuestionImages = [];
 
         const questions = this.state.questions;
         let newQuestions = questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
@@ -214,9 +253,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
 
         const newCurrentNumber = currNumber == questions.length - 1 ? 0 : currNumber + 1;
-        const qnumberForPicturesLoad = currNumber == questions.length - 2 ? 0 :
-            currNumber == questions.length - 1 ? 1 : currNumber + 2;
         const newCurrentQuestion = questions[newCurrentNumber];
+        debugger;
+        const isPicturesLoaded = !!this.localStorage[newCurrentQuestion.key];
 
         this.setState({
             ...this.state,
@@ -224,11 +263,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             currentQuestion: newCurrentQuestion,
             pointsToAdd: newCurrentQuestion.points,
             currentQNumber: newCurrentNumber,
-            isNextPicturesLoaded: false,
-            loading: true,
-        }, () => {
-            //TODO: make async
-            this.loadPictures(qnumberForPicturesLoad);
+            loading: !isPicturesLoaded,
         });
     };
     onReset = () => {
@@ -255,15 +290,12 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             },
         });
     };
-    private nextQuestionImages: any[];
-    private currentQuestionImages: any[];
+    private localStorage: any;
 
     constructor(props) {
         super(props);
 
         this.state = {
-            isNextPicturesLoaded: false,
-            isCurrentPicturesLoaded: false,
             loading: true,
         };
     }
@@ -307,10 +339,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 currentQNumber: 0,
                 currentQuestion: currentQuestion,
                 pointsToAdd: currentQuestion.points,
+            }, () => {
+                this.loadPictures();
             });
-
-            this.loadPictures(0);
-            this.loadPictures(1);
         });
     }
 
@@ -359,15 +390,16 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                     </Typography>
                                     <br/>
                                     {
-                                        this.currentQuestionImages &&
-                                        this.currentQuestionImages.map((url: string, i: number) => {
+                                        this.localStorage[this.state.currentQuestion.key] &&
+                                        this.localStorage[this.state.currentQuestion.key].length ?
+                                        this.localStorage[this.state.currentQuestion.key].map((url: string, i: number) => {
                                             return <img key={i}
                                                         src={url}
                                                         style={{
                                                             height: '180px',
                                                             display: 'inline-block',
                                                         }}/>;
-                                        })
+                                        }) : null
                                     }
                                     <br/>
                                     {this.state.currentQuestion.type === QuestionType.choose_right &&
@@ -392,23 +424,27 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                         </Button>
 
                                     </div>
-                                    <div className={TestStyles.addPointsDiv}>
-                                        <div>
-                                            <TextField label='Количество баллов за правильный ответ'
-                                                       fullWidth={true}
-                                                       margin={'dense'}
-                                                       onChange={(evt) => this.onPointsToAddChange(evt)}
-                                                       value={this.state.pointsToAdd}
-                                            />
+                                    {this.props.checkMode &&
+                                        <div className={TestStyles.addPointsDiv}>
+                                            <div>
+                                                <TextField label='Добавить баллов'
+                                                           fullWidth={true}
+                                                           margin={'dense'}
+                                                           disabled={!(this.state.currentQuestion.type == QuestionType.open_question)}
+                                                           onChange={(evt) => this.onPointsToAddChange(evt)}
+                                                           value={this.state.pointsToAdd}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Button variant="contained"
+                                                        color="primary"
+                                                        disabled={!(this.state.currentQuestion.type == QuestionType.open_question)}
+                                                        onClick={this.onPointsAdd}>
+                                                    Добавить баллы
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <Button variant="contained"
-                                                    color="primary"
-                                                    onClick={this.onPointsAdd}>
-                                                Добавить баллы
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    }
                                 </Paper>
                             }
                             {

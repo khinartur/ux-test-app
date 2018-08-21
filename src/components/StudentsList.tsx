@@ -250,6 +250,7 @@ export default class StudentsList extends React.Component<{}, State> {
                                         <TableCell>{n.points}</TableCell>
                                         <TableCell>
                                             <IconButton aria-label="Show test"
+                                                        disabled={!n.test_passed}
                                                         onClick={(evt) => this.showUserTest(evt, n.github)}>
                                                 <EyeSettings/>
                                             </IconButton>

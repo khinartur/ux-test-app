@@ -9,6 +9,17 @@ export function embedKey(dbData) {
     return dbData;
 }
 
+export function ejectKey(data) {
+    if (!data) return data;
+
+    let result = {};
+    data.map(v => {
+        result[v.key] = v;
+    });
+
+    return result;
+}
+
 /**
  * Shuffles array in place. ES6 version
  * @param {Array} a items An array containing the items.
