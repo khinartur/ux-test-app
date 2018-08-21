@@ -154,7 +154,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 }
 
                 {
-                    mode === 'pass' &&
+                    (mode === 'pass' || mode === 'check') &&
                     <div>
                         {
                             this.state.answers.map((answer: IChooseAnswer, i: number) => {
@@ -167,6 +167,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                                     onChange={(evt) => this.onAnswerClick(evt)}
                                                     value={answer.text}
                                                     checked={answer.isAnswered}
+                                                    disabled={mode === 'check'}
                                                 />
                                             }
                                             label={answer.text}

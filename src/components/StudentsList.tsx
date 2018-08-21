@@ -20,6 +20,8 @@ import * as StudentListStyles from '../styles/StudentsList.scss';
 import IconButton from '@material-ui/core/IconButton';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import TestEditForm from './TestEditForm';
+import Test from './Test';
 
 interface StudentInfo {
     name: string;
@@ -46,6 +48,8 @@ interface State {
     mode?: EMode;
     editableStudent?: StudentInfo;
     loading: boolean;
+    showStudentResults: boolean;
+    checkingStudentLogin?: string;
 }
 
 export default class StudentsList extends React.Component<{}, State> {
@@ -145,6 +149,11 @@ export default class StudentsList extends React.Component<{}, State> {
     };
     showUserTest = (evt, login) => {
         console.log('SHOW USER TEST', login);
+        this.setState({
+            ...this.state,
+            showStudentResults: true,
+            checkingStudentLogin: login,
+        });
     };
     deleteUser = (evt, login) => {
         const students = this.state.students;
@@ -170,6 +179,16 @@ export default class StudentsList extends React.Component<{}, State> {
             this.updateStudentList(snapshot.val());
         }.bind(this));
     };
+    onCheck = () => {
+        this.setState({
+            ...this.state,
+            showStudentResults: false,
+            checkingStudentLogin: '',
+            loading: true,
+        }, () => {
+            this.refreshStudentList();
+        });
+    };
 
     constructor(props) {
         super(props);
@@ -180,6 +199,7 @@ export default class StudentsList extends React.Component<{}, State> {
             studentSurname: '',
             studentGithub: '',
             loading: true,
+            showStudentResults: false,
         };
 
         this.githubSignIn = this.githubSignIn.bind(this);
@@ -206,7 +226,7 @@ export default class StudentsList extends React.Component<{}, State> {
                         <LinearProgress/>
                     </div>
                 }
-                {!this.state.loading &&
+                {!this.state.loading && !this.state.showStudentResults &&
                 <Paper className={StudentListStyles.studentsListContainer}>
                     <Table>
                         <TableHead>
@@ -261,6 +281,11 @@ export default class StudentsList extends React.Component<{}, State> {
                         </Button>
                     </div>
                 </Paper>}
+                {!this.state.loading && this.state.showStudentResults &&
+                    <Test user={this.state.students[this.state.checkingStudentLogin]}
+                          checkMode={true}
+                          onCheck={this.onCheck}/>
+                }
             </React.Fragment>
         );
     }

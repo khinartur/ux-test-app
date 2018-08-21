@@ -46,7 +46,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
         const {mode} = this.props;
 
         return (
-            mode === 'pass' &&
+            (mode == 'pass' || mode == 'check') &&
             <div>
                 <TextField label="Ответ:"
                            fullWidth={true}
@@ -54,6 +54,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
                            rows={8}
                            rowsMax={8}
                            margin={'dense'}
+                           disabled={mode == 'check'}
                            onChange={(evt) => this.onAnswerTextareaChange(evt)}
                             defaultValue={this.props.question.questionData ? this.props.question.questionData.answer : ''}>
                 </TextField>

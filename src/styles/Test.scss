@@ -57,3 +57,10 @@
     left: calc(50% - 35px);
     top: 10px;
 }
+
+.addPointsDiv {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 30px;
+    padding: 20px;
+}

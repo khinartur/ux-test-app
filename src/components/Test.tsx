@@ -18,9 +18,12 @@ import * as TestStyles from '../styles/Test.scss';
 import Button from '@material-ui/core/Button';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import TextField from '@material-ui/core/TextField';
 
 interface Props {
     user: IUser;
+    checkMode: boolean;
+    onCheck: any;
 }
 
 interface State {
@@ -33,6 +36,8 @@ interface State {
     loading: boolean;
     isNextPicturesLoaded: boolean;
     isCurrentPicturesLoaded: boolean;
+
+    pointsToAdd?: number;
 }
 
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
@@ -63,7 +68,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                         break;
 
                     case QuestionType.open_question:
-                        q.isChecked = false;
+                        if (q.isChecked) {
+                            pointsSum += q.points;
+                        }
                 }
             });
 
@@ -76,6 +83,10 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     test_passed: true,
                     test_is_checked: false,
                 }).then(() => {
+                    if (this.props.checkMode) {
+                        this.props.onCheck();
+                        return;
+                    }
                     this.setState({
                         ...this.state,
                         loading: false,
@@ -205,11 +216,13 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         const newCurrentNumber = currNumber == questions.length - 1 ? 0 : currNumber + 1;
         const qnumberForPicturesLoad = currNumber == questions.length - 2 ? 0 :
             currNumber == questions.length - 1 ? 1 : currNumber + 2;
+        const newCurrentQuestion = questions[newCurrentNumber];
 
         this.setState({
             ...this.state,
             questions: newQuestions,
-            currentQuestion: questions[newCurrentNumber],
+            currentQuestion: newCurrentQuestion,
+            pointsToAdd: newCurrentQuestion.points,
             currentQNumber: newCurrentNumber,
             isNextPicturesLoaded: false,
             loading: true,
@@ -255,19 +268,45 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         };
     }
 
-    static getTestQuestions() {
-        return database.ref('/questions').once('value');
-    }
+    getTestQuestions = () => {
+        if (this.props.checkMode) {
+            return database.ref(`/passed-questions/${this.props.user.github}`).once('value');
+        } else {
+            return database.ref('/questions').once('value');
+        }
+    };
+
+    onPointsToAddChange = (evt) => {
+        this.setState({
+            ...this.state,
+            pointsToAdd: evt.currentTarget.value,
+        });
+    };
+
+    onPointsAdd = () => {
+        const points = this.state.pointsToAdd;
+
+        this.setState({
+            ...this.state,
+            currentQuestion: {
+                ...this.state.currentQuestion,
+                isChecked: true,
+                points: points,
+            },
+        });
+    };
 
     componentDidMount() {
-        Test.getTestQuestions().then(snapshot => {
+        this.getTestQuestions().then(snapshot => {
             const dbQuestions = Object.entries(embedKey(snapshot.val())).map((q) => q[1]);
+            const currentQuestion = dbQuestions[0] as IQuestion<AnyQuestionData>;
 
             this.setState({
                 ...this.state,
                 questions: dbQuestions as IQuestion<AnyQuestionData>[],
                 currentQNumber: 0,
-                currentQuestion: dbQuestions[0] as IQuestion<AnyQuestionData>,
+                currentQuestion: currentQuestion,
+                pointsToAdd: currentQuestion.points,
             });
 
             this.loadPictures(0);
@@ -276,6 +315,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     render() {
+        const {checkMode} = this.props;
         const question = this.state.currentQuestion;
 
         return (
@@ -288,7 +328,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 {
                     !this.state.loading &&
                     <React.Fragment>
-                        {!this.state.done &&
+                        {!this.state.done && !checkMode &&
                             <Typography variant="body2"
                                         className={TestStyles.questionNumberHeader}>
                                 Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
@@ -300,7 +340,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                         color='primary'
                                         fullWidth={false}
                                         onClick={this.onDone}>
-                                    Завершить тест
+                                    {checkMode ? 'Завершить проверку' : 'Завершить тест'}
                                 </Button>
                             </div>
                         }
@@ -332,16 +372,16 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                     <br/>
                                     {this.state.currentQuestion.type === QuestionType.choose_right &&
                                     <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
-                                                         mode={'pass'}
+                                                         mode={checkMode ? 'check' : 'pass'}
                                                          onAnswer={(answer) => this.onAnswer(answer)}/>}
                                     {this.state.currentQuestion.type === QuestionType.match_columns &&
                                     <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
-                                                          mode={'pass'}
+                                                          mode={checkMode ? 'check' : 'pass'}
                                                           onAnswer={(answer) => this.onAnswer(answer)}
                                                           onReset={this.onReset}/>}
                                     {this.state.currentQuestion.type === QuestionType.open_question &&
                                     <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
-                                                  mode={'pass'}
+                                                  mode={checkMode ? 'check' : 'pass'}
                                                   onAnswer={(answer) => this.onAnswer(answer)}/>}
                                     <div className={TestStyles.questionButtonNext}>
                                         <Button variant="contained"
@@ -351,6 +391,23 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                             {this.state.currentQuestion.isAnswered ? 'Дальше' : 'Пропустить'}
                                         </Button>
 
+                                    </div>
+                                    <div className={TestStyles.addPointsDiv}>
+                                        <div>
+                                            <TextField label='Количество баллов за правильный ответ'
+                                                       fullWidth={true}
+                                                       margin={'dense'}
+                                                       onChange={(evt) => this.onPointsToAddChange(evt)}
+                                                       value={this.state.pointsToAdd}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Button variant="contained"
+                                                    color="primary"
+                                                    onClick={this.onPointsAdd}>
+                                                Добавить баллы
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Paper>
                             }

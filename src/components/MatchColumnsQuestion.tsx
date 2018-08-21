@@ -256,7 +256,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     </Paper>
                 }
                 {
-                    mode === 'pass' &&
+                    (mode === 'pass' || mode == 'check') &&
                     <div>
                         {
                             this.state.answers.map((a: IMatchAnswer, i: number) => {
@@ -274,6 +274,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                     buttonRef={ref1}
                                                     fullWidth={true}
                                                     name={'left'}
+                                                    disabled={mode == 'check'}
                                                     onClick={(evt) => this.onAnswer(evt)}>
                                                 {this.state.passMode.leftAnswers[i].text}
                                             </Button>
@@ -287,6 +288,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                     buttonRef={ref2}
                                                     fullWidth={true}
                                                     name={'right'}
+                                                    disabled={mode == 'check'}
                                                     onClick={(evt) => this.onAnswer(evt)}>
                                                 {this.state.passMode.rightAnswers[i].text}
                                             </Button>
@@ -295,6 +297,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 );
                             })
                         }
+                        {mode !== 'check' &&
                         <div className={MatchColumnsQuestionStyles.resetButton}>
                             <Button variant="contained"
                                     color="primary"
@@ -304,6 +307,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 Сбросить
                             </Button>
                         </div>
+                        }
                     </div>
                 }
             </div>
