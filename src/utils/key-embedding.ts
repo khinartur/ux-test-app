@@ -1,3 +1,5 @@
+import {AnyQuestionData, IQuestion, IQuestionProps, QuestionType} from '../interfaces/IQuestion';
+
 export function embedKey(dbData) {
     if (!dbData) return dbData;
 
@@ -18,6 +20,17 @@ export function ejectKey(data) {
     });
 
     return result;
+}
+
+export function getTypeName(question: IQuestion<AnyQuestionData>) {
+    switch(question.type) {
+        case QuestionType.choose_right:
+            return 'Выбор ответа';
+        case QuestionType.match_columns:
+            return 'Сопоставление столбцов';
+        case QuestionType.open_question:
+            return 'Открытый вопрос';
+    }
 }
 
 /**

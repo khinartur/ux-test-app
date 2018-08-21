@@ -13,7 +13,7 @@ module.exports = {
     },
     output: {
         path: __dirname + '/dist/static',
-        filename: 'js/index.js',
+        publicPath: '/',
     },
     devServer: {
         contentBase: [
