@@ -9,18 +9,15 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import AddStudentDialog from './AddStudentDialog';
 import {ChangeEvent} from 'react';
+import EyeSettings from 'mdi-material-ui/EyeSettings';
+import AccountEdit from 'mdi-material-ui/AccountEdit';
+import Delete from 'mdi-material-ui/Delete';
 
 import {database} from '../modules/firebase';
 import {IUser} from '../interfaces/IUser';
 
 import * as StudentListStyles from '../styles/StudentsList.scss';
-
-let id = 0;
-
-function createData(name, surname, team, github, status, points) {
-    id += 1;
-    return {id, name, surname, team, github, status, points};
-}
+import IconButton from '@material-ui/core/IconButton';
 
 interface StudentInfo {
     name: string;
@@ -31,12 +28,22 @@ interface StudentInfo {
     test_is_checked: boolean;
 }
 
+enum EMode {
+    delete = 'delete',
+    create = 'create',
+    edit = 'edit',
+}
+
 interface State {
     addStudentDialogOpened: boolean;
-    newStudentName: string;
-    newStudentSurname: string;
-    newStudentGithub: string;
-    studentList: StudentInfo[];
+    studentName: string;
+    studentSurname: string;
+    studentGithub: string;
+    studentList?: StudentInfo[];
+    students?: { [login: string]: StudentInfo }
+    mode?: EMode;
+    editableStudent?: StudentInfo;
+    loading: boolean;
 }
 
 export default class StudentsList extends React.Component<{}, State> {
@@ -44,40 +51,81 @@ export default class StudentsList extends React.Component<{}, State> {
     onDialogInputChange = (evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const inputName = evt.target.name as keyof State;
         const inputValue = evt.target.value;
+        switch (this.state.mode) {
+            case EMode.create:
+                this.setState(
+                    {
+                        ...this.state,
+                        [inputName]: inputValue,
+                    },
+                );
+                break;
 
-        this.setState(
-            {
-                ...this.state,
-                [inputName]: inputValue,
-            },
-        );
+            case EMode.edit:
+                this.setState(
+                    {
+                        ...this.state,
+                        editableStudent: {
+                            ...this.state.editableStudent,
+                            [inputName]: inputValue,
+                        },
+                    },
+                );
+                break;
+        }
     };
     openAddStudentDialog = () => {
         this.setState({
+            ...this.state,
+            mode: EMode.create,
             addStudentDialogOpened: true,
         });
     };
     closeAddStudentDialog = () => {
         this.setState({
+            ...this.state,
             addStudentDialogOpened: false,
         });
     };
     onDialogSubmit = () => {
         //TODO: make loading
-        database.ref('users/' + this.state.newStudentGithub).set({
-            name: this.state.newStudentName,
-            surname: this.state.newStudentSurname,
-            github: this.state.newStudentGithub,
-            test_passed: false,
-            points: 0,
-            test_is_checked: false,
-        }).then(() => {
-            this.setState({
-                addStudentDialogOpened: false,
-                newStudentName: '',
-                newStudentSurname: '',
-                newStudentGithub: '',
-            });
+        switch (this.state.mode) {
+            case EMode.create:
+                database.ref('users/' + this.state.studentGithub).set({
+                    name: this.state.studentName,
+                    surname: this.state.studentSurname,
+                    github: this.state.studentGithub,
+                    test_passed: false,
+                    points: 0,
+                    test_is_checked: false,
+                }).then(() => {
+                    this.setState({
+                        ...this.state,
+                        studentName: '',
+                        studentSurname: '',
+                        studentGithub: '',
+                        loading: false,
+                    });
+                });
+                break;
+
+            case EMode.edit:
+                database.ref('users/' + this.state.editableStudent.github).set({
+                    ...this.state.editableStudent,
+                }).then(() => {
+                    this.refreshStudentList();
+                });
+                break;
+
+            case EMode.delete:
+                database.ref('users/' + this.state.editableStudent.github).remove().then(() => {
+                    this.refreshStudentList();
+                });
+        }
+        this.setState({
+            ...this.state,
+            addStudentDialogOpened: false,
+            loading: true,
         });
     };
     updateStudentList = (students) => {
@@ -89,6 +137,29 @@ export default class StudentsList extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             studentList: list,
+            students: students,
+            loading: false,
+        });
+    };
+    showUserTest = (evt, login) => {
+        console.log('SHOW USER TEST', login);
+    };
+    deleteUser = (evt, login) => {
+        const students = this.state.students;
+        this.setState({
+            ...this.state,
+            addStudentDialogOpened: true,
+            editableStudent: students[login],
+            mode: EMode.delete,
+        });
+    };
+    editUser = (evt, login) => {
+        const students = this.state.students;
+        this.setState({
+            ...this.state,
+            addStudentDialogOpened: true,
+            editableStudent: students[login],
+            mode: EMode.edit,
         });
     };
 
@@ -97,10 +168,10 @@ export default class StudentsList extends React.Component<{}, State> {
 
         this.state = {
             addStudentDialogOpened: false,
-            newStudentName: '',
-            newStudentSurname: '',
-            newStudentGithub: '',
-            studentList: [],
+            studentName: '',
+            studentSurname: '',
+            studentGithub: '',
+            loading: true,
         };
 
         this.githubSignIn = this.githubSignIn.bind(this);
@@ -116,15 +187,20 @@ export default class StudentsList extends React.Component<{}, State> {
     }
 
     componentDidMount() {
+        this.refreshStudentList();
+    }
+
+    refreshStudentList = () => {
         const usersRef = database.ref('users/');
         usersRef.on('value', function (snapshot) {
             this.updateStudentList(snapshot.val());
         }.bind(this));
-    }
+    };
 
     render() {
         return (
-            <Paper>
+            !this.state.loading &&
+            <Paper className={StudentListStyles.studentsListContainer}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -137,7 +213,7 @@ export default class StudentsList extends React.Component<{}, State> {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {this.state.studentList.map((n: IUser, i: number)  => {
+                        {this.state.studentList.map((n: IUser, i: number) => {
                             return (
                                 <TableRow key={i}>
                                     <TableCell>{n.name + ' ' + n.surname}</TableCell>
@@ -145,20 +221,38 @@ export default class StudentsList extends React.Component<{}, State> {
                                     <TableCell>{n.test_passed ? 'пройден' : 'не пройден'}</TableCell>
                                     <TableCell>{n.test_is_checked ? 'да' : 'нет'}</TableCell>
                                     <TableCell>{n.points}</TableCell>
+                                    <TableCell>
+                                        <IconButton aria-label="Show test"
+                                                    onClick={(evt) => this.showUserTest(evt, n.github)}>
+                                            <EyeSettings/>
+                                        </IconButton>
+                                        <IconButton aria-label="Edit student"
+                                                    onClick={(evt) => this.editUser(evt, n.github)}>
+                                            <AccountEdit/>
+                                        </IconButton>
+                                        <IconButton aria-label="Delete student"
+                                                    onClick={(evt) => this.deleteUser(evt, n.github)}>
+                                            <Delete/>
+                                        </IconButton>
+                                    </TableCell>
                                 </TableRow>
                             );
                         })}
                     </TableBody>
                 </Table>
                 <AddStudentDialog onClose={this.closeAddStudentDialog}
+                                  mode={this.state.mode}
+                                  student={this.state.editableStudent}
                                   open={this.state.addStudentDialogOpened}
                                   onChange={this.onDialogInputChange}
                                   onSubmit={this.onDialogSubmit}/>
-                <Button onClick={this.openAddStudentDialog}
-                        variant="contained"
-                        color="primary">
-                    Добавить студента
-                </Button>
+                <div className={StudentListStyles.addStudentButton}>
+                    <Button onClick={this.openAddStudentDialog}
+                            variant="contained"
+                            color="primary">
+                        Добавить студента
+                    </Button>
+                </div>
             </Paper>
         );
     }

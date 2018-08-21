@@ -16,7 +16,6 @@ import OpenQuestion from './OpenQuestion';
 
 import * as TestStyles from '../styles/Test.scss';
 import Button from '@material-ui/core/Button';
-import * as AppStyles from '../styles/App.scss';
 
 interface Props {
     user: IUser;

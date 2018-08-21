@@ -27,12 +27,6 @@ interface State extends IQuestionState<IMatchAnswer> {
 }
 
 export default class MatchColumnsQuestion extends React.Component<Props, State> {
-    private answerNumber = 0;
-    private materialColors = ['#aa2e25', '#2c387e', '#00695f', '#1769aa', '#357a38', '#482880', '#8f9a27',
-                                '#b23c17', '#b26a00'];
-    private previousAnswerButton;
-    private allAnswersButtons = [];
-
     onAnswerChange = (evt) => {
         this.setState({
             ...this.state,
@@ -81,7 +75,6 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             answers: resetAnswers,
         });
     };
-
     onAnswer = (evt) => {
         console.log(evt.target.textContent);
         const answerText = evt.target.textContent;
@@ -158,6 +151,11 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         console.log('MATCH COLUMNS ANSWERS:');
         console.dir(answers);
     };
+    private answerNumber = 0;
+    private materialColors = ['#aa2e25', '#2c387e', '#00695f', '#1769aa', '#357a38', '#482880', '#8f9a27',
+        '#b23c17', '#b26a00'];
+    private previousAnswerButton;
+    private allAnswersButtons = [];
 
     constructor(props) {
         super(props);
