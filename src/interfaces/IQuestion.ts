@@ -35,6 +35,7 @@ export interface IMatchAnswer {
     left: string;
     right: string;
     user_answer?: string;
+    color: string;
 }
 
 export interface IOpenQuestionData {
@@ -45,14 +46,15 @@ export interface IQuestionProps<T extends AnyQuestionData>{
     question: IQuestion<T>;
     onAnswerAdd?: any;
     onAnswer?: any;
+    onReset?: any;
     mode: string;
 }
 
 export type QuestionAnswer = IChooseAnswer | IMatchAnswer | string;
 
 interface IPassMode {
-    leftAnswers?: string[];
-    rightAnswers?: string[];
+    leftAnswers?: any[];
+    rightAnswers?: any[];
     answer?: any;
 }
 

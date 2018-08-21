@@ -18,6 +18,8 @@ import {IUser} from '../interfaces/IUser';
 
 import * as StudentListStyles from '../styles/StudentsList.scss';
 import IconButton from '@material-ui/core/IconButton';
+import * as AppStyles from '../styles/App.scss';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 interface StudentInfo {
     name: string;
@@ -162,6 +164,12 @@ export default class StudentsList extends React.Component<{}, State> {
             mode: EMode.edit,
         });
     };
+    refreshStudentList = () => {
+        const usersRef = database.ref('users/');
+        usersRef.on('value', function (snapshot) {
+            this.updateStudentList(snapshot.val());
+        }.bind(this));
+    };
 
     constructor(props) {
         super(props);
@@ -190,70 +198,70 @@ export default class StudentsList extends React.Component<{}, State> {
         this.refreshStudentList();
     }
 
-    refreshStudentList = () => {
-        const usersRef = database.ref('users/');
-        usersRef.on('value', function (snapshot) {
-            this.updateStudentList(snapshot.val());
-        }.bind(this));
-    };
-
     render() {
         return (
-            !this.state.loading &&
-            <Paper className={StudentListStyles.studentsListContainer}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Студент</TableCell>
-                            <TableCell>GitHub</TableCell>
-                            <TableCell>Статус теста</TableCell>
-                            <TableCell>Тест проверен</TableCell>
-                            <TableCell>Кол-во баллов</TableCell>
-                            <TableCell>Действия</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {this.state.studentList.map((n: IUser, i: number) => {
-                            return (
-                                <TableRow key={i}>
-                                    <TableCell>{n.name + ' ' + n.surname}</TableCell>
-                                    <TableCell>{n.github}</TableCell>
-                                    <TableCell>{n.test_passed ? 'пройден' : 'не пройден'}</TableCell>
-                                    <TableCell>{n.test_is_checked ? 'да' : 'нет'}</TableCell>
-                                    <TableCell>{n.points}</TableCell>
-                                    <TableCell>
-                                        <IconButton aria-label="Show test"
-                                                    onClick={(evt) => this.showUserTest(evt, n.github)}>
-                                            <EyeSettings/>
-                                        </IconButton>
-                                        <IconButton aria-label="Edit student"
-                                                    onClick={(evt) => this.editUser(evt, n.github)}>
-                                            <AccountEdit/>
-                                        </IconButton>
-                                        <IconButton aria-label="Delete student"
-                                                    onClick={(evt) => this.deleteUser(evt, n.github)}>
-                                            <Delete/>
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-                <AddStudentDialog onClose={this.closeAddStudentDialog}
-                                  mode={this.state.mode}
-                                  student={this.state.editableStudent}
-                                  open={this.state.addStudentDialogOpened}
-                                  onChange={this.onDialogInputChange}
-                                  onSubmit={this.onDialogSubmit}/>
-                <div className={StudentListStyles.addStudentButton}>
-                    <Button onClick={this.openAddStudentDialog}
-                            variant="contained"
-                            color="primary">
-                        Добавить студента
-                    </Button>
-                </div>
-            </Paper>
+            <React.Fragment>
+                {this.state.loading &&
+                    <div className={AppStyles.progress}>
+                        <LinearProgress/>
+                    </div>
+                }
+                {!this.state.loading &&
+                <Paper className={StudentListStyles.studentsListContainer}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Студент</TableCell>
+                                <TableCell>GitHub</TableCell>
+                                <TableCell>Статус теста</TableCell>
+                                <TableCell>Тест проверен</TableCell>
+                                <TableCell>Кол-во баллов</TableCell>
+                                <TableCell>Действия</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {this.state.studentList.map((n: IUser, i: number) => {
+                                return (
+                                    <TableRow key={i}>
+                                        <TableCell>{n.name + ' ' + n.surname}</TableCell>
+                                        <TableCell>{n.github}</TableCell>
+                                        <TableCell>{n.test_passed ? 'пройден' : 'не пройден'}</TableCell>
+                                        <TableCell>{n.test_is_checked ? 'да' : 'нет'}</TableCell>
+                                        <TableCell>{n.points}</TableCell>
+                                        <TableCell>
+                                            <IconButton aria-label="Show test"
+                                                        onClick={(evt) => this.showUserTest(evt, n.github)}>
+                                                <EyeSettings/>
+                                            </IconButton>
+                                            <IconButton aria-label="Edit student"
+                                                        onClick={(evt) => this.editUser(evt, n.github)}>
+                                                <AccountEdit/>
+                                            </IconButton>
+                                            <IconButton aria-label="Delete student"
+                                                        onClick={(evt) => this.deleteUser(evt, n.github)}>
+                                                <Delete/>
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                    <AddStudentDialog onClose={this.closeAddStudentDialog}
+                                      mode={this.state.mode}
+                                      student={this.state.editableStudent}
+                                      open={this.state.addStudentDialogOpened}
+                                      onChange={this.onDialogInputChange}
+                                      onSubmit={this.onDialogSubmit}/>
+                    <div className={StudentListStyles.addStudentButton}>
+                        <Button onClick={this.openAddStudentDialog}
+                                variant="contained"
+                                color="primary">
+                            Добавить студента
+                        </Button>
+                    </div>
+                </Paper>}
+            </React.Fragment>
         );
     }
 }

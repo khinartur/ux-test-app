@@ -54,7 +54,8 @@ export default class OpenQuestion extends React.Component<Props, State> {
                            rows={8}
                            rowsMax={8}
                            margin={'dense'}
-                           onChange={(evt) => this.onAnswerTextareaChange(evt)}>
+                           onChange={(evt) => this.onAnswerTextareaChange(evt)}
+                            defaultValue={this.props.question.questionData ? this.props.question.questionData.answer : ''}>
                 </TextField>
             </div>
         );

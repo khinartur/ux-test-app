@@ -20,6 +20,7 @@ import MatchColumnsQuestion from './MatchColumnsQuestion';
 import * as AppStyles from '../styles/App.scss';
 import TextField from '@material-ui/core/TextField';
 import {CHOOSE_RIGHT_POINTS, MATCH_COLUMNS_POINTS, OPEN_QUESTIONS_POINTS} from '../constants/points';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 interface State {
     questions?: { [key: string]: IQuestion<AnyQuestionData> };
@@ -300,140 +301,149 @@ export default class TestEditForm extends React.Component<{}, State> {
         console.log('ORDER TO PROPS:', this.state.currentQuestionOrder);
 
         return (
-            !this.state.loading &&
-            <div className={TestEditFormStyles.testEditForm}>
+            <React.Fragment>
+                {this.state.loading &&
+                <div className={AppStyles.progress}>
+                    <LinearProgress/>
+                </div>
+                }
                 {
-                    <div className={TestEditFormStyles.testEditFormItem}>
-                        {qCount ? //TODO: replace with generator
-                            new Array(qCount).fill(true).map((v: boolean, i: number) => {
-                                const q = questions[qMap[i + 1]];
-                                return <div key={i}
-                                            className={TestEditFormStyles.questionChooseDiv}
-                                            onClick={(evt) => this.editQuestion(evt, q.order)}
-                                            onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
-                                            onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
-                                >
-                                    {q.order + ') ' + q.text}
-                                </div>;
-                            })
-                            :
-                            <Typography variant="body1" gutterBottom>
-                                В тесте нет вопросов.
-                            </Typography>
+                    !this.state.loading &&
+                    <div className={TestEditFormStyles.testEditForm}>
+                        {
+                            <div className={TestEditFormStyles.testEditFormItem}>
+                                {qCount ? //TODO: replace with generator
+                                    new Array(qCount).fill(true).map((v: boolean, i: number) => {
+                                        const q = questions[qMap[i + 1]];
+                                        return <div key={i}
+                                                    className={TestEditFormStyles.questionChooseDiv}
+                                                    onClick={(evt) => this.editQuestion(evt, q.order)}
+                                                    onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
+                                                    onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
+                                        >
+                                            {q.order + ') ' + q.text}
+                                        </div>;
+                                    })
+                                    :
+                                    <Typography variant="body1" gutterBottom>
+                                        В тесте нет вопросов.
+                                    </Typography>
+                                }
+                            </div>
                         }
+                        <div className={TestEditFormStyles.testEditFormItem}>
+                            <Button variant="contained"
+                                    color="primary"
+                                    fullWidth={true}
+                                    onClick={this.showAddForm}
+                                    disabled={isEditFormShown}>
+                                Добавить вопрос
+                            </Button>
+                            <br/>
+                            {
+                                this.state.isOpenQuestionForm &&
+                                <Paper className={TestEditFormStyles.questionEditForm}>
+                                    <FormControl>
+                                        <InputLabel htmlFor="type">Тип вопроса</InputLabel>
+                                        <Select
+                                            value={this.state.currentQuestion.type}
+                                            inputProps={{
+                                                id: 'type',
+                                            }}
+                                            onChange={this.onSelectChange}
+                                        >
+                                            <MenuItem value={QuestionType.choose_right}>С выбором ответа</MenuItem>
+                                            <MenuItem value={QuestionType.match_columns}>Сопоставить столбцы</MenuItem>
+                                            <MenuItem value={QuestionType.open_question}>Открытый вопрос</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                    <Paper className={TestEditFormStyles.editPaper}>
+                                        <Typography
+                                            variant="title">{this.state.isNewQuestion ?
+                                            'Создание нового вопроса' : 'Редактирование вопроса'}
+                                        </Typography>
+                                        <br/>
+                                        <Paper className={AppStyles.error}>{this.state.error}</Paper>
+                                        <form autoComplete="off" onSubmit={(evt) => this.onFormSubmit(evt)}>
+                                            <TextField label="Формулировка вопроса:"
+                                                       fullWidth={true}
+                                                       margin={'dense'}
+                                                       onChange={this.onQuestionChange}
+                                                       defaultValue={this.state.currentQuestion.text}>
+                                            </TextField>
+                                            <br/>
+                                            <TextField label="Количество баллов:"
+                                                       fullWidth={true}
+                                                       margin={'dense'}
+                                                       onChange={this.onPointsChange}
+                                                       defaultValue={this.state.currentQuestion.points}>
+                                            </TextField>
+                                            <br/>
+                                            <div>
+                                                <input
+                                                    accept="image/*"
+                                                    className={TestEditFormStyles.uploadFileButton}
+                                                    id="raised-button-file"
+                                                    multiple
+                                                    type="file"
+                                                    onChange={(evt) => this.onFilesUpload(evt)}
+                                                />
+                                                <label htmlFor="raised-button-file">
+                                                    <Button variant="contained" color="primary" component="span">
+                                                        Добавить картинки
+                                                    </Button>
+                                                </label>
+                                            </div>
+                                            <br/>
+                                            <div>
+                                                {
+                                                    this.state.currentQuestion && this.state.currentQuestion.pictures &&
+                                                    this.state.currentQuestion.pictures.map((name: string, i: number) => {
+                                                        return <div key={i}>{name}</div>;
+                                                    })
+                                                }
+                                            </div>
+                                            {
+                                                this.state.currentQuestionType === QuestionType.choose_right &&
+                                                <ChooseRightQuestion
+                                                    question={this.state.currentQuestion as IQuestion<IChooseRightData>}
+                                                    mode={'edit'}
+                                                    onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
+                                            }
+                                            {
+                                                this.state.currentQuestionType === QuestionType.match_columns &&
+                                                <MatchColumnsQuestion
+                                                    question={this.state.currentQuestion as IQuestion<IMatchColumnsData>}
+                                                    mode={'edit'}
+                                                    onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
+                                            }
+                                            <div>
+                                                <Button
+                                                    className={TestEditFormStyles.editQuestionButton}
+                                                    variant="contained"
+                                                    color="primary"
+                                                    type="submit">
+                                                    {this.state.currentQuestion ? 'Сохранить' : 'Создать'}
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    style={{
+                                                        backgroundColor: '#b2102f',
+                                                        marginLeft: '10px',
+                                                        color: 'white',
+                                                    }}
+                                                    onClick={this.onCancel}>
+                                                    Отмена
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </Paper>
+                                </Paper>
+                            }
+                        </div>
                     </div>
                 }
-                <div className={TestEditFormStyles.testEditFormItem}>
-                    <Button variant="contained"
-                            color="primary"
-                            fullWidth={true}
-                            onClick={this.showAddForm}
-                            disabled={isEditFormShown}>
-                        Добавить вопрос
-                    </Button>
-                    <br/>
-                    {
-                        this.state.isOpenQuestionForm &&
-                        <Paper className={TestEditFormStyles.questionEditForm}>
-                            <FormControl>
-                                <InputLabel htmlFor="type">Тип вопроса</InputLabel>
-                                <Select
-                                    value={this.state.currentQuestion.type}
-                                    inputProps={{
-                                        id: 'type',
-                                    }}
-                                    onChange={this.onSelectChange}
-                                >
-                                    <MenuItem value={QuestionType.choose_right}>С выбором ответа</MenuItem>
-                                    <MenuItem value={QuestionType.match_columns}>Сопоставить столбцы</MenuItem>
-                                    <MenuItem value={QuestionType.open_question}>Открытый вопрос</MenuItem>
-                                </Select>
-                            </FormControl>
-                            <Paper className={TestEditFormStyles.editPaper}>
-                                <Typography
-                                    variant="title">{this.state.isNewQuestion ?
-                                    'Создание нового вопроса' : 'Редактирование вопроса'}
-                                </Typography>
-                                <br/>
-                                <Paper className={AppStyles.error}>{this.state.error}</Paper>
-                                <form autoComplete="off" onSubmit={(evt) => this.onFormSubmit(evt)}>
-                                    <TextField label="Формулировка вопроса:"
-                                               fullWidth={true}
-                                               margin={'dense'}
-                                               onChange={this.onQuestionChange}
-                                               defaultValue={this.state.currentQuestion.text}>
-                                    </TextField>
-                                    <br/>
-                                    <TextField label="Количество баллов:"
-                                               fullWidth={true}
-                                               margin={'dense'}
-                                               onChange={this.onPointsChange}
-                                               defaultValue={this.state.currentQuestion.points}>
-                                    </TextField>
-                                    <br/>
-                                    <div>
-                                        <input
-                                            accept="image/*"
-                                            className={TestEditFormStyles.uploadFileButton}
-                                            id="raised-button-file"
-                                            multiple
-                                            type="file"
-                                            onChange={(evt) => this.onFilesUpload(evt)}
-                                        />
-                                        <label htmlFor="raised-button-file">
-                                            <Button variant="contained" color="primary" component="span">
-                                                Добавить картинки
-                                            </Button>
-                                        </label>
-                                    </div>
-                                    <br/>
-                                    <div>
-                                        {
-                                            this.state.currentQuestion && this.state.currentQuestion.pictures &&
-                                            this.state.currentQuestion.pictures.map((name: string, i: number) => {
-                                                return <div key={i}>{name}</div>;
-                                            })
-                                        }
-                                    </div>
-                                    {
-                                        this.state.currentQuestionType === QuestionType.choose_right &&
-                                        <ChooseRightQuestion
-                                            question={this.state.currentQuestion as IQuestion<IChooseRightData>}
-                                            mode={'edit'}
-                                            onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
-                                    }
-                                    {
-                                        this.state.currentQuestionType === QuestionType.match_columns &&
-                                        <MatchColumnsQuestion
-                                            question={this.state.currentQuestion as IQuestion<IMatchColumnsData>}
-                                            mode={'edit'}
-                                            onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
-                                    }
-                                    <div>
-                                        <Button
-                                            className={TestEditFormStyles.editQuestionButton}
-                                            variant="contained"
-                                            color="primary"
-                                            type="submit">
-                                            {this.state.currentQuestion ? 'Сохранить' : 'Создать'}
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            style={{
-                                                backgroundColor: '#b2102f',
-                                                marginLeft: '10px',
-                                                color: 'white',
-                                            }}
-                                            onClick={this.onCancel}>
-                                            Отмена
-                                        </Button>
-                                    </div>
-                                </form>
-                            </Paper>
-                        </Paper>
-                    }
-                </div>
-            </div>
+            </React.Fragment>
         );
     }
 }

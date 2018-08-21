@@ -166,6 +166,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                                     color="primary"
                                                     onChange={(evt) => this.onAnswerClick(evt)}
                                                     value={answer.text}
+                                                    checked={answer.isAnswered}
                                                 />
                                             }
                                             label={answer.text}

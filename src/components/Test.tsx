@@ -16,6 +16,8 @@ import OpenQuestion from './OpenQuestion';
 
 import * as TestStyles from '../styles/Test.scss';
 import Button from '@material-ui/core/Button';
+import * as AppStyles from '../styles/App.scss';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 interface Props {
     user: IUser;
@@ -57,16 +59,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     loadPictures = (qNumber: number) => {
-        if (qNumber >= this.state.questions.length) {
-            this.setState({
-                ...this.state,
-                isNextPicturesLoaded: true,
-                loading: false,
-            });
-            return;
-        }
         const isNextQuestion = qNumber !== this.state.currentQNumber;
-
+        debugger;
         const question = this.state.questions[qNumber];
 
         if (isNextQuestion) {
@@ -77,6 +71,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         const pictures = question.pictures;
 
+        //TODO: i don't like it
         if (pictures) {
             pictures.map((filename: string, i: number) => {
                 storageRef.child(`${question.key}/${filename}`).getDownloadURL().then(url => {
@@ -146,7 +141,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
             case QuestionType.match_columns:
                 const mData = question.questionData as IMatchColumnsData;
-                const m = mData.answers.filter((v: IMatchAnswer) => v.left == (answer as IMatchAnswer).left)[0];
+                //const m = mData.answers.filter((v: IMatchAnswer) => v.left == (answer as IMatchAnswer).left)[0];
                 const answeredMAnswers = mData.answers.filter((v: IMatchAnswer) => v.user_answer);
                 this.setState({
                     ...this.state,
@@ -163,6 +158,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     currentQuestion: {
                         ...this.state.currentQuestion,
                         questionData: {
+                            ...this.state.currentQuestion,
                             answer: answer,
                         } as IOpenQuestionData,
                         isAnswered: !!answer,
@@ -176,17 +172,49 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         this.currentQuestionImages = this.nextQuestionImages;
         this.nextQuestionImages = [];
 
-        //TODO: make async
-        this.loadPictures(currNumber + 2);
-
         const questions = this.state.questions;
-        const isNewRound = currNumber == questions.length - 1;
+        let newQuestions = questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
+            return i !== currNumber ? q : this.state.currentQuestion;
+        });
+
+        const newCurrentNumber = currNumber == questions.length - 1 ? 0 : currNumber + 1;
+        const qnumberForPicturesLoad = currNumber == questions.length - 2 ? 0 :
+            currNumber == questions.length - 1 ? 1 : currNumber + 2;
+
         this.setState({
             ...this.state,
-            currentQuestion: isNewRound ? questions[0] : questions[currNumber + 1],
-            currentQNumber: currNumber + 1,
+            questions: newQuestions,
+            currentQuestion: questions[newCurrentNumber],
+            currentQNumber: newCurrentNumber,
             isNextPicturesLoaded: false,
-            loading: false,
+            loading: true,
+        }, () => {
+            //TODO: make async
+            this.loadPictures(qnumberForPicturesLoad);
+        });
+    };
+    onReset = () => {
+
+        // let resetAnswers;
+        //
+        // switch(this.state.currentQuestion.type) {
+        //     case QuestionType.match_columns:
+        //         resetAnswers = (this.state.currentQuestion.questionData as any)
+        //             .answers.map((a: any) => {
+        //                 return {...a, user_answer: ''};
+        //             });
+        // }
+
+        this.setState({
+            ...this.state,
+            currentQuestion: {
+                ...this.state.currentQuestion,
+                // questionData: {
+                //     ...this.state.currentQuestion.questionData,
+                //     answers: resetAnswers,
+                // },
+                isAnswered: false,
+            },
         });
     };
     private nextQuestionImages: any[];
@@ -226,77 +254,88 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         const question = this.state.currentQuestion;
 
         return (
-            !this.state.loading &&
             <React.Fragment>
-                <div>
-                    Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
+                {this.state.loading &&
+                <div className={AppStyles.progress}>
+                    <LinearProgress/>
                 </div>
-                <div className={TestStyles.doneTestButton}>
-                    <Button variant='contained'
-                            color='primary'
-                            fullWidth={false}
-                            onClick={this.onDone}>
-                        Завершить тест
-                    </Button>
-                </div>
-                <div className={TestStyles.container}>
-                    {
-                        !this.state.loading && !this.state.done &&
-                        <Paper className={TestStyles.questionPaper}
-                               elevation={10}>
-                            <Typography variant="title"
-                                        style={{paddingTop: '3px'}}>
-                                <div className={TestStyles.questionNumberDiv}>
+                }
+                {
+                    !this.state.loading &&
+                    <React.Fragment>
+                        <Typography variant="body2"
+                                    className={TestStyles.questionNumberHeader}>
+                            Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
+                        </Typography>
+                        <div className={TestStyles.doneTestButton}>
+                            <Button variant='contained'
+                                    color='primary'
+                                    fullWidth={false}
+                                    onClick={this.onDone}>
+                                Завершить тест
+                            </Button>
+                        </div>
+                        <div className={TestStyles.container}>
+                            {
+                                !this.state.loading && !this.state.done &&
+                                <Paper className={TestStyles.questionPaper}
+                                       elevation={10}>
+                                    <Typography variant="title"
+                                                style={{paddingTop: '3px'}}>
+                                        <div className={TestStyles.questionNumberDiv}>
                                             <span
                                                 className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
-                                </div>
-                                {question.text}
-                            </Typography>
-                            <br/>
-                            {
-                                this.currentQuestionImages &&
-                                this.currentQuestionImages.map((url: string, i: number) => {
-                                    return <img key={i}
-                                                src={url}
-                                                style={{
-                                                    height: '180px',
-                                                    display: 'inline-block',
-                                                }}/>;
-                                })
-                            }
-                            <br/>
-                            {this.state.currentQuestion.type === QuestionType.choose_right &&
-                            <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
-                                                 mode={'pass'}
-                                                 onAnswer={(answer) => this.onAnswer(answer)}/>}
-                            {this.state.currentQuestion.type === QuestionType.match_columns &&
-                            <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
+                                        </div>
+                                        {question.text}
+                                    </Typography>
+                                    <br/>
+                                    {
+                                        this.currentQuestionImages &&
+                                        this.currentQuestionImages.map((url: string, i: number) => {
+                                            return <img key={i}
+                                                        src={url}
+                                                        style={{
+                                                            height: '180px',
+                                                            display: 'inline-block',
+                                                        }}/>;
+                                        })
+                                    }
+                                    <br/>
+                                    {this.state.currentQuestion.type === QuestionType.choose_right &&
+                                    <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
+                                                         mode={'pass'}
+                                                         onAnswer={(answer) => this.onAnswer(answer)}/>}
+                                    {this.state.currentQuestion.type === QuestionType.match_columns &&
+                                    <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
+                                                          mode={'pass'}
+                                                          onAnswer={(answer) => this.onAnswer(answer)}
+                                                          onReset={this.onReset}/>}
+                                    {this.state.currentQuestion.type === QuestionType.open_question &&
+                                    <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
                                                   mode={'pass'}
                                                   onAnswer={(answer) => this.onAnswer(answer)}/>}
-                            {this.state.currentQuestion.type === QuestionType.open_question &&
-                            <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
-                                          mode={'pass'}
-                                          onAnswer={(answer) => this.onAnswer(answer)}/>}
-                            <div className={TestStyles.questionButtonNext}>
-                                <Button variant="contained"
-                                        color="primary"
-                                        fullWidth={true}
-                                        onClick={this.onNext}>
-                                    {this.state.currentQuestion.isAnswered ? 'Дальше' : 'Пропустить'}
-                                </Button>
+                                    <div className={TestStyles.questionButtonNext}>
+                                        <Button variant="contained"
+                                                color="primary"
+                                                fullWidth={true}
+                                                onClick={this.onNext}>
+                                            {this.state.currentQuestion.isAnswered ? 'Дальше' : 'Пропустить'}
+                                        </Button>
 
-                            </div>
-                        </Paper>
-                    }
-                    {
-                        !this.state.loading && this.state.done &&
-                        <Paper className={TestStyles.testDonePaper}>
-                            <Typography variant="body1" align={'center'}>
-                                Тест пройден. Следите за новостями портала.
-                            </Typography>
-                        </Paper>
-                    }
-                </div>
+                                    </div>
+                                </Paper>
+                            }
+                            {
+                                !this.state.loading && this.state.done &&
+                                <Paper className={TestStyles.testDonePaper}>
+                                    <Typography variant="body1" align={'center'}>
+                                        Тест пройден. Следите за новостями портала.
+                                    </Typography>
+                                </Paper>
+                            }
+                        </div>
+                    </React.Fragment>
+                }
             </React.Fragment>
         );
     }

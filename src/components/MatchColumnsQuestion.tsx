@@ -46,6 +46,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             left: this.state.answerTextLeft,
             right: this.state.answerTextRight,
             user_answer: '',
+            color: '#000000',
         };
 
         this.props.onAnswerAdd(newAnswer);
@@ -67,6 +68,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             resetAnswers.push({
                 ...answer,
                 user_answer: '',
+                color: '#000000',
             });
         });
 
@@ -74,6 +76,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             ...this.state,
             answers: resetAnswers,
         });
+
+        this.props.onReset();
     };
     onAnswer = (evt) => {
         console.log(evt.target.textContent);
@@ -84,9 +88,14 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
 
         switch (evt.currentTarget.name) {
             case 'left':
+                this.state.passMode.leftAnswers.map((a: any) => {
+                    if (a.text !== answerText) return;
+                    a.color = this.materialColors[this.answerNumber];
+                });
                 if (currentAnswer.right) {
                     let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
                     dbAnswer.user_answer = currentAnswer.right;
+                    dbAnswer.color = this.materialColors[this.answerNumber];
                     evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
                     this.answerNumber += 1;
                     this.setState({
@@ -109,15 +118,21 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             ...this.state.passMode,
                             answer: {
                                 left: answerText,
+                                color: this.materialColors[this.answerNumber],
                             },
                         }
                     });
                 }
                 break;
             case 'right':
+                this.state.passMode.rightAnswers.map((a: any) => {
+                    if (a.text !== answerText) return;
+                    a.color = this.materialColors[this.answerNumber];
+                });
                 if (currentAnswer.left) {
                     let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
                     dbAnswer.user_answer = answerText;
+                    dbAnswer.color = this.materialColors[this.answerNumber];
                     evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
                     this.answerNumber += 1;
                     this.setState({
@@ -140,6 +155,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             ...this.state.passMode,
                             answer: {
                                 right: answerText,
+                                color: this.materialColors[this.answerNumber],
                             },
                         }
                     });
@@ -169,8 +185,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         if (this.props.mode === 'pass') {
             let [leftAnswers, rightAnswers] = [[], []];
             this.state.answers.map((answer: IMatchAnswer) => {
-                leftAnswers.push(answer.left);
-                rightAnswers.push(answer.right);
+                leftAnswers.push({text: answer.left, bgColor: answer.color});
+                rightAnswers.push({text: answer.right, bgColor: answer.color});
             });
 
             this.setState({
@@ -243,7 +259,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     mode === 'pass' &&
                     <div>
                         {
-                            new Array(this.state.answers.length).fill(true).map((n: boolean, i: number) => {
+                            this.state.answers.map((a: IMatchAnswer, i: number) => {
                                 const ref1 = React.createRef();
                                 const ref2 = React.createRef();
                                 this.allAnswersButtons.push(ref1, ref2);
@@ -252,21 +268,27 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                         <div className={MatchColumnsQuestionStyles.answerButton}>
                                             <Button variant="contained"
                                                     color="primary"
+                                                    style={{
+                                                        backgroundColor: this.state.passMode.rightAnswers[i].bgColor,
+                                                    }}
                                                     buttonRef={ref1}
                                                     fullWidth={true}
                                                     name={'left'}
                                                     onClick={(evt) => this.onAnswer(evt)}>
-                                                {this.state.passMode.leftAnswers[i]}
+                                                {this.state.passMode.leftAnswers[i].text}
                                             </Button>
                                         </div>
                                         <div className={MatchColumnsQuestionStyles.answerButton}>
                                             <Button variant="contained"
                                                     color="primary"
+                                                    style={{
+                                                        backgroundColor: this.state.passMode.rightAnswers[i].bgColor,
+                                                    }}
                                                     buttonRef={ref2}
                                                     fullWidth={true}
                                                     name={'right'}
                                                     onClick={(evt) => this.onAnswer(evt)}>
-                                                {this.state.passMode.rightAnswers[i]}
+                                                {this.state.passMode.rightAnswers[i].text}
                                             </Button>
                                         </div>
                                     </div>
