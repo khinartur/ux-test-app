@@ -15,6 +15,7 @@ export interface IQuestion<T extends AnyQuestionData> {
     questionData: T;
     points: number;
     isAnswered?: boolean;
+    isChecked?: boolean;
 }
 
 export interface IChooseRightData {

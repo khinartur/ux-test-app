@@ -37,30 +37,57 @@ interface State {
 
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     onDone = () => {
-        let pointsSum = 0;
-        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
-            if (q.isAnswered) pointsSum += q.points;
-        });
+        debugger;
+        this.setState({
+            loading: true,
+        }, () => {
+            debugger;
+            let pointsSum = 0;
+            this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
+                let goodBoy = true;
+                switch (q.type) {
+                    case QuestionType.choose_right:
+                        (q.questionData as IChooseRightData).answers.map((a: IChooseAnswer) => {
+                            if (a.isAnswered && !a.isRight) goodBoy = false;
+                        });
+                        if (goodBoy) pointsSum += q.points;
+                        q.isChecked = true;
+                        break;
 
-        database.ref('passed-questions/' + this.props.user.github).set({
-            ...this.state.questions,
-        }).then(() => {
-            database.ref('users/' + this.props.user.github).set({
-                ...this.props.user,
-                points: pointsSum,
-                test_passed: true,
-                test_is_checked: false,
+                    case QuestionType.match_columns:
+                        (q.questionData as IMatchColumnsData).answers.map((a: IMatchAnswer) => {
+                            if (a.right !== a.user_answer) goodBoy = false;
+                        });
+                        if (goodBoy) pointsSum += q.points;
+                        q.isChecked = true;
+                        break;
+
+                    case QuestionType.open_question:
+                        q.isChecked = false;
+                }
+            });
+
+            database.ref('passed-questions/' + this.props.user.github).set({
+                ...this.state.questions,
             }).then(() => {
-                this.setState({
-                    ...this.state,
-                    done: true,
+                database.ref('users/' + this.props.user.github).set({
+                    ...this.props.user,
+                    points: pointsSum,
+                    test_passed: true,
+                    test_is_checked: false,
+                }).then(() => {
+                    this.setState({
+                        ...this.state,
+                        loading: false,
+                        done: true,
+                    });
                 });
             });
         });
     };
     loadPictures = (qNumber: number) => {
         const isNextQuestion = qNumber !== this.state.currentQNumber;
-        debugger;
+        //debugger;
         const question = this.state.questions[qNumber];
 
         if (isNextQuestion) {
@@ -123,7 +150,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }
     };
     onAnswer = (answer: QuestionAnswer) => {
-        debugger;
 
         const question = this.state.currentQuestion;
         switch (question.type) {
@@ -167,7 +193,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }
     };
     onNext = () => {
-        debugger;
         const currNumber = this.state.currentQNumber;
         this.currentQuestionImages = this.nextQuestionImages;
         this.nextQuestionImages = [];
@@ -263,18 +288,22 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 {
                     !this.state.loading &&
                     <React.Fragment>
-                        <Typography variant="body2"
-                                    className={TestStyles.questionNumberHeader}>
-                            Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
-                        </Typography>
-                        <div className={TestStyles.doneTestButton}>
-                            <Button variant='contained'
-                                    color='primary'
-                                    fullWidth={false}
-                                    onClick={this.onDone}>
-                                Завершить тест
-                            </Button>
-                        </div>
+                        {!this.state.done &&
+                            <Typography variant="body2"
+                                        className={TestStyles.questionNumberHeader}>
+                                Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
+                            </Typography>
+                        }
+                        {!this.state.done &&
+                            <div className={TestStyles.doneTestButton}>
+                                <Button variant='contained'
+                                        color='primary'
+                                        fullWidth={false}
+                                        onClick={this.onDone}>
+                                    Завершить тест
+                                </Button>
+                            </div>
+                        }
                         <div className={TestStyles.container}>
                             {
                                 !this.state.loading && !this.state.done &&
