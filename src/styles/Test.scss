@@ -1,19 +1,11 @@
-.container {
-    width: 500px;
-    margin: 50px auto;
-}
 
-.questionPaper {
-    padding: 50px;
-}
+
 
 .questionButton {
     margin: 8px 8px;
 }
 
-.questionButtonNext {
-    margin: 30px 8px 0;
-}
+
 
 .questionButtonActive {
     background-color: #00695f;
@@ -31,42 +23,10 @@
     left: calc(50% - 51px);
 }
 
-.questionNumberDiv {
-    height: 32px;
-    width: 32px;
-    background-color: black;
-    color: white;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.questionOrderSpan {
-    position: relative;
-    left: 8px;
-    top: 4px;
-}
-
-.toQuestionsButton {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-}
-
 .doneTestButton {
     position: fixed;
     top: 20px;
     right: 20px;
 }
 
-.questionNumberHeader {
-    position: absolute;
-    left: calc(50% - 35px);
-    top: 10px;
-}
 
-.addPointsDiv {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    margin-top: 30px;
-    padding: 20px;
-}

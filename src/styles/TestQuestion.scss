@@ -1,0 +1,46 @@
+.container {
+    width: 500px;
+    margin: 50px auto;
+}
+
+.questionPaper {
+    padding: 50px;
+}
+
+.questionNumberHeader {
+    position: absolute;
+    left: calc(50% - 35px);
+    top: 10px;
+}
+
+.toQuestionsButton {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+}
+
+.questionNumberDiv {
+    height: 32px;
+    width: 32px;
+    background-color: black;
+    color: white;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.questionOrderSpan {
+    position: relative;
+    left: 8px;
+    top: 4px;
+}
+
+.questionSaveButton {
+    margin: 30px 8px 0;
+}
+
+.addPointsDiv {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 30px;
+    padding: 20px;
+}

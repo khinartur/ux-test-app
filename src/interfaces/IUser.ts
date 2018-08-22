@@ -11,4 +11,5 @@ export interface IUser {
     points: number;
     test_is_checked: boolean;
     test_status: EUserTestStatus;
+    current_question: number;
 }

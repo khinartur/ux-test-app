@@ -43,12 +43,17 @@ export interface IOpenQuestionData {
     answer: string;
 }
 
+export enum EQuestionMode {
+    passing='passing',
+    checking='checking',
+}
+
 export interface IQuestionProps<T extends AnyQuestionData>{
     question: IQuestion<T>;
     onAnswerAdd?: any;
     onAnswer?: any;
     onReset?: any;
-    mode: string;
+    mode: EQuestionMode;
 }
 
 export type QuestionAnswer = IChooseAnswer | IMatchAnswer | string;
