@@ -9,28 +9,27 @@ import TestEditForm from './TestEditForm';
 import StudentProfile from './StudentProfile';
 import {IUser} from '../interfaces/IUser';
 import Test from './Test';
+import {auth} from '../modules/firebase';
 
-interface State {
-    loggedUser?: IUser;
-}
+export default class App extends React.Component<{}, {}> {
 
-export default class App extends React.Component<{}, State> {
-
-    onSign = (user: IUser) => {
-        this.setState({
-            ...this.state,
-            loggedUser: user,
-        });
+    onSign = (login: string) => {
+        localStorage.setItem('loggedUser', login);
     };
+
+    constructor(props) {
+        super(props);
+
+    }
 
     //TODO: what with routing? should user be able to route to any route?
     render() {
         return (
             <Switch>
                 <Route exact path="/" render={() => <Sign onSign={this.onSign}/>} />
-                <Route exact path="/profile" render={() => <StudentProfile user={this.state.loggedUser}/>} />
-                <Route exact path="/test" render={() => <Test user={this.state.loggedUser}/>} />
-                {/*<Route exact path="/test" component={Test}/>*/}
+                <Route exact path="/profile" render={() => <StudentProfile/>} />
+                {/*<Route exact path="/test" render={() => <Test user={this.state.loggedUser}/>} />*/}
+                <Route exact path="/test" component={Test}/>
                 <Route exact path="/admin" component={Admin}/>
                 <Route exact path="/admin/students" component={StudentsList}/>
                 <Route exact path="/admin/edit/test" component={TestEditForm}/>

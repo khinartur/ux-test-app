@@ -8,14 +8,12 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 
 import * as AppStyles from '../styles/App.scss';
 import * as StudentProfileStyles from '../styles/StudentProfile.scss';
-import {database} from '../modules/firebase';
+import {auth, database} from '../modules/firebase';
 
-interface Props {
-    user: IUser;
-}
+interface Props {}
 
 interface State {
-    loggedUser: IUser;
+    loggedUser?: IUser;
     loading: boolean;
 }
 
@@ -24,18 +22,27 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
     initTest = () => {
         this.props.history.push('/test');
     };
+    private userLogin: string;
 
     constructor(props) {
         super(props);
 
+
+        if (auth.currentUser) {
+            const login = localStorage.getItem('loggedUser');
+            this.userLogin = login;
+        } else {
+            localStorage.setItem('loggedUser', null);
+            this.props.history.push('/');
+        }
+
         this.state = {
-            loggedUser: this.props.user,
             loading: true,
         };
     }
 
     componentDidMount() {
-        database.ref('/users/' + this.props.user.github).once('value').then((snapshot) => {
+        database.ref('/users/' + this.userLogin).once('value').then((snapshot) => {
             const user = snapshot.val();
             this.setState({
                 loading: false,

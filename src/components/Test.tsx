@@ -7,7 +7,7 @@ import {
     QuestionAnswer,
     QuestionType
 } from '../interfaces/IQuestion';
-import {database, storageRef} from '../modules/firebase';
+import {auth, database, storageRef} from '../modules/firebase';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -24,139 +24,18 @@ import QuestionsList, {EQuestionsListMode} from './QuestionsList';
 import TestQuestion from './TestQuestion';
 
 interface Props {
-    user: IUser;
 }
 
 interface State {
     questions?: IQuestion<AnyQuestionData>[];
     currentQuestion?: IQuestion<AnyQuestionData>;
 
+    user: IUser;
     loading: boolean;
     showQuestionsList: boolean;
 }
 
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
-    // onDone = () => {
-    //     debugger;
-    //     this.setState({
-    //         loading: true,
-    //     }, () => {
-    //         debugger;
-    //         let pointsSum = 0;
-    //         this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
-    //             let goodBoy = true;
-    //             switch (q.type) {
-    //                 case QuestionType.choose_right:
-    //                     (q.questionData as IChooseRightData).answers.map((a: IChooseAnswer) => {
-    //                         if (a.isAnswered && !a.isRight) goodBoy = false;
-    //                     });
-    //                     if (goodBoy) pointsSum += q.points;
-    //                     q.isChecked = true;
-    //                     break;
-	//
-    //                 case QuestionType.match_columns:
-    //                     (q.questionData as IMatchColumnsData).answers.map((a: IMatchAnswer) => {
-    //                         if (a.right !== a.user_answer) goodBoy = false;
-    //                     });
-    //                     if (goodBoy) pointsSum += q.points;
-    //                     q.isChecked = true;
-    //                     break;
-	//
-    //                 case QuestionType.open_question:
-    //                     if (q.isChecked) {
-    //                         pointsSum += q.points;
-    //                     }
-    //             }
-    //         });
-	//
-    //         database.ref('passed-questions/' + this.props.user.github).set({
-    //             ...ejectKey(this.state.questions),
-    //         }).then(() => {
-    //             database.ref('users/' + this.props.user.github).set({
-    //                 ...this.props.user,
-    //                 points: pointsSum,
-    //                 test_passed: true,
-    //                 test_is_checked: false,
-    //             }).then(() => {
-    //                 if (this.props.checkMode) {
-    //                     this.props.onCheck();
-    //                     return;
-    //                 }
-    //                 this.setState({
-    //                     ...this.state,
-    //                     loading: false,
-    //                 });
-    //             });
-    //         });
-    //     });
-    // };
-    // onAnswer = (answer: QuestionAnswer) => {
-    //     const question = this.state.currentQuestion;
-    //     switch (question.type) {
-    //         case QuestionType.choose_right:
-    //             const chData = question.questionData as IChooseRightData;
-    //             const answeredChAnswers = chData.answers.filter((v: IChooseAnswer) => v.isAnswered);
-    //             this.setState({
-    //                 ...this.state,
-    //                 currentQuestion: {
-    //                     ...this.state.currentQuestion,
-    //                     isAnswered: !!answeredChAnswers.length,
-    //                 },
-    //             });
-    //             break;
-	//
-    //         case QuestionType.match_columns:
-    //             const mData = question.questionData as IMatchColumnsData;
-    //             //const m = mData.answers.filter((v: IMatchAnswer) => v.left == (answer as IMatchAnswer).left)[0];
-    //             const answeredMAnswers = mData.answers.filter((v: IMatchAnswer) => v.user_answer);
-    //             this.setState({
-    //                 ...this.state,
-    //                 currentQuestion: {
-    //                     ...this.state.currentQuestion,
-    //                     isAnswered: answeredMAnswers.length == mData.answers.length,
-    //                 },
-    //             });
-    //             break;
-	//
-    //         case QuestionType.open_question:
-    //             this.setState({
-    //                 ...this.state,
-    //                 currentQuestion: {
-    //                     ...this.state.currentQuestion,
-    //                     questionData: {
-    //                         ...this.state.currentQuestion,
-    //                         answer: answer,
-    //                     } as IOpenQuestionData,
-    //                     isAnswered: !!answer,
-    //                 },
-    //             });
-    //     }
-    // };
-    //
-    // onReset = () => {
-	//
-    //     // let resetAnswers;
-    //     //
-    //     // switch(this.state.currentQuestion.type) {
-    //     //     case QuestionType.match_columns:
-    //     //         resetAnswers = (this.state.currentQuestion.questionData as any)
-    //     //             .answers.map((a: any) => {
-    //     //                 return {...a, user_answer: ''};
-    //     //             });
-    //     // }
-	//
-    //     this.setState({
-    //         ...this.state,
-    //         currentQuestion: {
-    //             ...this.state.currentQuestion,
-    //             // questionData: {
-    //             //     ...this.state.currentQuestion.questionData,
-    //             //     answers: resetAnswers,
-    //             // },
-    //             isAnswered: false,
-    //         },
-    //     });
-    // };
     //
     // onPointsToAddChange = (evt) => {
     //     this.setState({
@@ -166,7 +45,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     // };
     // onPointsAdd = () => {
     //     const points = this.state.pointsToAdd;
-	//
+    //
     //     this.setState({
     //         ...this.state,
     //         currentQuestion: {
@@ -176,6 +55,19 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     //         },
     //     });
     // };
+
+    onDone = () => {
+        this.setState({
+            ...this.state,
+            loading: true,
+        });
+
+        database.ref('users/' + this.state.user.github).set({
+            test_status: EUserTestStatus.passed,
+        }).then(() => {
+            this.props.history.push('/profile');
+        });
+    };
 
     onNext = () => {
         const questions = this.state.questions;
@@ -202,7 +94,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     getTestQuestions = () => {
-        const {user} = this.props;
+        const {user} = this.state;
 
         if (user.test_status == EUserTestStatus.in_progress) {
             return database.ref(`/passed-questions/${user.github}`).once('value');
@@ -228,7 +120,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             } else {
                                 this.picturesStorage[q.key] = [objectURL];
                             }
-                            debugger;
                             if (this.state.loading) {
                                 this.setState({
                                     ...this.state,
@@ -242,7 +133,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 });
             } else {
                 this.picturesStorage[q.key] = [];
-                debugger;
                 if (this.state.loading) {
                     this.setState({
                         ...this.state,
@@ -268,28 +158,36 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     private picturesStorage: any;
     private questionsCount: number;
 
+    constructor(props) {
+        super(props);
+
+        const user = auth.currentUser;
+        if (user) {
+            debugger;
+            this.state = {
+                user: null,
+                loading: true,
+                showQuestionsList: true,
+            };
+        } else {
+            debugger;
+            this.props.history.push('/');
+        }
+    }
+
     static compareQuestions(a, b: any) {
         return a.order - b.order;
     }
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            loading: true,
-            showQuestionsList: true,
-        };
-    }
-
     componentDidMount() {
-        const {user} = this.props;
+        const {user} = this.state;
 
         this.getTestQuestions().then((snapshot) => {
             const questions = snapshot.val();
             if (user.test_status == EUserTestStatus.not_passed) {
                 database.ref('passed-questions/' + user.github).set(questions).then(() => {
-                    database.ref('users/' + this.props.user.github).set({
-                        ...this.props.user,
+                    database.ref('users/' + user.github).set({
+                        ...user,
                         test_status: EUserTestStatus.in_progress,
                         current_question: 1,
                     }).then(() => {
@@ -303,13 +201,14 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     render() {
-        const {loading} = this.state;
-        console.log(loading);
+
         return (
             <React.Fragment>
-                {loading && <div data-test="fookek" className={AppStyles.progress}>
+                {this.state.loading &&
+                <div className={AppStyles.progress}>
                     <LinearProgress/>
-                </div>}
+                </div>
+                }
                 {
                     !this.state.loading && this.state.showQuestionsList &&
                     <QuestionsList
@@ -327,9 +226,17 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                         mode={EQuestionMode.passing}
                         onBack={this.toList}
                         onNext={this.onNext}
-                        user={this.props.user}
+                        user={this.state.user}
                     />
                 }
+                <div style={{margin: '25px'}}>
+                    <Button variant='contained'
+                            color='primary'
+                            fullWidth={false}
+                            onClick={this.onDone}>
+                        Завершить тест
+                    </Button>
+                </div>
             </React.Fragment>
         );
     }
