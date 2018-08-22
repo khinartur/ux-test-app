@@ -14,7 +14,7 @@ import AccountEdit from 'mdi-material-ui/AccountEdit';
 import Delete from 'mdi-material-ui/Delete';
 
 import {database} from '../modules/firebase';
-import {IUser} from '../interfaces/IUser';
+import {EUserTestStatus, IUser} from '../interfaces/IUser';
 
 import * as StudentListStyles from '../styles/StudentsList.scss';
 import IconButton from '@material-ui/core/IconButton';
@@ -22,15 +22,6 @@ import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import TestEditForm from './TestEditForm';
 import Test from './Test';
-
-interface StudentInfo {
-    name: string;
-    surname: string;
-    github: string;
-    points: number;
-    test_passed: boolean;
-    test_is_checked: boolean;
-}
 
 enum EMode {
     delete = 'delete',
@@ -43,10 +34,10 @@ interface State {
     studentName: string;
     studentSurname: string;
     studentGithub: string;
-    studentList?: StudentInfo[];
-    students?: { [login: string]: StudentInfo }
+    studentList?: IUser[];
+    students?: { [login: string]: IUser }
     mode?: EMode;
-    editableStudent?: StudentInfo;
+    editableStudent?: IUser;
     loading: boolean;
     showStudentResults: boolean;
     checkingStudentLogin?: string;
@@ -245,12 +236,12 @@ export default class StudentsList extends React.Component<{}, State> {
                                     <TableRow key={i}>
                                         <TableCell>{n.name + ' ' + n.surname}</TableCell>
                                         <TableCell>{n.github}</TableCell>
-                                        <TableCell>{n.test_passed ? 'пройден' : 'не пройден'}</TableCell>
+                                        <TableCell>{n.test_status == EUserTestStatus.passed ? 'пройден' : 'не пройден'}</TableCell>
                                         <TableCell>{n.test_is_checked ? 'да' : 'нет'}</TableCell>
                                         <TableCell>{n.points}</TableCell>
                                         <TableCell>
                                             <IconButton aria-label="Show test"
-                                                        disabled={!n.test_passed}
+                                                        disabled={n.test_status == EUserTestStatus.not_passed}
                                                         onClick={(evt) => this.showUserTest(evt, n.github)}>
                                                 <EyeSettings/>
                                             </IconButton>

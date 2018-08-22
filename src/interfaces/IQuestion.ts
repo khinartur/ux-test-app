@@ -46,6 +46,7 @@ export interface IOpenQuestionData {
 export enum EQuestionMode {
     passing='passing',
     checking='checking',
+    editing='editing',
 }
 
 export interface IQuestionProps<T extends AnyQuestionData>{

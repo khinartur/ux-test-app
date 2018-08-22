@@ -10,7 +10,7 @@ import * as TestEditFormStyles from '../styles/TestEditForm.scss';
 import * as TestStyles from '../styles/Test.scss';
 
 import {
-    IMatchAnswer, IMatchColumnsData, QuestionType, IQuestionProps, IQuestionState, IChooseAnswer
+    IMatchAnswer, IMatchColumnsData, QuestionType, IQuestionProps, IQuestionState, IChooseAnswer, EQuestionMode
 } from '../interfaces/IQuestion';
 import {MATCH_COLUMNS_POINTS} from '../constants/points';
 import {database, storageRef} from '../modules/firebase';
@@ -182,7 +182,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
     }
 
     componentWillMount() {
-        if (this.props.mode === 'pass') {
+        if (this.props.mode === EQuestionMode.passing) {
             let [leftAnswers, rightAnswers] = [[], []];
             this.state.answers.map((answer: IMatchAnswer) => {
                 leftAnswers.push({text: answer.left, bgColor: answer.color});
@@ -207,7 +207,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         return (
             <div>
                 {
-                    mode === 'edit' &&
+                    mode === EQuestionMode.editing &&
                     <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
                         <div>
                             {
@@ -256,7 +256,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     </Paper>
                 }
                 {
-                    (mode === 'pass' || mode == 'check') &&
+                    (mode === EQuestionMode.passing || mode == EQuestionMode.checking) &&
                     <div>
                         {
                             this.state.answers.map((a: IMatchAnswer, i: number) => {
@@ -274,7 +274,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                     buttonRef={ref1}
                                                     fullWidth={true}
                                                     name={'left'}
-                                                    disabled={mode == 'check'}
+                                                    disabled={mode == EQuestionMode.checking}
                                                     onClick={(evt) => this.onAnswer(evt)}>
                                                 {this.state.passMode.leftAnswers[i].text}
                                             </Button>
@@ -288,7 +288,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                     buttonRef={ref2}
                                                     fullWidth={true}
                                                     name={'right'}
-                                                    disabled={mode == 'check'}
+                                                    disabled={mode == EQuestionMode.checking}
                                                     onClick={(evt) => this.onAnswer(evt)}>
                                                 {this.state.passMode.rightAnswers[i].text}
                                             </Button>
@@ -297,7 +297,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                 );
                             })
                         }
-                        {mode !== 'check' &&
+                        {mode !== EQuestionMode.checking &&
                         <div className={MatchColumnsQuestionStyles.resetButton}>
                             <Button variant="contained"
                                     color="primary"

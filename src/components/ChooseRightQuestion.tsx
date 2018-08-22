@@ -8,17 +8,12 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 import CheckCircle from 'mdi-material-ui/CheckCircle';
 
-import * as AppStyles from '../styles/App.scss';
-import * as TestEditFormStyles from '../styles/TestEditForm.scss';
 import * as ChooseRightQuestionStyles from '../styles/ChooseRightQuestion.scss';
-import * as TestStyles from '../styles/Test.scss';
 
 import {
+    EQuestionMode,
     IChooseAnswer, IChooseRightData, IQuestionProps, IQuestionState,
-    QuestionType
 } from '../interfaces/IQuestion';
-import {database, storageRef} from '../modules/firebase';
-import {CHOOSE_RIGHT_POINTS} from '../constants/points';
 
 interface Props extends IQuestionProps<IChooseRightData> {
 }
@@ -103,7 +98,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         return (
             <div>
                 {
-                    mode === 'edit' &&
+                    mode === EQuestionMode.editing &&
                     <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
                         <div>
                             {
@@ -154,7 +149,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 }
 
                 {
-                    (mode === 'pass' || mode === 'check') &&
+                    (mode === EQuestionMode.passing || mode == EQuestionMode.checking) &&
                     <div>
                         {
                             this.state.answers.map((answer: IChooseAnswer, i: number) => {
@@ -167,7 +162,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                                     onChange={(evt) => this.onAnswerClick(evt)}
                                                     value={answer.text}
                                                     checked={answer.isAnswered}
-                                                    disabled={mode === 'check'}
+                                                    disabled={mode === EQuestionMode.checking}
                                                 />
                                             }
                                             label={answer.text}

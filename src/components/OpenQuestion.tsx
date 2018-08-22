@@ -3,6 +3,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import {
+    EQuestionMode,
     IOpenQuestionData, IQuestionProps, IQuestionState,
     QuestionType
 } from '../interfaces/IQuestion';
@@ -46,7 +47,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
         const {mode} = this.props;
 
         return (
-            (mode == 'pass' || mode == 'check') &&
+            (mode == EQuestionMode.passing || mode == EQuestionMode.checking) &&
             <div>
                 <TextField label="Ответ:"
                            fullWidth={true}
@@ -54,7 +55,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
                            rows={8}
                            rowsMax={8}
                            margin={'dense'}
-                           disabled={mode == 'check'}
+                           disabled={mode == EQuestionMode.checking}
                            onChange={(evt) => this.onAnswerTextareaChange(evt)}
                             defaultValue={this.props.question.questionData ? this.props.question.questionData.answer : ''}>
                 </TextField>

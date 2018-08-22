@@ -16,7 +16,6 @@ import OpenQuestion from './OpenQuestion';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 
-
 import * as TestQuestionStyles from '../styles/TestQuestion.scss';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -29,7 +28,7 @@ interface Props {
     mode: EQuestionMode,
     onBack: () => void,
     onNext: () => void,
-    onPointsAdd: (e: any, p: number) => void,
+    onPointsAdd?: (e: any, p: number) => void,
     user: IUser,
 }
 

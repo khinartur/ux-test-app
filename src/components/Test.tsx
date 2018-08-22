@@ -1,8 +1,9 @@
 import * as React from 'react';
 import {RouteComponentProps, withRouter} from 'react-router';
-import {IUser} from '../interfaces/IUser';
+import {EUserTestStatus, IUser} from '../interfaces/IUser';
 import {
-    AnyQuestionData, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IOpenQuestionData, IQuestion,
+    AnyQuestionData, EQuestionMode, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IOpenQuestionData,
+    IQuestion,
     QuestionAnswer,
     QuestionType
 } from '../interfaces/IQuestion';
@@ -20,84 +21,197 @@ import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import TextField from '@material-ui/core/TextField';
 import QuestionsList, {EQuestionsListMode} from './QuestionsList';
+import TestQuestion from './TestQuestion';
 
 interface Props {
     user: IUser;
-    checkMode: boolean;
-    onCheck: any;
 }
 
 interface State {
     questions?: IQuestion<AnyQuestionData>[];
-
     currentQuestion?: IQuestion<AnyQuestionData>;
-    currentQNumber?: number;
 
     loading: boolean;
     showQuestionsList: boolean;
-
-    pointsToAdd?: number;
 }
 
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
-    onDone = () => {
-        debugger;
+    // onDone = () => {
+    //     debugger;
+    //     this.setState({
+    //         loading: true,
+    //     }, () => {
+    //         debugger;
+    //         let pointsSum = 0;
+    //         this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
+    //             let goodBoy = true;
+    //             switch (q.type) {
+    //                 case QuestionType.choose_right:
+    //                     (q.questionData as IChooseRightData).answers.map((a: IChooseAnswer) => {
+    //                         if (a.isAnswered && !a.isRight) goodBoy = false;
+    //                     });
+    //                     if (goodBoy) pointsSum += q.points;
+    //                     q.isChecked = true;
+    //                     break;
+	//
+    //                 case QuestionType.match_columns:
+    //                     (q.questionData as IMatchColumnsData).answers.map((a: IMatchAnswer) => {
+    //                         if (a.right !== a.user_answer) goodBoy = false;
+    //                     });
+    //                     if (goodBoy) pointsSum += q.points;
+    //                     q.isChecked = true;
+    //                     break;
+	//
+    //                 case QuestionType.open_question:
+    //                     if (q.isChecked) {
+    //                         pointsSum += q.points;
+    //                     }
+    //             }
+    //         });
+	//
+    //         database.ref('passed-questions/' + this.props.user.github).set({
+    //             ...ejectKey(this.state.questions),
+    //         }).then(() => {
+    //             database.ref('users/' + this.props.user.github).set({
+    //                 ...this.props.user,
+    //                 points: pointsSum,
+    //                 test_passed: true,
+    //                 test_is_checked: false,
+    //             }).then(() => {
+    //                 if (this.props.checkMode) {
+    //                     this.props.onCheck();
+    //                     return;
+    //                 }
+    //                 this.setState({
+    //                     ...this.state,
+    //                     loading: false,
+    //                 });
+    //             });
+    //         });
+    //     });
+    // };
+    // onAnswer = (answer: QuestionAnswer) => {
+    //     const question = this.state.currentQuestion;
+    //     switch (question.type) {
+    //         case QuestionType.choose_right:
+    //             const chData = question.questionData as IChooseRightData;
+    //             const answeredChAnswers = chData.answers.filter((v: IChooseAnswer) => v.isAnswered);
+    //             this.setState({
+    //                 ...this.state,
+    //                 currentQuestion: {
+    //                     ...this.state.currentQuestion,
+    //                     isAnswered: !!answeredChAnswers.length,
+    //                 },
+    //             });
+    //             break;
+	//
+    //         case QuestionType.match_columns:
+    //             const mData = question.questionData as IMatchColumnsData;
+    //             //const m = mData.answers.filter((v: IMatchAnswer) => v.left == (answer as IMatchAnswer).left)[0];
+    //             const answeredMAnswers = mData.answers.filter((v: IMatchAnswer) => v.user_answer);
+    //             this.setState({
+    //                 ...this.state,
+    //                 currentQuestion: {
+    //                     ...this.state.currentQuestion,
+    //                     isAnswered: answeredMAnswers.length == mData.answers.length,
+    //                 },
+    //             });
+    //             break;
+	//
+    //         case QuestionType.open_question:
+    //             this.setState({
+    //                 ...this.state,
+    //                 currentQuestion: {
+    //                     ...this.state.currentQuestion,
+    //                     questionData: {
+    //                         ...this.state.currentQuestion,
+    //                         answer: answer,
+    //                     } as IOpenQuestionData,
+    //                     isAnswered: !!answer,
+    //                 },
+    //             });
+    //     }
+    // };
+    //
+    // onReset = () => {
+	//
+    //     // let resetAnswers;
+    //     //
+    //     // switch(this.state.currentQuestion.type) {
+    //     //     case QuestionType.match_columns:
+    //     //         resetAnswers = (this.state.currentQuestion.questionData as any)
+    //     //             .answers.map((a: any) => {
+    //     //                 return {...a, user_answer: ''};
+    //     //             });
+    //     // }
+	//
+    //     this.setState({
+    //         ...this.state,
+    //         currentQuestion: {
+    //             ...this.state.currentQuestion,
+    //             // questionData: {
+    //             //     ...this.state.currentQuestion.questionData,
+    //             //     answers: resetAnswers,
+    //             // },
+    //             isAnswered: false,
+    //         },
+    //     });
+    // };
+    //
+    // onPointsToAddChange = (evt) => {
+    //     this.setState({
+    //         ...this.state,
+    //         pointsToAdd: evt.currentTarget.value,
+    //     });
+    // };
+    // onPointsAdd = () => {
+    //     const points = this.state.pointsToAdd;
+	//
+    //     this.setState({
+    //         ...this.state,
+    //         currentQuestion: {
+    //             ...this.state.currentQuestion,
+    //             isChecked: true,
+    //             points: points,
+    //         },
+    //     });
+    // };
+
+    onNext = () => {
+        const questions = this.state.questions;
+        const current = this.state.currentQuestion;
+
         this.setState({
-            loading: true,
-        }, () => {
-            debugger;
-            let pointsSum = 0;
-            this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
-                let goodBoy = true;
-                switch (q.type) {
-                    case QuestionType.choose_right:
-                        (q.questionData as IChooseRightData).answers.map((a: IChooseAnswer) => {
-                            if (a.isAnswered && !a.isRight) goodBoy = false;
-                        });
-                        if (goodBoy) pointsSum += q.points;
-                        q.isChecked = true;
-                        break;
-
-                    case QuestionType.match_columns:
-                        (q.questionData as IMatchColumnsData).answers.map((a: IMatchAnswer) => {
-                            if (a.right !== a.user_answer) goodBoy = false;
-                        });
-                        if (goodBoy) pointsSum += q.points;
-                        q.isChecked = true;
-                        break;
-
-                    case QuestionType.open_question:
-                        if (q.isChecked) {
-                            pointsSum += q.points;
-                        }
-                }
-            });
-
-            database.ref('passed-questions/' + this.props.user.github).set({
-                ...ejectKey(this.state.questions),
-            }).then(() => {
-                database.ref('users/' + this.props.user.github).set({
-                    ...this.props.user,
-                    points: pointsSum,
-                    test_passed: true,
-                    test_is_checked: false,
-                }).then(() => {
-                    if (this.props.checkMode) {
-                        this.props.onCheck();
-                        return;
-                    }
-                    this.setState({
-                        ...this.state,
-                        loading: false,
-                    });
-                });
-            });
+            ...this.state,
+            currentQuestion: questions[current.order + 1],
         });
     };
+    toList = () => {
+        this.setState({
+            ...this.state,
+            showQuestionsList: true,
+        });
+    };
+    onQuestionsListClick = (evt, index) => {
+        const questions = this.state.questions;
+
+        this.setState({
+            ...this.state,
+            currentQuestion: questions[index],
+        });
+    };
+    getTestQuestions = () => {
+        const {user} = this.props;
+
+        if (user.test_status == EUserTestStatus.in_progress) {
+            return database.ref(`/passed-questions/${user.github}`).once('value');
+        } else {
+            return database.ref('/questions').once('value');
+        }
+    };
     loadPictures = () => {
-        this.localStorage = new Array(this.state.questions.length);
-        //debugger;
-        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
+        this.picturesStorage = new Array(this.state.questions.length);
+        this.state.questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
             const pictures = q.pictures;
 
             if (pictures) {
@@ -108,13 +222,13 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                         xhr.onload = function () {
                             const blob = xhr.response;
                             const objectURL = URL.createObjectURL(blob);
-                            if (this.localStorage[q.key]) {
+                            if (this.picturesStorage[q.key]) {
                                 this.localStorage[q.key].push(objectURL);
                             } else {
                                 this.localStorage[q.key] = [objectURL];
                             }
 
-                            if (this.state.loading && q.order == this.state.currentQNumber + 1) {
+                            if (this.state.loading && i == 1) {
                                 this.setState({
                                     ...this.state,
                                     loading: false,
@@ -126,8 +240,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     });
                 });
             } else {
-                this.localStorage[q.key] = [];
-                if (this.state.loading && q.order == this.state.currentQNumber) {
+                this.picturesStorage[q.key] = [];
+                if (this.state.loading && i == 1) {
                     this.setState({
                         ...this.state,
                         loading: false,
@@ -136,132 +250,25 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             }
         });
     };
-    onAnswer = (answer: QuestionAnswer) => {
-        const question = this.state.currentQuestion;
-        switch (question.type) {
-            case QuestionType.choose_right:
-                const chData = question.questionData as IChooseRightData;
-                const answeredChAnswers = chData.answers.filter((v: IChooseAnswer) => v.isAnswered);
-                this.setState({
-                    ...this.state,
-                    currentQuestion: {
-                        ...this.state.currentQuestion,
-                        isAnswered: !!answeredChAnswers.length,
-                    },
-                });
-                break;
-
-            case QuestionType.match_columns:
-                const mData = question.questionData as IMatchColumnsData;
-                //const m = mData.answers.filter((v: IMatchAnswer) => v.left == (answer as IMatchAnswer).left)[0];
-                const answeredMAnswers = mData.answers.filter((v: IMatchAnswer) => v.user_answer);
-                this.setState({
-                    ...this.state,
-                    currentQuestion: {
-                        ...this.state.currentQuestion,
-                        isAnswered: answeredMAnswers.length == mData.answers.length,
-                    },
-                });
-                break;
-
-            case QuestionType.open_question:
-                this.setState({
-                    ...this.state,
-                    currentQuestion: {
-                        ...this.state.currentQuestion,
-                        questionData: {
-                            ...this.state.currentQuestion,
-                            answer: answer,
-                        } as IOpenQuestionData,
-                        isAnswered: !!answer,
-                    },
-                });
-        }
-    };
-    onNext = () => {
-        const currNumber = this.state.currentQNumber;
-
-        const questions = this.state.questions;
-        let newQuestions = questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
-            return i !== currNumber ? q : this.state.currentQuestion;
-        });
-
-        const newCurrentNumber = currNumber == questions.length - 1 ? 0 : currNumber + 1;
-        const newCurrentQuestion = questions[newCurrentNumber];
-        debugger;
-        const isPicturesLoaded = !!this.localStorage[newCurrentQuestion.key];
+    initState = (questions) => {
+        const dbQuestions = Object.entries(embedKey(questions)).map((q) => q[1]).sort(Test.compareQuestions);
+        this.questionsCount = dbQuestions.length;
+        const currentQuestion = dbQuestions[0] as IQuestion<AnyQuestionData>;
 
         this.setState({
             ...this.state,
-            questions: newQuestions,
-            currentQuestion: newCurrentQuestion,
-            pointsToAdd: newCurrentQuestion.points,
-            currentQNumber: newCurrentNumber,
-            loading: !isPicturesLoaded,
+            questions: dbQuestions as IQuestion<AnyQuestionData>[],
+            currentQuestion: currentQuestion,
+        }, () => {
+            this.loadPictures();
         });
     };
-    onReset = () => {
+    private picturesStorage: any;
+    private questionsCount: number;
 
-        // let resetAnswers;
-        //
-        // switch(this.state.currentQuestion.type) {
-        //     case QuestionType.match_columns:
-        //         resetAnswers = (this.state.currentQuestion.questionData as any)
-        //             .answers.map((a: any) => {
-        //                 return {...a, user_answer: ''};
-        //             });
-        // }
-
-        this.setState({
-            ...this.state,
-            currentQuestion: {
-                ...this.state.currentQuestion,
-                // questionData: {
-                //     ...this.state.currentQuestion.questionData,
-                //     answers: resetAnswers,
-                // },
-                isAnswered: false,
-            },
-        });
-    };
-    toList = () => {
-        this.setState({
-            ...this.state,
-            showQuestionsList: true,
-        });
-    };
-    getTestQuestions = () => {
-        if (this.props.checkMode) {
-            return database.ref(`/passed-questions/${this.props.user.github}`).once('value');
-        } else {
-            return database.ref('/questions').once('value');
-        }
-    };
-
-    onPointsToAddChange = (evt) => {
-        this.setState({
-            ...this.state,
-            pointsToAdd: evt.currentTarget.value,
-        });
-    };
-
-    onPointsAdd = () => {
-        const points = this.state.pointsToAdd;
-
-        this.setState({
-            ...this.state,
-            currentQuestion: {
-                ...this.state.currentQuestion,
-                isChecked: true,
-                points: points,
-            },
-        });
-    };
-
-    onQuestionsListClick = (evt, key) => {
-
-    };
-    private localStorage: any;
+    static compareQuestions(a, b: any) {
+        return a.order - b.order;
+    }
 
     constructor(props) {
         super(props);
@@ -273,25 +280,27 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     componentDidMount() {
-        this.getTestQuestions().then(snapshot => {
-            const dbQuestions = Object.entries(embedKey(snapshot.val())).map((q) => q[1]);
-            const currentQuestion = dbQuestions[0] as IQuestion<AnyQuestionData>;
+        const {user} = this.props;
 
-            this.setState({
-                ...this.state,
-                questions: dbQuestions as IQuestion<AnyQuestionData>[],
-                currentQNumber: 0,
-                currentQuestion: currentQuestion,
-                pointsToAdd: currentQuestion.points,
-            }, () => {
-                this.loadPictures();
-            });
+        this.getTestQuestions().then((snapshot) => {
+            const questions = snapshot.val();
+            if (user.test_status == EUserTestStatus.not_passed) {
+                database.ref('passed-questions/' + user.github).set(questions).then(() => {
+                    database.ref('users/' + this.props.user.github).set({
+                        ...this.props.user,
+                        test_status: EUserTestStatus.in_progress,
+                        current_question: 1,
+                    }).then(() => {
+                        this.initState(questions);
+                    });
+                });
+            } else {
+                this.initState(questions);
+            }
         });
     }
 
     render() {
-        const {checkMode} = this.props;
-        const question = this.state.currentQuestion;
 
         return (
             <React.Fragment>
@@ -303,122 +312,22 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 {
                     !this.state.loading && this.state.showQuestionsList &&
                     <QuestionsList
-                        mode={EQuestionsListMode.pass}
+                        mode={EQuestionsListMode.passing}
                         questions={this.state.questions}
                         onClick={this.onQuestionsListClick}
                     />
                 }
                 {
                     !this.state.loading && !this.state.showQuestionsList &&
-                    <React.Fragment>
-                        {!checkMode &&
-                            <Typography variant="body2"
-                                        className={TestStyles.questionNumberHeader}>
-                                Вопрос {this.state.currentQNumber + 1 + '/' + this.state.questions.length}
-                            </Typography>
-                        }
-                        {!checkMode &&
-                            <div className={TestStyles.toQuestionsButton}>
-                                <Button variant='contained'
-                                        color='primary'
-                                        fullWidth={false}
-                                        onClick={this.toList}>
-                                    К списку вопросов
-                                </Button>
-                            </div>
-                        }
-                        {!checkMode &&
-                            <div className={TestStyles.doneTestButton}>
-                                <Button variant='contained'
-                                        color='primary'
-                                        fullWidth={false}
-                                        onClick={this.onDone}>
-                                    Завершить тест
-                                </Button>
-                            </div>
-                        }
-                        <div className={TestStyles.container}>
-                            {
-                                !this.state.loading && !this.state.done &&
-                                <Paper className={TestStyles.questionPaper}
-                                       elevation={10}>
-                                    <Typography variant="title"
-                                                style={{paddingTop: '3px'}}>
-                                        <div className={TestStyles.questionNumberDiv}>
-                                            <span
-                                                className={TestStyles.questionOrderSpan}>{' ' + question.order + '.'}</span>
-                                        </div>
-                                        {question.text}
-                                    </Typography>
-                                    <br/>
-                                    {
-                                        this.localStorage[this.state.currentQuestion.key] &&
-                                        this.localStorage[this.state.currentQuestion.key].length ?
-                                        this.localStorage[this.state.currentQuestion.key].map((url: string, i: number) => {
-                                            return <img key={i}
-                                                        src={url}
-                                                        style={{
-                                                            height: '180px',
-                                                            display: 'inline-block',
-                                                        }}/>;
-                                        }) : null
-                                    }
-                                    <br/>
-                                    {this.state.currentQuestion.type === QuestionType.choose_right &&
-                                    <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
-                                                         mode={checkMode ? 'check' : 'pass'}
-                                                         onAnswer={(answer) => this.onAnswer(answer)}/>}
-                                    {this.state.currentQuestion.type === QuestionType.match_columns &&
-                                    <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
-                                                          mode={checkMode ? 'check' : 'pass'}
-                                                          onAnswer={(answer) => this.onAnswer(answer)}
-                                                          onReset={this.onReset}/>}
-                                    {this.state.currentQuestion.type === QuestionType.open_question &&
-                                    <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
-                                                  mode={checkMode ? 'check' : 'pass'}
-                                                  onAnswer={(answer) => this.onAnswer(answer)}/>}
-                                    <div className={TestStyles.questionButtonNext}>
-                                        <Button variant="contained"
-                                                color="primary"
-                                                fullWidth={true}
-                                                onClick={this.onNext}>
-                                            {this.state.currentQuestion.isAnswered ? 'Дальше' : 'Пропустить'}
-                                        </Button>
-
-                                    </div>
-                                    {this.props.checkMode &&
-                                        <div className={TestStyles.addPointsDiv}>
-                                            <div>
-                                                <TextField label='Добавить баллов'
-                                                           fullWidth={true}
-                                                           margin={'dense'}
-                                                           disabled={!(this.state.currentQuestion.type == QuestionType.open_question)}
-                                                           onChange={(evt) => this.onPointsToAddChange(evt)}
-                                                           value={this.state.pointsToAdd}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Button variant="contained"
-                                                        color="primary"
-                                                        disabled={!(this.state.currentQuestion.type == QuestionType.open_question)}
-                                                        onClick={this.onPointsAdd}>
-                                                    Добавить баллы
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    }
-                                </Paper>
-                            }
-                            {
-                                !this.state.loading && this.state.done &&
-                                <Paper className={TestStyles.testDonePaper}>
-                                    <Typography variant="body1" align={'center'}>
-                                        Тест пройден. Следите за новостями портала.
-                                    </Typography>
-                                </Paper>
-                            }
-                        </div>
-                    </React.Fragment>
+                    <TestQuestion
+                        question={this.state.currentQuestion}
+                        questionsCount={this.questionsCount}
+                        pictures={this.picturesStorage[this.state.currentQuestion.key]}
+                        mode={EQuestionMode.passing}
+                        onBack={this.toList}
+                        onNext={this.onNext}
+                        user={this.props.user}
+                    />
                 }
             </React.Fragment>
         );

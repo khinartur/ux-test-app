@@ -15,13 +15,13 @@ import {AnyQuestionData, IQuestion} from '../interfaces/IQuestion';
 import {getTypeName} from '../utils/key-embedding';
 
 export enum EQuestionsListMode {
-    edit = 'edit',
-    check = 'check',
-    pass = 'pass',
+    editing = 'editing',
+    checking = 'checking',
+    passing = 'passing',
 }
 
 interface Props {
-    onClick: (evt: any, key: string) => void;
+    onClick: (evt: any, index: number) => void;
     mode: EQuestionsListMode;
     questions: IQuestion<AnyQuestionData>[];
 }
@@ -71,11 +71,11 @@ export default class QuestionsList extends React.Component<Props, State> {
                                 <TableCell>Вопрос</TableCell>
                                 <TableCell>Тип</TableCell>
                                 {
-                                    mode !== EQuestionsListMode.edit &&
+                                    mode !== EQuestionsListMode.editing &&
                                     <React.Fragment>
                                         <TableCell>Статус</TableCell>
                                         {
-                                            mode == EQuestionsListMode.check &&
+                                            mode == EQuestionsListMode.checking &&
                                             <TableCell>Статус проверки</TableCell>
                                         }
                                     </React.Fragment>
@@ -86,13 +86,13 @@ export default class QuestionsList extends React.Component<Props, State> {
                             {questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
                                 return (
                                     <TableRow key={i}
-                                              onClick={(evt) => onClick(evt, q.key)}>
+                                              onClick={(evt) => onClick(evt, i)}>
                                         <TableCell className={QuestionsListStyles.questionTextCell}>
                                             {q.text}
                                         </TableCell>
                                         <TableCell>{getTypeName(q)}</TableCell>
                                         {
-                                            mode !== EQuestionsListMode.edit &&
+                                            mode !== EQuestionsListMode.editing &&
                                             <React.Fragment>
                                                 <TableCell>
                                                     {
@@ -101,7 +101,7 @@ export default class QuestionsList extends React.Component<Props, State> {
                                                     }
                                                 </TableCell>
                                                 {
-                                                    mode == EQuestionsListMode.check &&
+                                                    mode == EQuestionsListMode.checking &&
                                                     <TableCell>
                                                         {q.isChecked ?
                                                             <span style={{color: '#00695f'}}>проверен</span> :

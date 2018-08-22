@@ -2,7 +2,7 @@ import * as React from 'react';
 import Paper from '@material-ui/core/Paper';
 import {RouteComponentProps, withRouter} from 'react-router';
 import Typography from '@material-ui/core/Typography';
-import {IUser} from '../interfaces/IUser';
+import {EUserTestStatus, IUser} from '../interfaces/IUser';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
@@ -87,7 +87,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                             {/*</Typography>*/}
                             {/*}*/}
                             {
-                                user.test_passed ?
+                                user.test_status == EUserTestStatus.passed ?
                                     (
                                         <Typography variant="body2" gutterBottom>
                                             Вы уже прошли тест. Следите за новостями на портале.

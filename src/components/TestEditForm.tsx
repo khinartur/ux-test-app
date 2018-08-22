@@ -2,8 +2,7 @@ import * as React from 'react';
 import {database, storageRef} from '../modules/firebase';
 import Button from '@material-ui/core/Button';
 import {
-    AnyQuestionData, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IOpenQuestionData, IQuestion,
-    QuestionAnswer,
+    AnyQuestionData, EQuestionMode, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IQuestion,
     QuestionType
 } from '../interfaces/IQuestion';
 
@@ -412,14 +411,14 @@ export default class TestEditForm extends React.Component<{}, State> {
                                                 this.state.currentQuestionType === QuestionType.choose_right &&
                                                 <ChooseRightQuestion
                                                     question={this.state.currentQuestion as IQuestion<IChooseRightData>}
-                                                    mode={'edit'}
+                                                    mode={EQuestionMode.editing}
                                                     onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
                                             }
                                             {
                                                 this.state.currentQuestionType === QuestionType.match_columns &&
                                                 <MatchColumnsQuestion
                                                     question={this.state.currentQuestion as IQuestion<IMatchColumnsData>}
-                                                    mode={'edit'}
+                                                    mode={EQuestionMode.editing}
                                                     onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
                                             }
                                             <div>
