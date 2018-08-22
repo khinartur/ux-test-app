@@ -92,7 +92,8 @@ export default class StudentsList extends React.Component<{}, State> {
                     name: this.state.studentName,
                     surname: this.state.studentSurname,
                     github: this.state.studentGithub,
-                    test_passed: false,
+                    test_status: EUserTestStatus.not_passed,
+                    current_question: 0,
                     points: 0,
                     test_is_checked: false,
                 }).then(() => {

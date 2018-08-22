@@ -74,34 +74,21 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                             <Typography variant="body2" gutterBottom>
                                 Github: {user.github}
                             </Typography>
-                            {/*{*/}
-                            {/*user.test_passed &&*/}
-                            {/*<Typography variant="body2" gutterBottom>*/}
-                            {/*Кол-во баллов: {user.github}*/}
-                            {/*</Typography>*/}
-                            {/*}*/}
-                            {/*{*/}
-                            {/*user.test_passed &&*/}
-                            {/*<Typography variant="body2" gutterBottom>*/}
-                            {/*Статус проверки: {user.test_is_checked ? 'проверен' : 'не проверен'}*/}
-                            {/*</Typography>*/}
-                            {/*}*/}
-                            {
-                                user.test_status == EUserTestStatus.passed ?
-                                    (
-                                        <Typography variant="body2" gutterBottom>
-                                            Вы уже прошли тест. Следите за новостями на портале.
-                                        </Typography>
-                                    )
-                                    :
-                                    (
-                                        <Button variant="contained"
-                                                color="primary"
-                                                className={StudentProfileStyles.testButton}
-                                                onClick={this.initTest}>
-                                            Начать тест
-                                        </Button>
-                                    )
+                            {user.test_status == EUserTestStatus.passed ?
+                                (
+                                    <Typography variant="body2" gutterBottom>
+                                        Вы уже прошли тест. Следите за новостями на портале.
+                                    </Typography>
+                                )
+                                :
+                                (
+                                    <Button variant="contained"
+                                            color="primary"
+                                            className={StudentProfileStyles.testButton}
+                                            onClick={this.initTest}>
+                                        Начать тест
+                                    </Button>
+                                )
                             }
                             <br/>
                         </Paper>

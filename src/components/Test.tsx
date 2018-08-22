@@ -198,6 +198,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         this.setState({
             ...this.state,
             currentQuestion: questions[index],
+            showQuestionsList: false,
         });
     };
     getTestQuestions = () => {
@@ -211,7 +212,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     };
     loadPictures = () => {
         this.picturesStorage = new Array(this.state.questions.length);
-        this.state.questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
+        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
             const pictures = q.pictures;
 
             if (pictures) {
@@ -223,12 +224,12 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             const blob = xhr.response;
                             const objectURL = URL.createObjectURL(blob);
                             if (this.picturesStorage[q.key]) {
-                                this.localStorage[q.key].push(objectURL);
+                                this.picturesStorage[q.key].push(objectURL);
                             } else {
-                                this.localStorage[q.key] = [objectURL];
+                                this.picturesStorage[q.key] = [objectURL];
                             }
-
-                            if (this.state.loading && i == 1) {
+                            debugger;
+                            if (this.state.loading) {
                                 this.setState({
                                     ...this.state,
                                     loading: false,
@@ -241,7 +242,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 });
             } else {
                 this.picturesStorage[q.key] = [];
-                if (this.state.loading && i == 1) {
+                debugger;
+                if (this.state.loading) {
                     this.setState({
                         ...this.state,
                         loading: false,
@@ -301,14 +303,13 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     render() {
-
+        const {loading} = this.state;
+        console.log(loading);
         return (
             <React.Fragment>
-                {this.state.loading &&
-                <div className={AppStyles.progress}>
+                {loading && <div data-test="fookek" className={AppStyles.progress}>
                     <LinearProgress/>
-                </div>
-                }
+                </div>}
                 {
                     !this.state.loading && this.state.showQuestionsList &&
                     <QuestionsList

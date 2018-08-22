@@ -43,7 +43,7 @@ export default class QuestionsList extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            loading: true,
+            loading: false,
         };
     }
 
@@ -86,6 +86,7 @@ export default class QuestionsList extends React.Component<Props, State> {
                             {questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
                                 return (
                                     <TableRow key={i}
+                                              className={QuestionsListStyles.questionTableRow}
                                               onClick={(evt) => onClick(evt, i)}>
                                         <TableCell className={QuestionsListStyles.questionTextCell}>
                                             {q.text}
