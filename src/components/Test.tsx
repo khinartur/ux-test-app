@@ -161,17 +161,30 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     constructor(props) {
         super(props);
 
-        const user = auth.currentUser;
-        if (user) {
-            debugger;
-            this.state = {
-                user: null,
-                loading: true,
-                showQuestionsList: true,
-            };
-        } else {
-            debugger;
-            this.props.history.push('/');
+        // if (auth.currentUser) {
+        //     debugger;
+        //     this.state = {
+        //         user: null,
+        //         loading: true,
+        //         showQuestionsList: true,
+        //     };
+        // } else {
+        //     debugger;
+        //     this.props.history.push('/');
+        // }
+
+        this.state = {
+            user: {
+                name: 'Arthur',
+                surname: 'Khineltsev',
+                github: 'khinartur',
+                test_status: EUserTestStatus.not_passed,
+                test_is_checked: false,
+                current_question: 0,
+                points: 0,
+            } as IUser,
+            loading: true,
+            showQuestionsList: true,
         }
     }
 

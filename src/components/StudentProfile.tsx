@@ -27,7 +27,6 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
     constructor(props) {
         super(props);
 
-
         if (auth.currentUser) {
             const login = localStorage.getItem('loggedUser');
             this.userLogin = login;
