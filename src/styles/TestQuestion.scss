@@ -3,6 +3,40 @@
     margin: 50px auto;
 }
 
+.backArrow {
+    position: fixed;
+    top: 200px;
+    left: 200px;
+    width: 200px;
+    height: 200px;
+}
+
+.backArrow:hover {
+    background-color: aliceblue;
+}
+
+.nextArrow {
+    position: fixed;
+    top: 200px;
+    right: 200px;
+    width: 200px;
+    height: 200px;
+}
+
+.nextArrow:hover {
+    background-color: aliceblue;
+}
+
+.leftArrow {
+    margin-left: 88px;
+    margin-top: 88px;
+}
+
+.rightArrow {
+    margin-left: 88px;
+    margin-top: 88px;
+}
+
 .questionPaper {
     padding: 50px;
 }

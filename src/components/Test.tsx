@@ -33,7 +33,7 @@ interface State {
     questions?: IQuestion<AnyQuestionData>[];
     currentQuestion?: IQuestion<AnyQuestionData>;
 
-    user: IUser;
+    user?: IUser;
     loading: boolean;
     showQuestionsList: boolean;
     showDoneTestDialog: boolean;
@@ -103,6 +103,16 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             currentQuestion: questions[toStart ? 0 : current.order],
         });
     };
+    onBack = () => {
+        const questions = this.state.questions;
+        const current = this.state.currentQuestion;
+        const toEnd = current.order == 1;
+
+        this.setState({
+            ...this.state,
+            currentQuestion: questions[toEnd ? questions.length - 1 : current.order - 2],
+        });
+    };
     toList = () => {
         this.setState({
             ...this.state,
@@ -135,7 +145,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     },
                     isAnswered,
                 } as IQuestion<IMatchColumnsData>;
-                debugger;
+
                 this.setState({
                     ...this.state,
                     currentQuestion: newCurrent,
@@ -165,7 +175,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             return q;
         });
 
-        debugger;
+
         this.setState({
             ...this.state,
             questions: modifiedQuestions,
@@ -252,27 +262,18 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         super(props);
 
         // if (auth.currentUser) {
-        //     debugger;
+        //
         //     this.state = {
         //         user: null,
         //         loading: true,
         //         showQuestionsList: true,
         //     };
         // } else {
-        //     debugger;
+        //
         //     this.props.history.push('/');
         // }
 
         this.state = {
-            user: {
-                name: 'Arthur',
-                surname: 'Khineltsev',
-                github: 'khinartur',
-                test_status: EUserTestStatus.not_passed,
-                test_is_checked: false,
-                current_question: 0,
-                points: 0,
-            } as IUser,
             loading: true,
             showQuestionsList: true,
             showDoneTestDialog: false,
@@ -284,24 +285,30 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     componentDidMount() {
-        const {user} = this.state;
-
-        this.getTestQuestions().then((snapshot) => {
-            const questions = snapshot.val();
-            if (user.test_status == EUserTestStatus.not_passed) {
-                database.ref('passed-questions/' + user.github).set(questions).then(() => {
-                    database.ref('users/' + user.github).set({
-                        ...user,
-                        test_status: EUserTestStatus.in_progress,
-                        current_question: 1,
-                    }).then(() => {
-                        this.initState(questions);
+        database.ref('/users/khinartur').once('value')
+            .then((snapshot) => {
+                this.setState({
+                    ...this.state,
+                    user: snapshot.val(),
+                }, () => {
+                    this.getTestQuestions().then((snapshot) => {
+                        const questions = snapshot.val();
+                        if (this.state.user.test_status == EUserTestStatus.not_passed) {
+                            database.ref('passed-questions/' + this.state.user.github).set(questions).then(() => {
+                                database.ref('users/' + this.state.user.github).set({
+                                    ...this.state.user,
+                                    test_status: EUserTestStatus.in_progress,
+                                    current_question: 1,
+                                }).then(() => {
+                                    this.initState(questions);
+                                });
+                            });
+                        } else {
+                            this.initState(questions);
+                        }
                     });
                 });
-            } else {
-                this.initState(questions);
-            }
-        });
+            });
     }
 
     render() {
@@ -340,7 +347,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                                 questionsCount={this.questionsCount}
                                 pictures={this.picturesStorage[this.state.currentQuestion.key]}
                                 mode={EQuestionMode.passing}
-                                onBack={this.toList}
+                                onList={this.toList}
+                                onBack={this.onBack}
                                 onNext={this.onNext}
                                 onAnswer={this.onAnswer}
                                 user={this.state.user}

@@ -57,7 +57,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
     };
 
     onAnswer = (evt, dir, index) => {
-        debugger;
+
         const down = dir == 'down';
         if (down && index == this.state.answers.length - 1 ||
             !down && index == 0) return;
@@ -80,7 +80,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             user_answer: a,
         } as IMatchAnswer;
 
-        debugger;
+
         onAnswer(firstAnswer);
         onAnswer(secondAnswer);
 
@@ -136,7 +136,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                         ...a,
                         user_answer: an,
                     } as IMatchAnswer;
-                    debugger;
+
                     onAnswer(answer);
                 });
             });

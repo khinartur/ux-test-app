@@ -15,6 +15,8 @@ import MatchColumnsQuestion from './MatchColumnsQuestion';
 import OpenQuestion from './OpenQuestion';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import ChevronDoubleLeft from 'mdi-material-ui/ChevronDoubleLeft';
+import ChevronDoubleRight from 'mdi-material-ui/ChevronDoubleRight';
 
 import * as TestQuestionStyles from '../styles/TestQuestion.scss';
 import * as AppStyles from '../styles/App.scss';
@@ -26,6 +28,7 @@ interface Props {
     questionsCount: number;
     pictures: any[],
     mode: EQuestionMode,
+    onList?: () => void,
     onBack?: () => void,
     onNext?: () => void,
     onAnswer?: (a: QuestionAnswer[] | string, b: boolean) => void,
@@ -75,7 +78,6 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                 //(question as IQuestion<IMatchColumnsData>).questionData.answers = newAnswers;
                 isAnswered = newAnswers.some((a: IMatchAnswer) => !!a.user_answer);
                 //(question as IQuestion<IMatchColumnsData>).isAnswered = isAnswered;
-                debugger;
                 onAnswer(newAnswers, isAnswered);
                 break;
 
@@ -94,7 +96,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
         console.log('[TestQuestion#onAnswerSave]');
         console.dir(question.questionData);
 
-        debugger;
+
         this.setState({
             ...this.state,
             loading: true,
@@ -141,10 +143,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
     }
 
     render() {
-        const {question, questionsCount, pictures, mode, onBack} = this.props;
-
-        console.log('[TestQuestion#render]');
-        console.dir((question.questionData as any).answers);
+        const {question, questionsCount, pictures, mode, onList, onBack, onNext} = this.props;
 
         const isPassingMode = mode == EQuestionMode.passing;
 
@@ -166,9 +165,25 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                     <Button variant='contained'
                             color='primary'
                             fullWidth={false}
-                            onClick={onBack}>
+                            onClick={onList}>
                         К списку вопросов
                     </Button>
+                </div>
+                }
+                {isPassingMode &&
+                <div className={TestQuestionStyles.backArrow}
+                     onClick={onBack}>
+                    <div className={TestQuestionStyles.leftArrow}>
+                        <ChevronDoubleLeft/>
+                    </div>
+                </div>
+                }
+                {isPassingMode &&
+                <div className={TestQuestionStyles.nextArrow}
+                     onClick={onNext}>
+                    <div className={TestQuestionStyles.rightArrow}>
+                        <ChevronDoubleRight/>
+                    </div>
                 </div>
                 }
                 <div className={TestQuestionStyles.container}>
