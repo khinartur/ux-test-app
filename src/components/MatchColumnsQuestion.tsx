@@ -1,21 +1,18 @@
 import * as React from 'react';
 import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import MenuUp from 'mdi-material-ui/MenuUp';
+import MenuDown from 'mdi-material-ui/MenuDown';
 
-import * as AppStyles from '../styles/App.scss';
 import * as MatchColumnsQuestionStyles from '../styles/MatchColumnsQuestion.scss';
-import * as TestEditFormStyles from '../styles/TestEditForm.scss';
-import * as TestStyles from '../styles/Test.scss';
-
 import {
-    IMatchAnswer, IMatchColumnsData, QuestionType, IQuestionProps, IQuestionState, IChooseAnswer, EQuestionMode
+    IMatchAnswer, IMatchColumnsData, IQuestionProps, IQuestionState, EQuestionMode
 } from '../interfaces/IQuestion';
-import {MATCH_COLUMNS_POINTS} from '../constants/points';
-import {database, storageRef} from '../modules/firebase';
+
 import {shuffle} from '../utils/key-embedding';
-import {Req} from 'awesome-typescript-loader/dist/checker/protocol';
+import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
 
 interface Props extends IQuestionProps<IMatchColumnsData> {
 }
@@ -58,120 +55,54 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             answerTextRight: '',
         });
     };
-    onReset = () => {
-        this.allAnswersButtons.map((ref: any) => {
-            ref.current.style.backgroundColor = '#000000';
-        });
 
-        let resetAnswers = [];
-        this.state.answers.map((answer: IMatchAnswer) => {
-            resetAnswers.push({
-                ...answer,
-                user_answer: '',
-                color: '#000000',
-            });
+    onAnswer = (evt, dir, index) => {
+        debugger;
+        const down = dir == 'down';
+        if (down && index == this.state.answers.length - 1 ||
+            !down && index == 0) return;
+
+        const {onAnswer} = this.props;
+        const {rightAnswers} = this.state.passMode;
+        const bIndex = down ? index + 1 : index - 1;
+
+        const a = rightAnswers[index];
+        const b = rightAnswers[bIndex];
+        [rightAnswers[index], rightAnswers[bIndex]] = [b, a];
+
+        const firstAnswer = {
+            ...this.state.answers[index],
+            user_answer: b,
+        } as IMatchAnswer;
+
+        const secondAnswer = {
+            ...this.state.answers[bIndex],
+            user_answer: a,
+        } as IMatchAnswer;
+
+        debugger;
+        onAnswer(firstAnswer);
+        onAnswer(secondAnswer);
+
+        this.state.answers.map((a: IMatchAnswer, i: number) => {
+            if (i !== index && i !== bIndex) {
+                const an = rightAnswers[i];
+                const answer = {
+                    ...a,
+                    user_answer: an,
+                } as IMatchAnswer;
+                onAnswer(answer);
+            }
         });
 
         this.setState({
             ...this.state,
-            answers: resetAnswers,
+            passMode: {
+                ...this.state.passMode,
+                rightAnswers: rightAnswers,
+            }
         });
-
-        this.props.onReset();
     };
-    onAnswer = (evt) => {
-        console.log(evt.target.textContent);
-        const answerText = evt.target.textContent;
-        const answers = this.state.answers;
-
-        const currentAnswer = this.state.passMode.answer || {};
-
-        switch (evt.currentTarget.name) {
-            case 'left':
-                this.state.passMode.leftAnswers.map((a: any) => {
-                    if (a.text !== answerText) return;
-                    a.color = this.materialColors[this.answerNumber];
-                });
-                if (currentAnswer.right) {
-                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
-                    dbAnswer.user_answer = currentAnswer.right;
-                    dbAnswer.color = this.materialColors[this.answerNumber];
-                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
-                    this.answerNumber += 1;
-                    this.setState({
-                        ...this.state,
-                        passMode: {
-                            ...this.state.passMode,
-                            answer: null,
-                        }
-                    });
-                    this.props.onAnswer(dbAnswer);
-                } else {
-                    if (this.previousAnswerButton) {
-                        this.previousAnswerButton.style.backgroundColor = '#000000';
-                        this.previousAnswerButton = evt.currentTarget;
-                    }
-                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
-                    this.setState({
-                        ...this.state,
-                        passMode: {
-                            ...this.state.passMode,
-                            answer: {
-                                left: answerText,
-                                color: this.materialColors[this.answerNumber],
-                            },
-                        }
-                    });
-                }
-                break;
-            case 'right':
-                this.state.passMode.rightAnswers.map((a: any) => {
-                    if (a.text !== answerText) return;
-                    a.color = this.materialColors[this.answerNumber];
-                });
-                if (currentAnswer.left) {
-                    let dbAnswer = answers.filter((ans: IMatchAnswer) => ans.left == currentAnswer.left)[0];
-                    dbAnswer.user_answer = answerText;
-                    dbAnswer.color = this.materialColors[this.answerNumber];
-                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
-                    this.answerNumber += 1;
-                    this.setState({
-                        ...this.state,
-                        passMode: {
-                            ...this.state.passMode,
-                            answer: null,
-                        }
-                    });
-                    this.props.onAnswer(dbAnswer);
-                } else {
-                    if (this.previousAnswerButton) {
-                        this.previousAnswerButton.style.backgroundColor = '#000000';
-                        this.previousAnswerButton = evt.currentTarget;
-                    }
-                    evt.currentTarget.style.backgroundColor = this.materialColors[this.answerNumber];
-                    this.setState({
-                        ...this.state,
-                        passMode: {
-                            ...this.state.passMode,
-                            answer: {
-                                right: answerText,
-                                color: this.materialColors[this.answerNumber],
-                            },
-                        }
-                    });
-                }
-                break;
-        }
-
-
-        console.log('MATCH COLUMNS ANSWERS:');
-        console.dir(answers);
-    };
-    private answerNumber = 0;
-    private materialColors = ['#aa2e25', '#2c387e', '#00695f', '#1769aa', '#357a38', '#482880', '#8f9a27',
-        '#b23c17', '#b26a00'];
-    private previousAnswerButton;
-    private allAnswersButtons = [];
 
     constructor(props) {
         super(props);
@@ -182,27 +113,40 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
     }
 
     componentWillMount() {
-        if (this.props.mode === EQuestionMode.passing) {
+        const {question, mode, onAnswer} = this.props;
+
+        if (mode === EQuestionMode.passing) {
             let [leftAnswers, rightAnswers] = [[], []];
-            this.state.answers.map((answer: IMatchAnswer) => {
-                leftAnswers.push({text: answer.left, bgColor: answer.color});
-                rightAnswers.push({text: answer.right, bgColor: answer.color});
+            question.questionData.answers.map((answer: IMatchAnswer) => {
+                leftAnswers.push(answer.left);
+                rightAnswers.push(answer.right);
             });
 
             this.setState({
                 ...this.state,
                 passMode: {
                     ...this.state.passMode,
-                    leftAnswers: shuffle(leftAnswers),
+                    leftAnswers: leftAnswers,
                     rightAnswers: shuffle(rightAnswers),
                 }
+            }, () => {
+                question.questionData.answers.forEach((a: IMatchAnswer, i: number) => {
+                    const an = rightAnswers[i];
+                    const answer = {
+                        ...a,
+                        user_answer: an,
+                    } as IMatchAnswer;
+                    debugger;
+                    onAnswer(answer);
+                });
             });
         }
     }
 
     render() {
-        const {mode} = this.props;
-        this.allAnswersButtons = [];
+        const {question, mode} = this.props;
+
+
 
         return (
             <div>
@@ -256,57 +200,68 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     </Paper>
                 }
                 {
-                    (mode === EQuestionMode.passing || mode == EQuestionMode.checking) &&
+                    mode == EQuestionMode.passing &&
                     <div>
                         {
-                            this.state.answers.map((a: IMatchAnswer, i: number) => {
-                                const ref1 = React.createRef();
-                                const ref2 = React.createRef();
-                                this.allAnswersButtons.push(ref1, ref2);
+                            question.questionData.answers.map((a: IMatchAnswer, i: number) => {
                                 return (
                                     <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
-                                        <div className={MatchColumnsQuestionStyles.answerButton}>
-                                            <Button variant="contained"
-                                                    color="primary"
-                                                    style={{
-                                                        backgroundColor: this.state.passMode.rightAnswers[i].bgColor,
-                                                    }}
-                                                    buttonRef={ref1}
-                                                    fullWidth={true}
-                                                    name={'left'}
-                                                    disabled={mode == EQuestionMode.checking}
-                                                    onClick={(evt) => this.onAnswer(evt)}>
-                                                {this.state.passMode.leftAnswers[i].text}
-                                            </Button>
-                                        </div>
-                                        <div className={MatchColumnsQuestionStyles.answerButton}>
-                                            <Button variant="contained"
-                                                    color="primary"
-                                                    style={{
-                                                        backgroundColor: this.state.passMode.rightAnswers[i].bgColor,
-                                                    }}
-                                                    buttonRef={ref2}
-                                                    fullWidth={true}
-                                                    name={'right'}
-                                                    disabled={mode == EQuestionMode.checking}
-                                                    onClick={(evt) => this.onAnswer(evt)}>
-                                                {this.state.passMode.rightAnswers[i].text}
-                                            </Button>
-                                        </div>
+                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
+                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                                <Typography variant="body2">
+                                                    {this.state.passMode.leftAnswers[i]}
+                                                </Typography>
+                                            </div>
+                                        </Paper>
+                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
+                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                                <Typography variant="body2"
+                                                            className={MatchColumnsQuestionStyles.matchTypography}>
+                                                    {this.state.passMode.rightAnswers[i]}
+                                                </Typography>
+                                            </div>
+                                            <IconButton aria-label="Dows"
+                                                        onClick={(evt) => this.onAnswer(evt, 'down', i)}
+                                                        style={{float: 'right'}}>
+                                                <MenuDown/>
+                                            </IconButton>
+                                            <IconButton aria-label="Up"
+                                                        onClick={(evt) => this.onAnswer(evt, 'up', i)}
+                                                        style={{float: 'right'}}>
+                                                <MenuUp/>
+                                            </IconButton>
+                                        </Paper>
                                     </div>
                                 );
                             })
                         }
-                        {mode !== EQuestionMode.checking &&
-                        <div className={MatchColumnsQuestionStyles.resetButton}>
-                            <Button variant="contained"
-                                    color="primary"
-                                    fullWidth={true}
-                                    name={'left'}
-                                    onClick={this.onReset}>
-                                Сбросить
-                            </Button>
-                        </div>
+                    </div>
+                }
+                {
+                    mode == EQuestionMode.checking &&
+                    <div>
+                        {
+                            question.questionData.answers.map((a: IMatchAnswer, i: number) => {
+                                return (
+                                    <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
+                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
+                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                                <Typography variant="body2">
+                                                    {a.left}
+                                                </Typography>
+                                            </div>
+                                        </Paper>
+                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
+                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                                <Typography variant="body2"
+                                                            className={MatchColumnsQuestionStyles.matchTypography}>
+                                                    {a.user_answer || a.right}
+                                                </Typography>
+                                            </div>
+                                        </Paper>
+                                    </div>
+                                );
+                            })
                         }
                     </div>
                 }

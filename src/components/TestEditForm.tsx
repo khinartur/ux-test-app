@@ -155,7 +155,6 @@ export default class TestEditForm extends React.Component<{}, State> {
             currentQuestionType: type,
         });
     };
-
     updateQuestionsList = (questions, map) => {
         this.setState({
             ...this.state,
@@ -164,7 +163,6 @@ export default class TestEditForm extends React.Component<{}, State> {
             loading: false,
         });
     };
-
     showAddForm = () => {
         const questions = this.state.questions;
         const currOrder = questions ? Object.keys(questions).length + 1 : 1;
@@ -184,7 +182,6 @@ export default class TestEditForm extends React.Component<{}, State> {
             isNewQuestion: true,
         });
     };
-
     editQuestion = (evt: any, order: number) => {
         if (this.state.isOpenQuestionForm) return;
 
@@ -194,11 +191,10 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             currentQuestion: qToEdit,
-            currentQuestionType: QuestionType.open_question,
+            currentQuestionType: qToEdit.type,
             isOpenQuestionForm: true,
         });
     };
-
     onSuccess = () => {
         this.updateQuestions();
 
@@ -210,7 +206,6 @@ export default class TestEditForm extends React.Component<{}, State> {
             isNewQuestion: false,
         });
     };
-
     onCancel = () => {
         const questions = this.state.questions;
 
@@ -223,7 +218,6 @@ export default class TestEditForm extends React.Component<{}, State> {
             isNewQuestion: false,
         });
     };
-
     onQuestionMouseOver = (evt) => {
         if (this.state.isOpenQuestionForm) return;
         evt.target.className = TestEditFormStyles.questionChooseDivActive;
@@ -269,18 +263,6 @@ export default class TestEditForm extends React.Component<{}, State> {
             }.bind(this));
         }.bind(this));
     };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            isOpenQuestionForm: false,
-            currentQuestionType: QuestionType.choose_right,
-            loading: true,
-            error: '',
-        };
-    }
-
     uploadFiles(key: string, fileIndex: number) {
         const file = this.state.uploadedFiles[fileIndex];
         storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
@@ -292,6 +274,17 @@ export default class TestEditForm extends React.Component<{}, State> {
             }
         });
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isOpenQuestionForm: false,
+            currentQuestionType: QuestionType.choose_right,
+            loading: true,
+            error: '',
+        };
+    }
 
     componentDidMount() {
         this.updateQuestions();
@@ -314,27 +307,25 @@ export default class TestEditForm extends React.Component<{}, State> {
                 {
                     !this.state.loading &&
                     <div className={TestEditFormStyles.testEditForm}>
-                        {
-                            <div className={TestEditFormStyles.testEditFormItem}>
-                                {qCount ? //TODO: replace with generator
-                                    new Array(qCount).fill(true).map((v: boolean, i: number) => {
-                                        const q = questions[qMap[i + 1]];
-                                        return <div key={i}
-                                                    className={TestEditFormStyles.questionChooseDiv}
-                                                    onClick={(evt) => this.editQuestion(evt, q.order)}
-                                                    onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
-                                                    onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
-                                        >
-                                            {q.order + ') ' + q.text}
-                                        </div>;
-                                    })
-                                    :
-                                    <Typography variant="body1" gutterBottom>
-                                        В тесте нет вопросов.
-                                    </Typography>
-                                }
-                            </div>
-                        }
+                        <div className={TestEditFormStyles.testEditFormItem}>
+                            {qCount ? //TODO: replace with generator
+                                new Array(qCount).fill(true).map((v: boolean, i: number) => {
+                                    const q = questions[qMap[i + 1]];
+                                    return <div key={i}
+                                                className={TestEditFormStyles.questionChooseDiv}
+                                                onClick={(evt) => this.editQuestion(evt, q.order)}
+                                                onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
+                                                onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
+                                    >
+                                        {q.order + ') ' + q.text}
+                                    </div>;
+                                })
+                                :
+                                <Typography variant="body1" gutterBottom>
+                                    В тесте нет вопросов.
+                                </Typography>
+                            }
+                        </div>
                         <div className={TestEditFormStyles.testEditFormItem}>
                             <Button variant="contained"
                                     color="primary"

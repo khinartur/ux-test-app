@@ -1,11 +1,6 @@
-
-
-
 .questionButton {
     margin: 8px 8px;
 }
-
-
 
 .questionButtonActive {
     background-color: #00695f;
@@ -29,4 +24,11 @@
     right: 20px;
 }
 
+.checkModeContaiter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
 
+.checkModeContaiterItem {
+    margin: 50px;
+}

@@ -97,6 +97,7 @@ export default class StudentsList extends React.Component<{}, State> {
                     points: 0,
                     test_is_checked: false,
                 }).then(() => {
+                    this.refreshStudentList();
                     this.setState({
                         ...this.state,
                         studentName: '',
@@ -140,7 +141,6 @@ export default class StudentsList extends React.Component<{}, State> {
         });
     };
     showUserTest = (evt, login) => {
-        console.log('SHOW USER TEST', login);
         this.setState({
             ...this.state,
             showStudentResults: true,

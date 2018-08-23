@@ -26,10 +26,11 @@ interface Props {
     questionsCount: number;
     pictures: any[],
     mode: EQuestionMode,
-    onBack: () => void,
-    onNext: () => void,
+    onBack?: () => void,
+    onNext?: () => void,
+    onAnswer?: (a: QuestionAnswer[] | string, b: boolean) => void,
     onPointsAdd?: (e: any, p: number) => void,
-    user: IUser,
+    user?: IUser,
 }
 
 interface State {
@@ -41,7 +42,7 @@ interface State {
 class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     onAnswerChange = (answer: QuestionAnswer) => {
-        const {question} = this.props;
+        const {question, onAnswer} = this.props;
 
         let answers;
         let newAnswers = [];
@@ -50,29 +51,39 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
             case QuestionType.choose_right:
                 answers = (question.questionData as IChooseRightData).answers;
                 answers.map((a: IChooseAnswer) => {
-                    newAnswers.push(a.text == (answer as IChooseAnswer).text ? answer : a);
+                    if (a.text == (answer as IChooseAnswer).text) {
+                        (answer as IChooseAnswer).isAnswered = !(answer as IChooseAnswer).isAnswered;
+                        newAnswers.push(answer);
+                    } else {
+                        newAnswers.push(a);
+                    }
                 });
-
-                (question as IQuestion<IChooseRightData>).questionData.answers = newAnswers;
                 isAnswered = newAnswers.filter((a: IChooseAnswer) => a.isAnswered).length > 0;
-                (question as IQuestion<IChooseRightData>).isAnswered = isAnswered;
+                onAnswer(newAnswers, isAnswered);
                 break;
 
             case QuestionType.match_columns:
                 answers = (question.questionData as IMatchColumnsData).answers;
-                answers.map((a: IMatchAnswer) => {
-                    newAnswers.push(a.left == (answer as IMatchAnswer).left ? answer : a);
+                newAnswers = answers.map((a: IMatchAnswer) => {
+                    if (a.left === (answer as IMatchAnswer).left) {
+                        return answer;
+                    }
+
+                    return a;
                 });
 
-                (question as IQuestion<IMatchColumnsData>).questionData.answers = newAnswers;
-                isAnswered = newAnswers.filter((a: IMatchAnswer) => !!a.user_answer).length > 0;
-                (question as IQuestion<IMatchColumnsData>).isAnswered = isAnswered;
+                //(question as IQuestion<IMatchColumnsData>).questionData.answers = newAnswers;
+                isAnswered = newAnswers.some((a: IMatchAnswer) => !!a.user_answer);
+                //(question as IQuestion<IMatchColumnsData>).isAnswered = isAnswered;
+                debugger;
+                onAnswer(newAnswers, isAnswered);
                 break;
 
             case QuestionType.open_question:
-                (question as IQuestion<IOpenQuestionData>).questionData.answer = answer as string;
+                //(question as IQuestion<IOpenQuestionData>).questionData.answer = answer as string;
                 isAnswered = !!answer;
-                (question as IQuestion<IOpenQuestionData>).isAnswered = isAnswered;
+                //(question as IQuestion<IOpenQuestionData>).isAnswered = isAnswered;
+                onAnswer(answer as string, isAnswered);
                 break;
         }
     };
@@ -80,6 +91,10 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
     onAnswerSave = () => {
         const {user, question, onNext} = this.props;
 
+        console.log('[TestQuestion#onAnswerSave]');
+        console.dir(question.questionData);
+
+        debugger;
         this.setState({
             ...this.state,
             loading: true,
@@ -127,6 +142,9 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
 
     render() {
         const {question, questionsCount, pictures, mode, onBack} = this.props;
+
+        console.log('[TestQuestion#render]');
+        console.dir((question.questionData as any).answers);
 
         const isPassingMode = mode == EQuestionMode.passing;
 
@@ -192,6 +210,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                             <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
                                           mode={mode}
                                           onAnswer={(answer) => this.onAnswerChange(answer)}/>}
+                            {isPassingMode &&
                             <div className={TestQuestionStyles.questionSaveButton}>
                                 <Button variant="contained"
                                         color="primary"
@@ -200,6 +219,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                                     Сохранить ответ
                                 </Button>
                             </div>
+                            }
                             {!isPassingMode &&
                             <div className={TestQuestionStyles.addPointsDiv}>
                                 <div>

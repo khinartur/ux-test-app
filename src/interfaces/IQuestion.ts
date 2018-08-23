@@ -36,7 +36,6 @@ export interface IMatchAnswer {
     left: string;
     right: string;
     user_answer?: string;
-    color: string;
 }
 
 export interface IOpenQuestionData {

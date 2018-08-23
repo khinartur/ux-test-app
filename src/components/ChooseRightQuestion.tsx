@@ -65,20 +65,20 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             answerVariantChecked: false,
         });
     };
-
-
     onAnswerClick = (evt) => {
         console.log(evt.target.value);
 
         let userAnswer = evt.target.value;
-        let answers = this.state.answers;
+        let currentAnswer = {};
+        let answers = this.props.question.questionData.answers;
         answers.map((ans: IChooseAnswer) => {
             if (ans.text == userAnswer) {
-                ans.isAnswered = !ans.isAnswered;
+                currentAnswer = ans;
             }
         });
 
         this.props.onAnswer({
+            ...currentAnswer,
             text: userAnswer,
         });
     };
@@ -87,13 +87,13 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            answers: this.props.question ? this.props.question.questionData.answers : null,
+            answers: props.question ? props.question.questionData.answers : null,
             answerVariantChecked: false,
         };
     }
 
     render() {
-        const {mode} = this.props;
+        const {question, mode} = this.props;
 
         return (
             <div>
@@ -152,7 +152,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     (mode === EQuestionMode.passing || mode == EQuestionMode.checking) &&
                     <div>
                         {
-                            this.state.answers.map((answer: IChooseAnswer, i: number) => {
+                            question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
                                 return (
                                     <FormGroup row key={i}>
                                         <FormControlLabel

@@ -68,6 +68,7 @@ export default class QuestionsList extends React.Component<Props, State> {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell>No</TableCell>
                                 <TableCell>Вопрос</TableCell>
                                 <TableCell>Тип</TableCell>
                                 {
@@ -88,6 +89,7 @@ export default class QuestionsList extends React.Component<Props, State> {
                                     <TableRow key={i}
                                               className={QuestionsListStyles.questionTableRow}
                                               onClick={(evt) => onClick(evt, i)}>
+                                        <TableCell>{q.order + '.'}</TableCell>
                                         <TableCell className={QuestionsListStyles.questionTextCell}>
                                             {q.text}
                                         </TableCell>

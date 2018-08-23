@@ -57,7 +57,7 @@ export default class OpenQuestion extends React.Component<Props, State> {
                            margin={'dense'}
                            disabled={mode == EQuestionMode.checking}
                            onChange={(evt) => this.onAnswerTextareaChange(evt)}
-                            defaultValue={this.props.question.questionData ? this.props.question.questionData.answer : ''}>
+                           defaultValue={this.props.question.questionData ? this.props.question.questionData.answer : ''}>
                 </TextField>
             </div>
         );
