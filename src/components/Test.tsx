@@ -24,6 +24,7 @@ import QuestionsList, {EQuestionsListMode} from './QuestionsList';
 import TestQuestion from './TestQuestion';
 import DoneTestDialog from './DoneTestDialog';
 import * as TestQuestionStyles from '../styles/TestQuestion.scss';
+import {checkModeContaiter} from '../styles/Test.scss';
 
 interface Props {
     checkMode?: boolean;
@@ -224,9 +225,13 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }, () => this.onNext());
     };
     onQuestionsListClick = (evt, index) => {
+        const {history, checkMode} = this.props;
         const {questions} = this.state;
         const newCurrent = questions[index];
-        this.props.history.replace(`/test/${newCurrent.order}`);
+
+        if (!checkMode) {
+            history.replace(`/test/${newCurrent.order}`);
+        }
 
         this.setState({
             ...this.state,
@@ -329,7 +334,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     componentDidMount() {
-        const userLogin = this.props.user ? this.props.user.github : this.state.userLogin;
+        const {user, checkMode} = this.props;
+        const userLogin = checkMode ? user.github : this.state.userLogin;
 
         database.ref(`/users/${userLogin}`).once('value')
             .then((snapshot) => {
@@ -338,11 +344,12 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     user: snapshot.val(),
                 }, () => {
                     this.getTestQuestions().then((snapshot) => {
+                        const {user} = this.state;
                         const questions = snapshot.val();
-                        if (this.state.user.test_status == EUserTestStatus.not_passed) {
-                            database.ref('passed-questions/' + this.state.user.github).set(questions).then(() => {
-                                database.ref('users/' + this.state.user.github).set({
-                                    ...this.state.user,
+                        if (user.test_status == EUserTestStatus.not_passed) {
+                            database.ref('passed-questions/' + user.github).set(questions).then(() => {
+                                database.ref('users/' + user.github).set({
+                                    ...user,
                                     test_status: EUserTestStatus.in_progress,
                                     current_question: 1,
                                 }).then(() => {
