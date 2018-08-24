@@ -7,7 +7,6 @@ import {
     QuestionAnswer,
     QuestionType
 } from '../interfaces/IQuestion';
-import {database} from '../modules/firebase';
 import ChooseRightQuestion from './ChooseRightQuestion';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -31,93 +30,18 @@ interface Props {
     onList?: () => void,
     onBack?: () => void,
     onNext?: () => void,
-    onAnswer?: (a: QuestionAnswer[] | string, b: boolean) => void,
+    onAnswer?: (a: IQuestion<AnyQuestionData>) => void,
+    onAnswerSave?: () => void;
     onPointsAdd?: (e: any, p: number) => void,
     user?: IUser,
 }
 
 interface State {
-    isQuestionAnswered: boolean;
     pointsToAdd?: number;
     loading: boolean;
 }
 
 class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, State> {
-
-    onAnswerChange = (answer: QuestionAnswer) => {
-        const {question, onAnswer} = this.props;
-
-        let answers;
-        let newAnswers = [];
-        let isAnswered;
-        switch (question.type) {
-            case QuestionType.choose_right:
-                answers = (question.questionData as IChooseRightData).answers;
-                answers.map((a: IChooseAnswer) => {
-                    if (a.text == (answer as IChooseAnswer).text) {
-                        (answer as IChooseAnswer).isAnswered = !(answer as IChooseAnswer).isAnswered;
-                        newAnswers.push(answer);
-                    } else {
-                        newAnswers.push(a);
-                    }
-                });
-                isAnswered = newAnswers.filter((a: IChooseAnswer) => a.isAnswered).length > 0;
-                onAnswer(newAnswers, isAnswered);
-                break;
-
-            case QuestionType.match_columns:
-                answers = (question.questionData as IMatchColumnsData).answers;
-                newAnswers = answers.map((a: IMatchAnswer) => {
-                    if (a.left === (answer as IMatchAnswer).left) {
-                        return answer;
-                    }
-
-                    return a;
-                });
-
-                //(question as IQuestion<IMatchColumnsData>).questionData.answers = newAnswers;
-                isAnswered = newAnswers.some((a: IMatchAnswer) => !!a.user_answer);
-                //(question as IQuestion<IMatchColumnsData>).isAnswered = isAnswered;
-                onAnswer(newAnswers, isAnswered);
-                break;
-
-            case QuestionType.open_question:
-                //(question as IQuestion<IOpenQuestionData>).questionData.answer = answer as string;
-                isAnswered = !!answer;
-                //(question as IQuestion<IOpenQuestionData>).isAnswered = isAnswered;
-                onAnswer(answer as string, isAnswered);
-                break;
-        }
-    };
-
-    onAnswerSave = () => {
-        const {user, question, onNext} = this.props;
-
-        console.log('[TestQuestion#onAnswerSave]');
-        console.dir(question.questionData);
-
-
-        this.setState({
-            ...this.state,
-            loading: true,
-        });
-
-        database.ref('passed-questions/' + user.github + '/' + question.key).set({
-            ...question,
-        }).then(() => {
-            database.ref('users/' + this.props.user.github).set({
-                ...this.props.user,
-                test_status: EUserTestStatus.in_progress,
-                current_question: question.order + 1,
-            }).then(() => {
-                onNext();
-                this.setState({
-                    ...this.state,
-                    loading: false,
-                });
-            });
-        });
-    };
 
     onPointsToAddChange = (evt) => {
         const points = evt.currentTarget.textContent;
@@ -133,17 +57,17 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
 
         this.state = {
             pointsToAdd: this.props.question.points,
-            isQuestionAnswered: false,
             loading: false,
         };
     }
+
 
     componentDidMount() {
 
     }
 
     render() {
-        const {question, questionsCount, pictures, mode, onList, onBack, onNext} = this.props;
+        const {question, questionsCount, pictures, mode, onList, onBack, onNext, onAnswer, onAnswerSave} = this.props;
 
         const isPassingMode = mode == EQuestionMode.passing;
 
@@ -216,21 +140,21 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                             {question.type === QuestionType.choose_right &&
                             <ChooseRightQuestion question={question as IQuestion<IChooseRightData>}
                                                  mode={mode}
-                                                 onAnswer={(answer) => this.onAnswerChange(answer)}/>}
+                                                 onAnswer={onAnswer}/>}
                             {question.type === QuestionType.match_columns &&
                             <MatchColumnsQuestion question={question as IQuestion<IMatchColumnsData>}
                                                   mode={mode}
-                                                  onAnswer={(answer) => this.onAnswerChange(answer)}/>}
+                                                  onAnswer={onAnswer}/>}
                             {question.type === QuestionType.open_question &&
                             <OpenQuestion question={question as IQuestion<IOpenQuestionData>}
                                           mode={mode}
-                                          onAnswer={(answer) => this.onAnswerChange(answer)}/>}
+                                          onAnswer={onAnswer}/>}
                             {isPassingMode &&
                             <div className={TestQuestionStyles.questionSaveButton}>
                                 <Button variant="contained"
                                         color="primary"
                                         fullWidth={true}
-                                        onClick={this.onAnswerSave}>
+                                        onClick={onAnswerSave}>
                                     Сохранить ответ
                                 </Button>
                             </div>

@@ -7,7 +7,7 @@ import MenuDown from 'mdi-material-ui/MenuDown';
 
 import * as MatchColumnsQuestionStyles from '../styles/MatchColumnsQuestion.scss';
 import {
-    IMatchAnswer, IMatchColumnsData, IQuestionProps, IQuestionState, EQuestionMode
+    IMatchAnswer, IMatchColumnsData, IQuestionProps, IQuestionState, EQuestionMode, IChooseAnswer, IQuestion
 } from '../interfaces/IQuestion';
 
 import {shuffle} from '../utils/key-embedding';
@@ -57,43 +57,50 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
     };
 
     onAnswer = (evt, dir, index) => {
+        const {answers} = this.state;
+        const {rightAnswers} = this.state.passMode;
+        const {question, onAnswer} = this.props;
 
         const down = dir == 'down';
         if (down && index == this.state.answers.length - 1 ||
             !down && index == 0) return;
 
-        const {onAnswer} = this.props;
-        const {rightAnswers} = this.state.passMode;
         const bIndex = down ? index + 1 : index - 1;
 
-        const a = rightAnswers[index];
-        const b = rightAnswers[bIndex];
+        const [a, b] = [rightAnswers[index], rightAnswers[bIndex]];
         [rightAnswers[index], rightAnswers[bIndex]] = [b, a];
 
-        const firstAnswer = {
-            ...this.state.answers[index],
-            user_answer: b,
-        } as IMatchAnswer;
+        let newAnswers = [];
 
-        const secondAnswer = {
-            ...this.state.answers[bIndex],
-            user_answer: a,
-        } as IMatchAnswer;
+        newAnswers.push(
+            {
+                ...answers[index],
+                user_answer: b,
+            } as IMatchAnswer,
+            {
+                ...answers[bIndex],
+                user_answer: a,
+            } as IMatchAnswer
+        );
 
-
-        onAnswer(firstAnswer);
-        onAnswer(secondAnswer);
-
-        this.state.answers.map((a: IMatchAnswer, i: number) => {
+        answers.forEach((a: IMatchAnswer, i: number) => {
             if (i !== index && i !== bIndex) {
                 const an = rightAnswers[i];
-                const answer = {
+                newAnswers.push({
                     ...a,
                     user_answer: an,
-                } as IMatchAnswer;
-                onAnswer(answer);
+                } as IMatchAnswer);
             }
         });
+
+        onAnswer({
+            ...question,
+            questionData: {
+                ...question.questionData,
+                answers: newAnswers,
+            },
+        } as IQuestion<IMatchColumnsData>);
+
 
         this.setState({
             ...this.state,
@@ -130,23 +137,26 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     rightAnswers: shuffle(rightAnswers),
                 }
             }, () => {
-                question.questionData.answers.forEach((a: IMatchAnswer, i: number) => {
+                let newAnswers = question.questionData.answers.map((a: IMatchAnswer, i: number) => {
                     const an = rightAnswers[i];
-                    const answer = {
+                    return {
                         ...a,
                         user_answer: an,
                     } as IMatchAnswer;
-
-                    onAnswer(answer);
                 });
+                onAnswer({
+                    ...question,
+                    questionData: {
+                        ...question.questionData,
+                        answers: newAnswers,
+                    },
+                } as IQuestion<IMatchColumnsData>);
             });
         }
     }
 
     render() {
         const {question, mode} = this.props;
-
-
 
         return (
             <div>

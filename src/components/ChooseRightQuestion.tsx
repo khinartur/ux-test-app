@@ -12,7 +12,7 @@ import * as ChooseRightQuestionStyles from '../styles/ChooseRightQuestion.scss';
 
 import {
     EQuestionMode,
-    IChooseAnswer, IChooseRightData, IQuestionProps, IQuestionState,
+    IChooseAnswer, IChooseRightData, IQuestion, IQuestionProps, IQuestionState,
 } from '../interfaces/IQuestion';
 
 interface Props extends IQuestionProps<IChooseRightData> {
@@ -23,6 +23,7 @@ interface State extends IQuestionState<IChooseAnswer> {
     error?: string;
     answerVariantText?: string;
     answerVariantChecked?: boolean;
+    //isAnswered: boolean;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -66,21 +67,38 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         });
     };
     onAnswerClick = (evt) => {
+        const {question} = this.props;
+        const {answers} = this.state;
         console.log(evt.target.value);
 
         let userAnswer = evt.target.value;
-        let currentAnswer = {};
-        let answers = this.props.question.questionData.answers;
-        answers.map((ans: IChooseAnswer) => {
+
+        let newAnswers = answers.map((ans: IChooseAnswer) => {
             if (ans.text == userAnswer) {
-                currentAnswer = ans;
+                return {
+                    ...ans,
+                    isAnswered: !ans.isAnswered,
+                } as IChooseAnswer;
             }
+
+            return ans;
+        });
+        //const isAnswered = newAnswers.some((a: IChooseAnswer) => a.isAnswered);
+
+        this.setState({
+            ...this.state,
+            answers: newAnswers,
+            //isAnswered,
         });
 
         this.props.onAnswer({
-            ...currentAnswer,
-            text: userAnswer,
-        });
+            ...question,
+            //isAnswered,
+            questionData: {
+                ...question.questionData,
+                answers: newAnswers,
+            }
+        } as IQuestion<IChooseRightData>);
     };
 
     constructor(props) {
@@ -89,11 +107,13 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         this.state = {
             answers: props.question ? props.question.questionData.answers : null,
             answerVariantChecked: false,
+            //isAnswered: props.question ? props.question.isAnswered : false,
         };
     }
 
     render() {
-        const {question, mode} = this.props;
+        const {mode} = this.props;
+        const {answers} = this.state;
 
         return (
             <div>
@@ -102,8 +122,8 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
                         <div>
                             {
-                                this.state.answers && this.state.answers.length ?
-                                    this.state.answers.map((answer: IChooseAnswer, index: number) => {
+                                answers && this.state.answers.length ?
+                                    answers.map((answer: IChooseAnswer, index: number) => {
                                         return <Paper key={index}
                                                       className={ChooseRightQuestionStyles.answerPaper}>
                                             {answer.text} {answer.isRight && <CheckCircle color={'secondary'}/>}
@@ -152,7 +172,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     (mode === EQuestionMode.passing || mode == EQuestionMode.checking) &&
                     <div>
                         {
-                            question.questionData.answers.map((answer: IChooseAnswer, i: number) => {
+                            answers.map((answer: IChooseAnswer, i: number) => {
                                 return (
                                     <FormGroup row key={i}>
                                         <FormControlLabel

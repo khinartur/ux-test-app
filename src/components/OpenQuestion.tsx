@@ -4,7 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import {
     EQuestionMode,
-    IOpenQuestionData, IQuestionProps, IQuestionState,
+    IOpenQuestionData, IQuestion, IQuestionProps, IQuestionState,
     QuestionType
 } from '../interfaces/IQuestion';
 import {OPEN_QUESTIONS_POINTS} from '../constants/points';
@@ -26,7 +26,8 @@ interface State extends IQuestionState<string> {
 export default class OpenQuestion extends React.Component<Props, State> {
 
     onAnswerTextareaChange = (evt) => {
-        console.log(evt.target.value);
+        const {question, onAnswer} = this.props;
+
         let userAnswer = evt.target.value;
 
         this.setState({
@@ -36,7 +37,12 @@ export default class OpenQuestion extends React.Component<Props, State> {
             },
         });
 
-        this.props.onAnswer(userAnswer);
+        onAnswer({
+            ...question,
+            questionData: {
+                answer: userAnswer,
+            },
+        } as IQuestion<IOpenQuestionData>);
     };
 
     constructor(props) {

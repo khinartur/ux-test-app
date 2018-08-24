@@ -83,7 +83,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                             {user.test_status == EUserTestStatus.passed ?
                                 (
                                     <Typography variant="body2" gutterBottom>
-                                        Вы уже прошли тест. Следите за новостями на портале.
+                                        Вы прошли тест. Следите за новостями на портале.
                                     </Typography>
                                 )
                                 :
