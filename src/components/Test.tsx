@@ -23,10 +23,12 @@ import TextField from '@material-ui/core/TextField';
 import QuestionsList, {EQuestionsListMode} from './QuestionsList';
 import TestQuestion from './TestQuestion';
 import DoneTestDialog from './DoneTestDialog';
+import * as TestQuestionStyles from '../styles/TestQuestion.scss';
 
 interface Props {
     checkMode?: boolean;
     onCheck?: () => void;
+    toStudentList?: () => void;
 }
 
 interface State {
@@ -40,25 +42,40 @@ interface State {
 }
 
 class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
-    //
-    // onPointsToAddChange = (evt) => {
-    //     this.setState({
-    //         ...this.state,
-    //         pointsToAdd: evt.currentTarget.value,
-    //     });
-    // };
-    // onPointsAdd = () => {
-    //     const points = this.state.pointsToAdd;
-    //
-    //     this.setState({
-    //         ...this.state,
-    //         currentQuestion: {
-    //             ...this.state.currentQuestion,
-    //             isChecked: true,
-    //             points: points,
-    //         },
-    //     });
-    // };
+
+    onPointsAdd = (evt, points: number) => {
+        const {user, currentQuestion} = this.state;
+
+        this.setState({
+            ...this.state,
+            loading: true,
+        });
+
+        const newCurrent = {
+            ...currentQuestion,
+            points: points,
+            isChecked: true,
+        } as IQuestion<AnyQuestionData>;
+
+        const userPoints = +user.points;
+        database.ref('passed-questions/' + user.github + '/' + currentQuestion.key).set({
+            ...newCurrent,
+        }).then(() => {
+            database.ref('users/' + user.github).set({
+                ...user,
+                points: userPoints + points,
+            }).then(() => {
+                this.updateQuestionsList();
+            });
+        });
+
+        this.setState({
+            ...this.state,
+            currentQuestion: {
+                ...newCurrent
+            },
+        });
+    };
     closeDoneTestDialog = () => {
         this.setState({
             ...this.state,
@@ -124,9 +141,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }
     };
     onNext = () => {
-        debugger;
-        const questions = this.state.questions;
-        const current = this.state.currentQuestion;
+        const {questions, currentQuestion} = this.state;
+
+        const current = currentQuestion;
         const toStart = current.order == questions.length;
 
         this.setState({
@@ -153,7 +170,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     onAnswer = (newCurrent: IQuestion<AnyQuestionData>) => {
-        debugger;
         this.setState({
             ...this.state,
             currentQuestion: newCurrent,
@@ -161,16 +177,19 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     };
     onAnswerSave = () => {
         const {user, currentQuestion} = this.state;
-        debugger;
 
         this.setState({
             ...this.state,
             loading: true,
         });
 
+        const isChecked = currentQuestion.type === QuestionType.choose_right ||
+            currentQuestion.type === QuestionType.match_columns;
+
         database.ref('passed-questions/' + user.github + '/' + currentQuestion.key).set({
             ...currentQuestion,
             isAnswered: true,
+            isChecked,
         }).then(() => {
             database.ref('users/' + user.github).set({
                 ...user,
@@ -200,8 +219,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }, () => this.onNext());
     };
     onQuestionsListClick = (evt, index) => {
-        const questions = this.state.questions;
-        debugger;
+        const {questions} = this.state;
 
         this.setState({
             ...this.state,
@@ -263,9 +281,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     };
     initState = (questions) => {
         const dbQuestions = Object.entries(embedKey(questions)).map((q) => q[1]).sort(Test.compareQuestions);
-        this.questionsCount = dbQuestions.length;
         const currentQuestion = dbQuestions[0] as IQuestion<AnyQuestionData>;
-        debugger;
 
         this.setState({
             ...this.state,
@@ -276,7 +292,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     private picturesStorage: any;
-    private questionsCount: number;
 
     constructor(props) {
         super(props);
@@ -332,46 +347,46 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     render() {
-        const {checkMode} = this.props;
-
-        debugger;
+        const {loading, showQuestionsList, questions, currentQuestion, user, showDoneTestDialog} = this.state;
+        const {checkMode, toStudentList} = this.props;
 
         return (
             <React.Fragment>
-                {this.state.loading &&
+                {loading &&
                 <div className={AppStyles.progress}>
                     <LinearProgress/>
                 </div>
                 }
                 {
-                    !checkMode && !this.state.loading &&
+                    !checkMode && !loading &&
                     <React.Fragment>
 
                         {
-                            this.state.showQuestionsList &&
+                            showQuestionsList &&
                             <QuestionsList
                                 mode={EQuestionsListMode.passing}
-                                questions={this.state.questions}
+                                questions={questions}
                                 onClick={this.onQuestionsListClick}
                             />
                         }
                         {
-                            !this.state.showQuestionsList &&
+                            !showQuestionsList &&
                             <TestQuestion
-                                question={this.state.currentQuestion}
-                                questionsCount={this.questionsCount}
-                                pictures={this.picturesStorage[this.state.currentQuestion.key]}
+                                question={currentQuestion}
+                                questionsCount={questions.length}
+                                pictures={this.picturesStorage[currentQuestion.key]}
                                 mode={EQuestionMode.passing}
                                 onList={this.toList}
                                 onBack={this.onBack}
                                 onNext={this.onNext}
                                 onAnswer={this.onAnswer}
                                 onAnswerSave={this.onAnswerSave}
-                                user={this.state.user}
+                                onPointsAdd={this.onPointsAdd}
+                                user={user}
                             />
                         }
                         {
-                            this.state.showQuestionsList &&
+                            showQuestionsList &&
                             <div style={{margin: '25px'}}>
                                 <Button variant='contained'
                                         color='primary'
@@ -384,28 +399,37 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     </React.Fragment>
                 }
                 {
-                    !this.state.loading && checkMode &&
+                    !loading && checkMode &&
                     <React.Fragment>
+                        <div className={TestQuestionStyles.toQuestionsButton}>
+                            <Button variant='contained'
+                                    color='primary'
+                                    fullWidth={false}
+                                    onClick={toStudentList}>
+                                Назад
+                            </Button>
+                        </div>
                         <div className={TestStyles.checkModeContaiter}>
                             <div className={TestStyles.checkModeContaiterItem}>
                                 <QuestionsList
                                     mode={EQuestionsListMode.checking}
-                                    questions={this.state.questions}
+                                    questions={questions}
                                     onClick={this.onQuestionsListClick}
                                 />
                             </div>
                             <div className={TestStyles.checkModeContaiterItem}>
                                 <TestQuestion
-                                    question={this.state.currentQuestion}
-                                    questionsCount={this.questionsCount}
-                                    pictures={this.picturesStorage[this.state.currentQuestion.key]}
+                                    question={currentQuestion}
+                                    questionsCount={questions.length}
+                                    pictures={this.picturesStorage[currentQuestion.key]}
                                     mode={EQuestionMode.checking}
+                                    onPointsAdd={this.onPointsAdd}
                                 />
                             </div>
                         </div>
                     </React.Fragment>
                 }
-                <DoneTestDialog open={this.state.showDoneTestDialog}
+                <DoneTestDialog open={showDoneTestDialog}
                                 onClose={this.closeDoneTestDialog}
                                 onSubmit={this.onDialogSubmit}/>
             </React.Fragment>

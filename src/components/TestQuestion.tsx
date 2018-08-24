@@ -45,6 +45,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
 
     onPointsToAddChange = (evt) => {
         const points = evt.currentTarget.textContent;
+        debugger;
 
         this.setState({
             ...this.state,
@@ -61,13 +62,10 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
         };
     }
 
-
-    componentDidMount() {
-
-    }
-
     render() {
-        const {question, questionsCount, pictures, mode, onList, onBack, onNext, onAnswer, onAnswerSave} = this.props;
+        const {question, questionsCount, pictures, mode, onList,
+            onBack, onNext, onAnswer, onAnswerSave, onPointsAdd} = this.props;
+        const {pointsToAdd} = this.state;
 
         const isPassingMode = mode == EQuestionMode.passing;
 
@@ -167,14 +165,14 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                                                margin={'dense'}
                                                disabled={!(question.type == QuestionType.open_question)}
                                                onChange={(evt) => this.onPointsToAddChange(evt)}
-                                               defaultValue={question.points}
+                                               defaultValue={pointsToAdd}
                                     />
                                 </div>
                                 <div>
                                     <Button variant="contained"
                                             color="primary"
                                             disabled={!(question.type == QuestionType.open_question)}
-                                            onClick={(evt) => this.props.onPointsAdd(evt, this.state.pointsToAdd)}>
+                                            onClick={(evt) => onPointsAdd(evt, pointsToAdd)}>
                                         Добавить баллы
                                     </Button>
                                 </div>

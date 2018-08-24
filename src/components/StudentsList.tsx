@@ -140,6 +140,13 @@ export default class StudentsList extends React.Component<{}, State> {
             loading: false,
         });
     };
+    toStudentList = () => {
+        this.setState({
+            ...this.state,
+            showStudentResults: false,
+            checkingStudentLogin: '',
+        });
+    };
     showUserTest = (evt, login) => {
         this.setState({
             ...this.state,
@@ -277,7 +284,8 @@ export default class StudentsList extends React.Component<{}, State> {
                 {!this.state.loading && this.state.showStudentResults &&
                     <Test user={this.state.students[this.state.checkingStudentLogin]}
                           checkMode={true}
-                          onCheck={this.onCheck}/>
+                          onCheck={this.onCheck}
+                            toStudentList={this.toStudentList}/>
                 }
             </React.Fragment>
         );
