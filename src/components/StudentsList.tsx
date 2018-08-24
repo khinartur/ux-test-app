@@ -205,17 +205,6 @@ export default class StudentsList extends React.Component<{}, State> {
             loading: true,
             showStudentResults: false,
         };
-
-        this.githubSignIn = this.githubSignIn.bind(this);
-    }
-
-    githubSignIn() {
-        //TODO: check instance
-        const provider = new firebase.auth.GithubAuthProvider();
-        firebase.auth().signInWithPopup(provider).then(function (result) {
-            console.log('Result:');
-            console.dir(result);
-        });
     }
 
     componentDidMount() {
@@ -293,7 +282,7 @@ export default class StudentsList extends React.Component<{}, State> {
                     <Test user={students[checkingStudentLogin]}
                           checkMode={true}
                           onCheck={this.onCheck}
-                            toStudentList={this.toStudentList}/>
+                          toStudentList={this.toStudentList}/>
                 }
             </React.Fragment>
         );

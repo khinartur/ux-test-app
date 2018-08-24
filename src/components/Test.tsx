@@ -29,6 +29,7 @@ interface Props {
     checkMode?: boolean;
     onCheck?: () => void;
     toStudentList?: () => void;
+    user?: IUser;
 }
 
 interface State {
@@ -306,7 +307,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 showDoneTestDialog: false,
             };
         } else {
-            //localStorage.setItem('loggedUser', null);
             props.history.push('/');
         }
     }
@@ -316,7 +316,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     componentDidMount() {
-        const {userLogin} = this.state;
+        const userLogin = this.props.user ? this.props.user.github : this.state.userLogin;
 
         database.ref(`/users/${userLogin}`).once('value')
             .then((snapshot) => {
