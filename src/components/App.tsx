@@ -36,6 +36,7 @@ export default class App extends React.Component<{}, {}> {
                 <Route exact path="/" render={() => <Sign onSign={this.onSign}/>} />
                 <Route exact path="/profile" component={StudentProfile}/>
                 <Route exact path="/test" component={Test}/>
+                <Route exact path="/test/:key" component={Test}/>
                 <Route exact path="/admin" component={Admin}/>
                 <Route exact path="/admin/students" component={StudentsList}/>
                 <Route exact path="/admin/edit/test" component={TestEditForm}/>

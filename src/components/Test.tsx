@@ -35,6 +35,7 @@ interface Props {
 interface State {
     questions?: IQuestion<AnyQuestionData>[];
     currentQuestion?: IQuestion<AnyQuestionData>;
+    locationNumber?: number;
 
     userLogin?: string;
     user?: IUser;
@@ -55,7 +56,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         const newCurrent = {
             ...currentQuestion,
-            points: points,
+            points: +points,
             isChecked: true,
         } as IQuestion<AnyQuestionData>;
 
@@ -65,7 +66,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }).then(() => {
             database.ref('users/' + user.github).set({
                 ...user,
-                points: userPoints + points,
+                points: userPoints + +points,
             }).then(() => {
                 this.updateQuestionsList();
             });
@@ -144,28 +145,30 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     };
     onNext = () => {
         const {questions, currentQuestion} = this.state;
-
-        const current = currentQuestion;
-        const toStart = current.order == questions.length;
+        const toStart = currentQuestion.order == questions.length;
+        const newCurrent = questions[toStart ? 0 : currentQuestion.order];
+        this.props.history.replace(`/test/${newCurrent.order}`);
 
         this.setState({
             ...this.state,
-            currentQuestion: questions[toStart ? 0 : current.order],
+            currentQuestion: newCurrent,
             loading: false,
         });
     };
     onBack = () => {
-        debugger;
-        const questions = this.state.questions;
-        const current = this.state.currentQuestion;
-        const toEnd = current.order == 1;
+        const {questions, currentQuestion} = this.state;
+        const toEnd = currentQuestion.order == 1;
+        const newCurrent = questions[toEnd ? questions.length - 1 : currentQuestion.order - 2];
+        this.props.history.replace(`/test/${newCurrent.order}`);
 
         this.setState({
             ...this.state,
-            currentQuestion: questions[toEnd ? questions.length - 1 : current.order - 2],
+            currentQuestion: newCurrent,
         });
     };
     toList = () => {
+        this.props.history.replace('/test');
+
         this.setState({
             ...this.state,
             showQuestionsList: true,
@@ -222,10 +225,12 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     };
     onQuestionsListClick = (evt, index) => {
         const {questions} = this.state;
+        const newCurrent = questions[index];
+        this.props.history.replace(`/test/${newCurrent.order}`);
 
         this.setState({
             ...this.state,
-            currentQuestion: questions[index],
+            currentQuestion: newCurrent,
             showQuestionsList: false,
         });
     };
@@ -242,8 +247,10 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         return !!this.picturesStorage[this.state.currentQuestion.key];
     };
     loadPictures = () => {
-        this.picturesStorage = new Array(this.state.questions.length);
-        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
+        const {loading, questions} = this.state;
+
+        this.picturesStorage = new Array(questions.length);
+        questions.map((q: IQuestion<AnyQuestionData>) => {
             const pictures = q.pictures;
 
             if (pictures) {
@@ -259,7 +266,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             } else {
                                 this.picturesStorage[q.key] = [objectURL];
                             }
-                            if (this.state.loading && this.isPicturesLoaded()) {
+                            if (loading && this.isPicturesLoaded()) {
                                 this.setState({
                                     ...this.state,
                                     loading: false,
@@ -272,7 +279,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 });
             } else {
                 this.picturesStorage[q.key] = [];
-                if (this.state.loading && this.isPicturesLoaded()) {
+                if (loading && this.isPicturesLoaded()) {
                     this.setState({
                         ...this.state,
                         loading: false,
@@ -282,8 +289,10 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     initState = (questions) => {
+        const {locationNumber} = this.state;
+
         const dbQuestions = Object.entries(embedKey(questions)).map((q) => q[1]).sort(Test.compareQuestions);
-        const currentQuestion = dbQuestions[0] as IQuestion<AnyQuestionData>;
+        const currentQuestion = dbQuestions[locationNumber - 1 || 0] as IQuestion<AnyQuestionData>;
 
         this.setState({
             ...this.state,
@@ -300,12 +309,16 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         const login = localStorage.getItem('loggedUser');
         if (login) {
+            const locationNumber = props.match.params.key;
+
             this.state = {
                 userLogin: login,
                 loading: true,
-                showQuestionsList: true,
+                showQuestionsList: !(!!locationNumber),
                 showDoneTestDialog: false,
+                locationNumber,
             };
+
         } else {
             props.history.push('/');
         }

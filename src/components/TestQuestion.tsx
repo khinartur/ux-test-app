@@ -44,8 +44,7 @@ interface State {
 class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     onPointsToAddChange = (evt) => {
-        const points = evt.currentTarget.textContent;
-        debugger;
+        const points = evt.currentTarget.value;
 
         this.setState({
             ...this.state,
@@ -63,8 +62,10 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
     }
 
     render() {
-        const {question, questionsCount, pictures, mode, onList,
-            onBack, onNext, onAnswer, onAnswerSave, onPointsAdd} = this.props;
+        const {
+            question, questionsCount, pictures, mode, onList,
+            onBack, onNext, onAnswer, onAnswerSave, onPointsAdd
+        } = this.props;
         const {pointsToAdd} = this.state;
 
         const isPassingMode = mode == EQuestionMode.passing;
@@ -165,8 +166,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                                                margin={'dense'}
                                                disabled={!(question.type == QuestionType.open_question)}
                                                onChange={(evt) => this.onPointsToAddChange(evt)}
-                                               defaultValue={pointsToAdd}
-                                    />
+                                               defaultValue={pointsToAdd}/>
                                 </div>
                                 <div>
                                     <Button variant="contained"

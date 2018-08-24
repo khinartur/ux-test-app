@@ -28,6 +28,11 @@ class Sign extends React.Component<Props & RouterProps, State> {
     constructor(props) {
         super(props);
 
+        const login = localStorage.getItem('loggedUser');
+        if (login) {
+            this.props.history.push('/profile');
+        }
+
         this.state = {
             error: '',
         };
