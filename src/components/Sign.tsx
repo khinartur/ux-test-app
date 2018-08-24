@@ -67,6 +67,8 @@ class Sign extends React.Component<Props & RouterProps, State> {
     };
 
     render() {
+        const {error} = this.state;
+
         return (
             <div className={SignStyles.signWrapper}>
                 <div className={SignStyles.spaceItemA}></div>
@@ -74,7 +76,7 @@ class Sign extends React.Component<Props & RouterProps, State> {
                 <div className={SignStyles.spaceItemD}></div>
                 <div className={SignStyles.spaceItemE}></div>
                 <div className={SignStyles.signForm}>
-                    <Paper className={AppStyles.error}>{this.state.error}</Paper>
+                    <Paper className={AppStyles.error}>{error}</Paper>
                     <Typography variant="headline" gutterBottom align={'center'}>
                         Технопарк. Тестирование по курсу UX
                     </Typography>

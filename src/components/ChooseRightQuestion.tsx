@@ -23,7 +23,6 @@ interface State extends IQuestionState<IChooseAnswer> {
     error?: string;
     answerVariantText?: string;
     answerVariantChecked?: boolean;
-    //isAnswered: boolean;
 }
 
 export default class ChooseRightQuestion extends React.Component<Props, State> {
@@ -41,9 +40,10 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         });
     };
     onAnswerAdd = () => {
-        console.dir(this.state);
+        const {onAnswerAdd} = this.props;
+        const {answerVariantText, answerVariantChecked, answers} = this.state;
 
-        if (!this.state.answerVariantText) {
+        if (!answerVariantText) {
             this.setState({
                 ...this.state,
                 error: 'Ответ не должен быть пустым',
@@ -51,14 +51,14 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         }
 
         const newAnswer = {
-            text: this.state.answerVariantText,
-            isRight: this.state.answerVariantChecked,
+            text: answerVariantText,
+            isRight: answerVariantChecked,
             isAnswered: false,
         };
 
-        this.props.onAnswerAdd(newAnswer);
+        onAnswerAdd(newAnswer);
 
-        const currentAnswers = this.state.answers;
+        const currentAnswers = answers;
         this.setState({
             ...this.state,
             answers: currentAnswers && currentAnswers.length ? [...currentAnswers, newAnswer] : [newAnswer],
@@ -83,17 +83,14 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
 
             return ans;
         });
-        //const isAnswered = newAnswers.some((a: IChooseAnswer) => a.isAnswered);
 
         this.setState({
             ...this.state,
             answers: newAnswers,
-            //isAnswered,
         });
 
         this.props.onAnswer({
             ...question,
-            //isAnswered,
             questionData: {
                 ...question.questionData,
                 answers: newAnswers,
@@ -107,13 +104,12 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         this.state = {
             answers: props.question ? props.question.questionData.answers : null,
             answerVariantChecked: false,
-            //isAnswered: props.question ? props.question.isAnswered : false,
         };
     }
 
     render() {
         const {mode} = this.props;
-        const {answers} = this.state;
+        const {answers, answerVariantText, answerVariantChecked} = this.state;
 
         return (
             <div>
@@ -122,7 +118,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                     <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
                         <div>
                             {
-                                answers && this.state.answers.length ?
+                                answers && answers.length ?
                                     answers.map((answer: IChooseAnswer, index: number) => {
                                         return <Paper key={index}
                                                       className={ChooseRightQuestionStyles.answerPaper}>
@@ -140,7 +136,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                            fullWidth={true}
                                            margin={'dense'}
                                            onChange={this.onAnswerChange}
-                                           value={this.state.answerVariantText}
+                                           value={answerVariantText}
                                 />
                             </div>
                             <div>
@@ -150,7 +146,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                                             <Checkbox
                                                 color="primary"
                                                 onChange={this.onCheckboxChange}
-                                                checked={!!this.state.answerVariantChecked}
+                                                checked={!!answerVariantChecked}
                                             />
                                         }
                                         label='Правильный ответ'

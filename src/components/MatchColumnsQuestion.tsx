@@ -24,6 +24,7 @@ interface State extends IQuestionState<IMatchAnswer> {
 }
 
 export default class MatchColumnsQuestion extends React.Component<Props, State> {
+
     onAnswerChange = (evt) => {
         this.setState({
             ...this.state,
@@ -31,7 +32,10 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         });
     };
     onAnswerAdd = () => {
-        if (!this.state.answerTextLeft || !this.state.answerTextRight) {
+        const {answerTextLeft, answerTextRight, answers} = this.state;
+        const {onAnswerAdd} = this.props;
+
+        if (!answerTextLeft || !answerTextRight) {
             this.setState({
                 ...this.state,
                 error: 'Ответ ни в каком из стобцов не должен быть пустым',
@@ -40,29 +44,29 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         }
 
         const newAnswer = {
-            left: this.state.answerTextLeft,
-            right: this.state.answerTextRight,
+            left: answerTextLeft,
+            right: answerTextRight,
             user_answer: '',
             color: '#000000',
         };
 
-        this.props.onAnswerAdd(newAnswer);
+        onAnswerAdd(newAnswer);
 
         this.setState({
             ...this.state,
-            answers: this.state.answers ? [...this.state.answers, newAnswer] : [newAnswer],
+            answers: answers ? [...answers, newAnswer] : [newAnswer],
             answerTextLeft: '',
             answerTextRight: '',
         });
     };
 
     onAnswer = (evt, dir, index) => {
-        const {answers} = this.state;
+        const {answers, passMode} = this.state;
         const {rightAnswers} = this.state.passMode;
         const {question, onAnswer} = this.props;
 
         const down = dir == 'down';
-        if (down && index == this.state.answers.length - 1 ||
+        if (down && index == answers.length - 1 ||
             !down && index == 0) return;
 
         const bIndex = down ? index + 1 : index - 1;
@@ -105,7 +109,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         this.setState({
             ...this.state,
             passMode: {
-                ...this.state.passMode,
+                ...passMode,
                 rightAnswers: rightAnswers,
             }
         });
@@ -121,6 +125,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
 
     componentWillMount() {
         const {question, mode, onAnswer} = this.props;
+        const {passMode} = this.state;
 
         if (mode === EQuestionMode.passing) {
             let [leftAnswers, rightAnswers] = [[], []];
@@ -132,7 +137,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             this.setState({
                 ...this.state,
                 passMode: {
-                    ...this.state.passMode,
+                    ...passMode,
                     leftAnswers: leftAnswers,
                     rightAnswers: shuffle(rightAnswers),
                 }
@@ -157,6 +162,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
 
     render() {
         const {question, mode} = this.props;
+        const {answers, answerTextLeft, answerTextRight, passMode} = this.state;
 
         return (
             <div>
@@ -165,8 +171,8 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
                         <div>
                             {
-                                this.state.answers && this.state.answers.length ?
-                                    this.state.answers.map((answer: IMatchAnswer, index: number) => {
+                                answers && answers.length ?
+                                    answers.map((answer: IMatchAnswer, index: number) => {
                                         return <Paper key={index}>
                                             {answer.left + '   =====>   ' + answer.right}
                                         </Paper>;
@@ -185,7 +191,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                name: 'answerTextLeft',
                                            }}
                                            onChange={this.onAnswerChange}
-                                           value={this.state.answerTextLeft}
+                                           value={answerTextLeft}
                                 />
                             </div>
                             <div>
@@ -196,7 +202,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                                name: 'answerTextRight',
                                            }}
                                            onChange={this.onAnswerChange}
-                                           value={this.state.answerTextRight}
+                                           value={answerTextRight}
                                 />
                             </div>
                             <div>
@@ -219,7 +225,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                         <Paper className={MatchColumnsQuestionStyles.answerPaper}>
                                             <div className={MatchColumnsQuestionStyles.matchTypography}>
                                                 <Typography variant="body2">
-                                                    {this.state.passMode.leftAnswers[i]}
+                                                    {passMode.leftAnswers[i]}
                                                 </Typography>
                                             </div>
                                         </Paper>
@@ -227,7 +233,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                                             <div className={MatchColumnsQuestionStyles.matchTypography}>
                                                 <Typography variant="body2"
                                                             className={MatchColumnsQuestionStyles.matchTypography}>
-                                                    {this.state.passMode.rightAnswers[i]}
+                                                    {passMode.rightAnswers[i]}
                                                 </Typography>
                                             </div>
                                             <IconButton aria-label="Dows"

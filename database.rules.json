@@ -6,11 +6,19 @@
     },
     "users": {
       ".read": true,
-      ".write": false
+      ".write": true
     },
-    "**": {
-        ".read": "auth.uid !== null",
-        ".write": "auth.uid !== null"
+    "questions": {
+        ".read": true,
+        ".write": true
+    },
+    "passed-questions": {
+      ".read": true,
+      ".write": true
+    },
+    "questions-order": {
+      ".read": true,
+      ".write": true
     }
   }
 }

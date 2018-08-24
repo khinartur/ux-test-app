@@ -291,15 +291,13 @@ export default class TestEditForm extends React.Component<{}, State> {
     }
 
     render() {
-        const questions = this.state.questions;
-        const qMap = this.state.questionsOrderMap;
+        const {loading, questions, isOpenQuestionForm, questionsOrderMap, currentQuestion, isNewQuestion,
+            currentQuestionType} = this.state;
         const qCount = questions ? Object.keys(questions).length : 0;
-        const isEditFormShown = this.state.isOpenQuestionForm;
-        console.log('ORDER TO PROPS:', this.state.currentQuestionOrder);
 
         return (
             <React.Fragment>
-                {this.state.loading &&
+                {loading &&
                 <div className={AppStyles.progress}>
                     <LinearProgress/>
                 </div>
@@ -310,7 +308,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                         <div className={TestEditFormStyles.testEditFormItem}>
                             {qCount ? //TODO: replace with generator
                                 new Array(qCount).fill(true).map((v: boolean, i: number) => {
-                                    const q = questions[qMap[i + 1]];
+                                    const q = questions[questionsOrderMap[i + 1]];
                                     return <div key={i}
                                                 className={TestEditFormStyles.questionChooseDiv}
                                                 onClick={(evt) => this.editQuestion(evt, q.order)}
@@ -331,17 +329,17 @@ export default class TestEditForm extends React.Component<{}, State> {
                                     color="primary"
                                     fullWidth={true}
                                     onClick={this.showAddForm}
-                                    disabled={isEditFormShown}>
+                                    disabled={isOpenQuestionForm}>
                                 Добавить вопрос
                             </Button>
                             <br/>
                             {
-                                this.state.isOpenQuestionForm &&
+                                isOpenQuestionForm &&
                                 <Paper className={TestEditFormStyles.questionEditForm}>
                                     <FormControl>
                                         <InputLabel htmlFor="type">Тип вопроса</InputLabel>
                                         <Select
-                                            value={this.state.currentQuestion.type}
+                                            value={currentQuestion.type}
                                             inputProps={{
                                                 id: 'type',
                                             }}
@@ -354,7 +352,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                     </FormControl>
                                     <Paper className={TestEditFormStyles.editPaper}>
                                         <Typography
-                                            variant="title">{this.state.isNewQuestion ?
+                                            variant="title">{isNewQuestion ?
                                             'Создание нового вопроса' : 'Редактирование вопроса'}
                                         </Typography>
                                         <br/>
@@ -364,14 +362,14 @@ export default class TestEditForm extends React.Component<{}, State> {
                                                        fullWidth={true}
                                                        margin={'dense'}
                                                        onChange={this.onQuestionChange}
-                                                       defaultValue={this.state.currentQuestion.text}>
+                                                       defaultValue={currentQuestion.text}>
                                             </TextField>
                                             <br/>
                                             <TextField label="Количество баллов:"
                                                        fullWidth={true}
                                                        margin={'dense'}
                                                        onChange={this.onPointsChange}
-                                                       defaultValue={this.state.currentQuestion.points}>
+                                                       defaultValue={currentQuestion.points}>
                                             </TextField>
                                             <br/>
                                             <div>
@@ -392,23 +390,23 @@ export default class TestEditForm extends React.Component<{}, State> {
                                             <br/>
                                             <div>
                                                 {
-                                                    this.state.currentQuestion && this.state.currentQuestion.pictures &&
-                                                    this.state.currentQuestion.pictures.map((name: string, i: number) => {
+                                                    currentQuestion && currentQuestion.pictures &&
+                                                    currentQuestion.pictures.map((name: string, i: number) => {
                                                         return <div key={i}>{name}</div>;
                                                     })
                                                 }
                                             </div>
                                             {
-                                                this.state.currentQuestionType === QuestionType.choose_right &&
+                                                currentQuestionType === QuestionType.choose_right &&
                                                 <ChooseRightQuestion
-                                                    question={this.state.currentQuestion as IQuestion<IChooseRightData>}
+                                                    question={currentQuestion as IQuestion<IChooseRightData>}
                                                     mode={EQuestionMode.editing}
                                                     onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
                                             }
                                             {
-                                                this.state.currentQuestionType === QuestionType.match_columns &&
+                                                currentQuestionType === QuestionType.match_columns &&
                                                 <MatchColumnsQuestion
-                                                    question={this.state.currentQuestion as IQuestion<IMatchColumnsData>}
+                                                    question={currentQuestion as IQuestion<IMatchColumnsData>}
                                                     mode={EQuestionMode.editing}
                                                     onAnswerAdd={(answer: IChooseAnswer) => this.onAnswerAdd(answer)}/>
                                             }
@@ -418,7 +416,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                                     variant="contained"
                                                     color="primary"
                                                     type="submit">
-                                                    {this.state.currentQuestion ? 'Сохранить' : 'Создать'}
+                                                    {currentQuestion ? 'Сохранить' : 'Создать'}
                                                 </Button>
                                                 <Button
                                                     variant="contained"

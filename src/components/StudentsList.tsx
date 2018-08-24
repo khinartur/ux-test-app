@@ -46,9 +46,11 @@ interface State {
 export default class StudentsList extends React.Component<{}, State> {
 
     onDialogInputChange = (evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const {mode, editableStudent} = this.state;
+
         const inputName = evt.target.name as keyof State;
         const inputValue = evt.target.value;
-        switch (this.state.mode) {
+        switch (mode) {
             case EMode.create:
                 this.setState(
                     {
@@ -63,7 +65,7 @@ export default class StudentsList extends React.Component<{}, State> {
                     {
                         ...this.state,
                         editableStudent: {
-                            ...this.state.editableStudent,
+                            ...editableStudent,
                             [inputName]: inputValue,
                         },
                     },
@@ -85,13 +87,14 @@ export default class StudentsList extends React.Component<{}, State> {
         });
     };
     onDialogSubmit = () => {
-        //TODO: make loading
+        const {studentGithub, studentName, studentSurname, editableStudent} = this.state;
+
         switch (this.state.mode) {
             case EMode.create:
-                database.ref('users/' + this.state.studentGithub).set({
-                    name: this.state.studentName,
-                    surname: this.state.studentSurname,
-                    github: this.state.studentGithub,
+                database.ref('users/' + studentGithub).set({
+                    name: studentName,
+                    surname: studentSurname,
+                    github: studentGithub,
                     test_status: EUserTestStatus.not_passed,
                     current_question: 0,
                     points: 0,
@@ -109,15 +112,15 @@ export default class StudentsList extends React.Component<{}, State> {
                 break;
 
             case EMode.edit:
-                database.ref('users/' + this.state.editableStudent.github).set({
-                    ...this.state.editableStudent,
+                database.ref('users/' + editableStudent.github).set({
+                    ...editableStudent,
                 }).then(() => {
                     this.refreshStudentList();
                 });
                 break;
 
             case EMode.delete:
-                database.ref('users/' + this.state.editableStudent.github).remove().then(() => {
+                database.ref('users/' + editableStudent.github).remove().then(() => {
                     this.refreshStudentList();
                 });
         }
@@ -155,7 +158,8 @@ export default class StudentsList extends React.Component<{}, State> {
         });
     };
     deleteUser = (evt, login) => {
-        const students = this.state.students;
+        const {students} = this.state;
+
         this.setState({
             ...this.state,
             addStudentDialogOpened: true,
@@ -164,7 +168,8 @@ export default class StudentsList extends React.Component<{}, State> {
         });
     };
     editUser = (evt, login) => {
-        const students = this.state.students;
+        const {students} = this.state;
+
         this.setState({
             ...this.state,
             addStudentDialogOpened: true,
@@ -218,14 +223,17 @@ export default class StudentsList extends React.Component<{}, State> {
     }
 
     render() {
+        const {loading, showStudentResults, studentList, mode, editableStudent, addStudentDialogOpened,
+            checkingStudentLogin, students} = this.state;
+
         return (
             <React.Fragment>
-                {this.state.loading &&
+                {loading &&
                     <div className={AppStyles.progress}>
                         <LinearProgress/>
                     </div>
                 }
-                {!this.state.loading && !this.state.showStudentResults &&
+                {!loading && !showStudentResults &&
                 <Paper className={StudentListStyles.studentsListContainer}>
                     <Table>
                         <TableHead>
@@ -239,7 +247,7 @@ export default class StudentsList extends React.Component<{}, State> {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.studentList.map((n: IUser, i: number) => {
+                            {studentList.map((n: IUser, i: number) => {
                                 return (
                                     <TableRow key={i}>
                                         <TableCell>{n.name + ' ' + n.surname}</TableCell>
@@ -268,9 +276,9 @@ export default class StudentsList extends React.Component<{}, State> {
                         </TableBody>
                     </Table>
                     <AddStudentDialog onClose={this.closeAddStudentDialog}
-                                      mode={this.state.mode}
-                                      student={this.state.editableStudent}
-                                      open={this.state.addStudentDialogOpened}
+                                      mode={mode}
+                                      student={editableStudent}
+                                      open={addStudentDialogOpened}
                                       onChange={this.onDialogInputChange}
                                       onSubmit={this.onDialogSubmit}/>
                     <div className={StudentListStyles.addStudentButton}>
@@ -281,8 +289,8 @@ export default class StudentsList extends React.Component<{}, State> {
                         </Button>
                     </div>
                 </Paper>}
-                {!this.state.loading && this.state.showStudentResults &&
-                    <Test user={this.state.students[this.state.checkingStudentLogin]}
+                {!loading && showStudentResults &&
+                    <Test user={students[checkingStudentLogin]}
                           checkMode={true}
                           onCheck={this.onCheck}
                             toStudentList={this.toStudentList}/>

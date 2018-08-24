@@ -32,13 +32,6 @@ interface State {
 
 export default class QuestionsList extends React.Component<Props, State> {
 
-    // updateQuestionsList = (questions) => {
-    //     this.setState({
-    //         ...this.state,
-    //         questions: embedKey(questions),
-    //     });
-    // };
-
     constructor(props) {
         super(props);
 
@@ -47,23 +40,18 @@ export default class QuestionsList extends React.Component<Props, State> {
         };
     }
 
-    componentDidMount() {
-        // database.ref('users/').on('value', function (snapshot) {
-        //     this.updateQuestionsList(snapshot.val());
-        // }.bind(this));
-    }
-
     render() {
         const {questions, onClick, mode} = this.props;
+        const {loading} = this.state;
 
         return (
             <React.Fragment>
-                {this.state.loading &&
+                {loading &&
                 <div className={AppStyles.progress}>
                     <LinearProgress/>
                 </div>
                 }
-                {!this.state.loading &&
+                {!loading &&
                 <Paper className={QuestionsListStyles.tablePaper}>
                     <Table>
                         <TableHead>

@@ -35,6 +35,7 @@ interface State {
     questions?: IQuestion<AnyQuestionData>[];
     currentQuestion?: IQuestion<AnyQuestionData>;
 
+    userLogin?: string;
     user?: IUser;
     loading: boolean;
     showQuestionsList: boolean;
@@ -296,23 +297,18 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     constructor(props) {
         super(props);
 
-        // if (auth.currentUser) {
-        //
-        //     this.state = {
-        //         user: null,
-        //         loading: true,
-        //         showQuestionsList: true,
-        //     };
-        // } else {
-        //
-        //     this.props.history.push('/');
-        // }
-
-        this.state = {
-            loading: true,
-            showQuestionsList: true,
-            showDoneTestDialog: false,
-        };
+        const login = localStorage.getItem('loggedUser');
+        if (login) {
+            this.state = {
+                userLogin: login,
+                loading: true,
+                showQuestionsList: true,
+                showDoneTestDialog: false,
+            };
+        } else {
+            //localStorage.setItem('loggedUser', null);
+            props.history.push('/');
+        }
     }
 
     static compareQuestions(a, b: any) {
@@ -320,7 +316,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     }
 
     componentDidMount() {
-        database.ref('/users/khinartur').once('value')
+        const {userLogin} = this.state;
+
+        database.ref(`/users/${userLogin}`).once('value')
             .then((snapshot) => {
                 this.setState({
                     ...this.state,

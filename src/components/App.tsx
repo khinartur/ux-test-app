@@ -4,10 +4,8 @@ import Sign from './Sign';
 import Admin from './Admin';
 import StudentsList from './StudentsList';
 
-import * as AppStyles from '../styles/App.scss';
 import TestEditForm from './TestEditForm';
 import StudentProfile from './StudentProfile';
-import {IUser} from '../interfaces/IUser';
 import Test from './Test';
 import {auth} from '../modules/firebase';
 

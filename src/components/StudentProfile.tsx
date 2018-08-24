@@ -13,7 +13,7 @@ import {auth, database} from '../modules/firebase';
 interface Props {}
 
 interface State {
-    loggedUser?: IUser;
+    user?: IUser;
     loading: boolean;
 }
 
@@ -32,11 +32,10 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                 const user = snapshot.val();
                 this.setState({
                     loading: false,
-                    loggedUser: user,
+                    user: user,
                 });
             });
         } else {
-            //localStorage.setItem('loggedUser', null);
             this.props.history.push('/');
         }
 
@@ -46,16 +45,16 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
     }
 
     render() {
-        const user = this.state.loggedUser;
+        const {loading, user} = this.state;
 
         return (
             <React.Fragment>
-                {this.state.loading &&
+                {loading &&
                     <div className={AppStyles.progress}>
                         <LinearProgress/>
                     </div>
                 }
-                {!this.state.loading &&
+                {!loading &&
                 <div className={StudentProfileStyles.profileWrapper}>
                     <div className={StudentProfileStyles.spaceItemA}></div>
                     <div className={StudentProfileStyles.spaceItemC}></div>
