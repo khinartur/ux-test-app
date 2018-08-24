@@ -20,6 +20,15 @@ export default class App extends React.Component<{}, {}> {
     constructor(props) {
         super(props);
 
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('[LOGGED USER]');
+                console.dir(user);
+            } else {
+                props.history.push('/');
+            }
+        });
+
     }
 
     //TODO: what with routing? should user be able to route to any route?
@@ -27,8 +36,7 @@ export default class App extends React.Component<{}, {}> {
         return (
             <Switch>
                 <Route exact path="/" render={() => <Sign onSign={this.onSign}/>} />
-                <Route exact path="/profile" render={() => <StudentProfile/>} />
-                {/*<Route exact path="/test" render={() => <Test user={this.state.loggedUser}/>} />*/}
+                <Route exact path="/profile" component={StudentProfile}/>
                 <Route exact path="/test" component={Test}/>
                 <Route exact path="/admin" component={Admin}/>
                 <Route exact path="/admin/students" component={StudentsList}/>

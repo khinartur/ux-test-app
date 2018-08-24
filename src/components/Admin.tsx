@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 import * as AdminStyles from '../styles/Admin.scss';
+import {database} from '../modules/firebase';
 
 interface Props {
     history: any;
@@ -20,6 +21,18 @@ class Admin extends React.Component<Props> {
         this.props.history.push('/admin/students');
     };
 
+    constructor(props) {
+        super(props);
+
+        const login = localStorage.getItem('loggedUser');
+        if (!login) {
+            this.props.history.push('/');
+        }
+
+        this.state = {
+            loading: true,
+        };
+    }
 
     render() {
         return (

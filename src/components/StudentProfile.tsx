@@ -22,32 +22,27 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
     initTest = () => {
         this.props.history.push('/test');
     };
-    private userLogin: string;
 
     constructor(props) {
         super(props);
 
-        if (auth.currentUser) {
-            const login = localStorage.getItem('loggedUser');
-            this.userLogin = login;
+        const login = localStorage.getItem('loggedUser');
+        if (login) {
+            database.ref('/users/' + login).once('value').then((snapshot) => {
+                const user = snapshot.val();
+                this.setState({
+                    loading: false,
+                    loggedUser: user,
+                });
+            });
         } else {
-            localStorage.setItem('loggedUser', null);
+            //localStorage.setItem('loggedUser', null);
             this.props.history.push('/');
         }
 
         this.state = {
             loading: true,
         };
-    }
-
-    componentDidMount() {
-        database.ref('/users/' + this.userLogin).once('value').then((snapshot) => {
-            const user = snapshot.val();
-            this.setState({
-                loading: false,
-                loggedUser: user,
-            });
-        });
     }
 
     render() {

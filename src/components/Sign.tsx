@@ -34,16 +34,14 @@ class Sign extends React.Component<Props & RouterProps, State> {
     }
 
     isAdmin = (login: string) => {
-        return database.ref('/admins').once('value').then(function(snapshot) {
-            const admins = snapshot.val();
-            return admins && admins[login];
+        return database.ref(`/admins/${login}`).once('value').then(function(snapshot) {
+            return snapshot.val();
         });
     };
 
     isAllowedUser = (login: string) => {
-        return database.ref('/users').once('value').then(function(snapshot) {
-            const users = snapshot.val();
-            return users[login];
+        return database.ref(`/users/${login}`).once('value').then(function(snapshot) {
+            return snapshot.val();
         });
     };
 
