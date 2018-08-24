@@ -145,10 +145,14 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         }
     };
     onNext = () => {
+        const {history, checkMode} = this.props;
         const {questions, currentQuestion} = this.state;
         const toStart = currentQuestion.order == questions.length;
         const newCurrent = questions[toStart ? 0 : currentQuestion.order];
-        this.props.history.replace(`/test/${newCurrent.order}`);
+
+        if (!checkMode) {
+            history.replace(`/test/${newCurrent.order}`);
+        }
 
         this.setState({
             ...this.state,
