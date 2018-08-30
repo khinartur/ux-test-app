@@ -119,7 +119,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         super(props);
 
         this.state = {
-            answers: this.props.question ? this.props.question.questionData.answers : null,
+            answers: props.question ? props.question.questionData.answers : null,
         };
     }
 
@@ -129,7 +129,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
 
         if (mode === EQuestionMode.passing) {
             let [leftAnswers, rightAnswers] = [[], []];
-            question.questionData.answers.map((answer: IMatchAnswer) => {
+            question.questionData.answers.forEach((answer: IMatchAnswer) => {
                 leftAnswers.push(answer.left);
                 rightAnswers.push(answer.right);
             });

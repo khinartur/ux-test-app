@@ -45,10 +45,6 @@ export default class OpenQuestion extends React.Component<Props, State> {
         } as IQuestion<IOpenQuestionData>);
     };
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const {mode, question} = this.props;
 

@@ -9,6 +9,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import * as AppStyles from '../styles/App.scss';
 import * as StudentProfileStyles from '../styles/StudentProfile.scss';
 import {auth, database} from '../modules/firebase';
+import {getUser} from '../api/api-database';
 
 interface Props {}
 
@@ -28,7 +29,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
 
         const login = localStorage.getItem('loggedUser');
         if (login) {
-            database.ref('/users/' + login).once('value').then((snapshot) => {
+            getUser(login).then((snapshot) => {
                 const user = snapshot.val();
                 this.setState({
                     loading: false,
@@ -36,7 +37,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                 });
             });
         } else {
-            this.props.history.push('/');
+            props.history.push('/');
         }
 
         this.state = {

@@ -20,6 +20,8 @@ import * as AppStyles from '../styles/App.scss';
 import TextField from '@material-ui/core/TextField';
 import {CHOOSE_RIGHT_POINTS, MATCH_COLUMNS_POINTS, OPEN_QUESTIONS_POINTS} from '../constants/points';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import {getNextQuestionKey, getQuestionsOrder, saveQuestion, setQuestionOrder} from '../api/api-database';
+import {uploadFile} from '../api/api-storage';
 
 interface State {
     questions?: { [key: string]: IQuestion<AnyQuestionData> };
@@ -40,6 +42,8 @@ interface State {
 export default class TestEditForm extends React.Component<{}, State> {
 
     onFormSubmit = (evt) => {
+        const {currentQuestion, uploadedFiles} = this.state;
+
         this.setState({
             ...this.state,
             loading: true,
@@ -54,42 +58,40 @@ export default class TestEditForm extends React.Component<{}, State> {
             return;
         }
 
-        const key = this.state.currentQuestion && this.state.currentQuestion.key ?
-            this.state.currentQuestion.key :
-            database.ref().child('/questions').push().key;
-
+        const key = currentQuestion && currentQuestion.key ? currentQuestion.key : getNextQuestionKey();
 
         console.log('KEY:', key);
-        console.dir(this.state.currentQuestion);
+        console.dir(currentQuestion);
         //TODO: save without key
-        database.ref('questions/' + key).set({
-            ...this.state.currentQuestion,
-        }).then(() => {
+        saveQuestion(currentQuestion, key).then(() => {
             console.log('questions order');
-            database.ref('questions-order/' + this.state.currentQuestion.order).set(key).then(() => {
-                if (this.state.uploadedFiles && this.state.uploadedFiles.length) {
+            return setQuestionOrder(currentQuestion.order, key);
+        })
+            .then(() => {
+                if (uploadedFiles && uploadedFiles.length) {
                     this.uploadFiles(key, 0);
                 } else {
                     this.onSuccess();
                 }
             });
-        });
     };
     validateQuestion = () => {
-        if (!this.state.currentQuestion.text) {
+        const {currentQuestion} = this.state;
+
+        if (!currentQuestion.text) {
             return 'Формулировка вопроса не может быть пустой';
         }
 
-        if (this.state.currentQuestion.type == QuestionType.choose_right) {
-            const q = this.state.currentQuestion as IQuestion<IChooseRightData>;
+        if (currentQuestion.type === QuestionType.choose_right) {
+            const q = currentQuestion as IQuestion<IChooseRightData>;
             const answers = q.questionData.answers;
             const rightAnswers = answers.filter((a: IChooseAnswer) => a.isRight);
 
             if (!rightAnswers.length) return 'Необходим хотя бы один правильный ответ';
         }
 
-        if (this.state.currentQuestion.type == QuestionType.match_columns) {
-            const q = this.state.currentQuestion as IQuestion<IMatchColumnsData>;
+        if (currentQuestion.type === QuestionType.match_columns) {
+            const q = currentQuestion as IQuestion<IMatchColumnsData>;
             const answers = q.questionData.answers;
             if (answers.length <= 1) return 'Необходимо хотя бы 2 пары ответов';
         }
@@ -97,12 +99,14 @@ export default class TestEditForm extends React.Component<{}, State> {
         return '';
     };
     onAnswerAdd = (answer: IChooseAnswer | IMatchAnswer) => {
-        const currentAnswers = (this.state.currentQuestion.questionData as IChooseRightData | IMatchColumnsData).answers;
+        const {currentQuestion} = this.state;
+
+        const currentAnswers = (currentQuestion.questionData as IChooseRightData | IMatchColumnsData).answers;
 
         this.setState({
             ...this.state,
             currentQuestion: {
-                ...this.state.currentQuestion,
+                ...currentQuestion,
                 questionData: {
                     answers: currentAnswers && currentAnswers.length ? [...currentAnswers, answer] : [answer],
                 } as IChooseRightData | IMatchColumnsData,
@@ -110,44 +114,52 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     onQuestionChange = (evt) => {
+        const {currentQuestion} = this.state;
+
         this.setState({
             ...this.state,
             currentQuestion: {
-                ...this.state.currentQuestion,
+                ...currentQuestion,
                 text: evt.target.value,
             }
         });
     };
     onPointsChange = (evt) => {
+        const {currentQuestion} = this.state;
+
         this.setState({
             ...this.state,
             currentQuestion: {
-                ...this.state.currentQuestion,
+                ...currentQuestion,
                 points: evt.target.value,
             }
         });
     };
     onFilesUpload = (evt) => {
+        const {currentQuestion} = this.state;
+
         const files = evt.target.files;
 
         const filenames = Array.prototype.map.call(files, file => file.name);
         this.setState({
             ...this.state,
             currentQuestion: {
-                ...this.state.currentQuestion,
+                ...currentQuestion,
                 pictures: filenames,
             },
             uploadedFiles: files,
         });
     };
     onSelectChange = (evt) => {
+        const {currentQuestion} = this.state;
+
         console.log(evt.target.value);
         const type = evt.target.value;
 
         this.setState({
             ...this.state,
             currentQuestion: {
-                ...this.state.currentQuestion,
+                ...currentQuestion,
                 type: evt.target.value,
                 points: this.getPoints(type),
                 questionData: this.getDefaultQuestionData(type),
@@ -164,9 +176,10 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     showAddForm = () => {
-        const questions = this.state.questions;
+        const {questions, currentQuestionType} = this.state;
+
         const currOrder = questions ? Object.keys(questions).length + 1 : 1;
-        const currType = this.state.currentQuestionType;
+        const currType = currentQuestionType;
 
         this.setState({
             ...this.state,
@@ -183,10 +196,12 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     editQuestion = (evt: any, order: number) => {
-        if (this.state.isOpenQuestionForm) return;
+        const {isOpenQuestionForm, questionsOrderMap, questions} = this.state;
 
-        const qKey = this.state.questionsOrderMap[order];
-        const qToEdit = this.state.questions[qKey];
+        if (isOpenQuestionForm) return;
+
+        const qKey = questionsOrderMap[order];
+        const qToEdit = questions[qKey];
 
         this.setState({
             ...this.state,
@@ -207,7 +222,7 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     onCancel = () => {
-        const questions = this.state.questions;
+        const {questions} = this.state;
 
         this.setState({
             ...this.state,
@@ -219,11 +234,15 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     onQuestionMouseOver = (evt) => {
-        if (this.state.isOpenQuestionForm) return;
+        const {isOpenQuestionForm} = this.state;
+
+        if (isOpenQuestionForm) return;
         evt.target.className = TestEditFormStyles.questionChooseDivActive;
     };
     onQuestionMouseOut = (evt) => {
-        if (this.state.isOpenQuestionForm) return;
+        const {isOpenQuestionForm} = this.state;
+
+        if (isOpenQuestionForm) return;
         evt.target.className = TestEditFormStyles.questionChooseDiv;
     };
     getPoints = (type) => {
@@ -257,16 +276,19 @@ export default class TestEditForm extends React.Component<{}, State> {
         }
     };
     updateQuestions = () => {
-        database.ref('questions/').on('value', function (questionsSnapshot) {
-            database.ref('questions-order/').once('value').then(function (mapSnapshot) {
+        //TODO: унести в api
+        database.ref('questions/').on('value', (questionsSnapshot) => {
+            getQuestionsOrder().then((mapSnapshot) => {
                 this.updateQuestionsList(questionsSnapshot.val(), mapSnapshot.val());
-            }.bind(this));
-        }.bind(this));
+            });
+        });
     };
     uploadFiles(key: string, fileIndex: number) {
-        const file = this.state.uploadedFiles[fileIndex];
-        storageRef.child(`${key}/${file.name}`).put(file).then((snapshot) => {
-            if (this.state.uploadedFiles.length == fileIndex + 1) {
+        const {uploadedFiles} = this.state;
+
+        const file = uploadedFiles[fileIndex];
+        uploadFile(key, file).then(() => {
+            if (uploadedFiles.length == fileIndex + 1) {
                 console.log('On success add question');
                 this.onSuccess();
             } else {
@@ -291,7 +313,7 @@ export default class TestEditForm extends React.Component<{}, State> {
     }
 
     render() {
-        const {loading, questions, isOpenQuestionForm, questionsOrderMap, currentQuestion, isNewQuestion,
+        const {loading, error, questions, isOpenQuestionForm, questionsOrderMap, currentQuestion, isNewQuestion,
             currentQuestionType} = this.state;
         const qCount = questions ? Object.keys(questions).length : 0;
 
@@ -303,7 +325,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                 </div>
                 }
                 {
-                    !this.state.loading &&
+                    !loading &&
                     <div className={TestEditFormStyles.testEditForm}>
                         <div className={TestEditFormStyles.testEditFormItem}>
                             {qCount ? //TODO: replace with generator
@@ -356,7 +378,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                             'Создание нового вопроса' : 'Редактирование вопроса'}
                                         </Typography>
                                         <br/>
-                                        <Paper className={AppStyles.error}>{this.state.error}</Paper>
+                                        <Paper className={AppStyles.error}>{error}</Paper>
                                         <form autoComplete="off" onSubmit={(evt) => this.onFormSubmit(evt)}>
                                             <TextField label="Формулировка вопроса:"
                                                        fullWidth={true}

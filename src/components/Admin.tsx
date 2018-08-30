@@ -14,11 +14,15 @@ interface Props {
 class Admin extends React.Component<Props> {
 
     goToTestEdit = () => {
-        this.props.history.push('/admin/edit/test');
+        const {history} = this.props;
+
+        history.push('/admin/edit/test');
     };
 
     goToStudentsResults = () => {
-        this.props.history.push('/admin/students');
+        const {history} = this.props;
+
+        history.push('/admin/students');
     };
 
     constructor(props) {
@@ -26,7 +30,7 @@ class Admin extends React.Component<Props> {
 
         const login = localStorage.getItem('loggedUser');
         if (!login) {
-            this.props.history.push('/');
+            props.history.push('/');
         }
 
         this.state = {

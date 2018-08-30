@@ -22,6 +22,7 @@ import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import TestEditForm from './TestEditForm';
 import Test from './Test';
+import {createUser, deleteUser, updateUser} from '../api/api-database';
 
 enum EMode {
     delete = 'delete',
@@ -91,7 +92,7 @@ export default class StudentsList extends React.Component<{}, State> {
 
         switch (this.state.mode) {
             case EMode.create:
-                database.ref('users/' + studentGithub).set({
+                const newUser = {
                     name: studentName,
                     surname: studentSurname,
                     github: studentGithub,
@@ -99,28 +100,30 @@ export default class StudentsList extends React.Component<{}, State> {
                     current_question: 0,
                     points: 0,
                     test_is_checked: false,
-                }).then(() => {
-                    this.refreshStudentList();
-                    this.setState({
-                        ...this.state,
-                        studentName: '',
-                        studentSurname: '',
-                        studentGithub: '',
-                        loading: false,
+                };
+
+                createUser(newUser)
+                    .then(() => {
+                        this.refreshStudentList();
+                        this.setState({
+                            ...this.state,
+                            studentName: '',
+                            studentSurname: '',
+                            studentGithub: '',
+                            loading: false,
+                        });
                     });
-                });
                 break;
 
             case EMode.edit:
-                database.ref('users/' + editableStudent.github).set({
-                    ...editableStudent,
-                }).then(() => {
-                    this.refreshStudentList();
-                });
+                updateUser(editableStudent, {})
+                    .then(() => {
+                        this.refreshStudentList();
+                    });
                 break;
 
             case EMode.delete:
-                database.ref('users/' + editableStudent.github).remove().then(() => {
+                deleteUser(editableStudent.github).then(() => {
                     this.refreshStudentList();
                 });
         }
@@ -132,9 +135,9 @@ export default class StudentsList extends React.Component<{}, State> {
     };
     updateStudentList = (students) => {
         let list = [];
-        for (const studentLogin in students) {
-            list.push(students[studentLogin]);
-        }
+        Object.entries(students).forEach((prop) => {
+            list.push(students[prop[0]]);
+        });
 
         this.setState({
             ...this.state,
@@ -177,11 +180,12 @@ export default class StudentsList extends React.Component<{}, State> {
             mode: EMode.edit,
         });
     };
+    //TODO: hmmmm
     refreshStudentList = () => {
         const usersRef = database.ref('users/');
-        usersRef.on('value', function (snapshot) {
+        usersRef.on('value', (snapshot) => {
             this.updateStudentList(snapshot.val());
-        }.bind(this));
+        });
     };
     onCheck = () => {
         this.setState({
@@ -212,15 +216,17 @@ export default class StudentsList extends React.Component<{}, State> {
     }
 
     render() {
-        const {loading, showStudentResults, studentList, mode, editableStudent, addStudentDialogOpened,
-            checkingStudentLogin, students} = this.state;
+        const {
+            loading, showStudentResults, studentList, mode, editableStudent, addStudentDialogOpened,
+            checkingStudentLogin, students
+        } = this.state;
 
         return (
             <React.Fragment>
                 {loading &&
-                    <div className={AppStyles.progress}>
-                        <LinearProgress/>
-                    </div>
+                <div className={AppStyles.progress}>
+                    <LinearProgress/>
+                </div>
                 }
                 {!loading && !showStudentResults &&
                 <Paper className={StudentListStyles.studentsListContainer}>
@@ -279,10 +285,10 @@ export default class StudentsList extends React.Component<{}, State> {
                     </div>
                 </Paper>}
                 {!loading && showStudentResults &&
-                    <Test user={students[checkingStudentLogin]}
-                          checkMode={true}
-                          onCheck={this.onCheck}
-                          toStudentList={this.toStudentList}/>
+                <Test user={students[checkingStudentLogin]}
+                      checkMode={true}
+                      onCheck={this.onCheck}
+                      toStudentList={this.toStudentList}/>
                 }
             </React.Fragment>
         );

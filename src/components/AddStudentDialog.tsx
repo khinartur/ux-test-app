@@ -20,10 +20,6 @@ interface Props {
 
 export default class AddStudentDialog extends React.Component<Props> {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const {open, onChange, onSubmit, onClose, mode, student} = this.props;
 

@@ -16,7 +16,7 @@ interface RouterProps {
 }
 
 interface Props {
-    onSign: (user: IUser) => void;
+    onSign: (l: string) => void;
 }
 
 interface State {
@@ -30,7 +30,7 @@ class Sign extends React.Component<Props & RouterProps, State> {
 
         const login = localStorage.getItem('loggedUser');
         if (login) {
-            this.props.history.push('/profile');
+            props.history.push('/profile');
         }
 
         this.state = {
@@ -38,6 +38,7 @@ class Sign extends React.Component<Props & RouterProps, State> {
         };
     }
 
+    //TODO: admin list
     isAdmin = (login: string) => {
         return database.ref(`/admins/${login}`).once('value').then(function(snapshot) {
             return snapshot.val();
@@ -51,16 +52,21 @@ class Sign extends React.Component<Props & RouterProps, State> {
     };
 
     githubSignIn = () => {
-        auth.signInWithPopup(provider).then(function (result) {
-            console.dir(result);
-            const login = result.additionalUserInfo.username;
-            this.isAdmin(login).then(isAdmin => {
-                if (isAdmin) this.props.history.push('/admin');
+        const {history, onSign} = this.props;
+
+        let login;
+        auth.signInWithPopup(provider).then((result) => {
+            login = result.additionalUserInfo.username;
+            return this.isAdmin(login);
+        })
+            .then((isAdmin) => {
+                if (isAdmin) history.push('/admin');
                 return this.isAllowedUser(login);
-            }).then(allowedUser => {
+            })
+            .then((allowedUser) => {
                 if (allowedUser) {
-                    this.props.onSign(login);
-                    this.props.history.push('/profile');
+                    onSign(login);
+                    history.push('/profile');
                 } else {
                     this.setState({
                         ...this.state,
@@ -68,7 +74,6 @@ class Sign extends React.Component<Props & RouterProps, State> {
                     });
                 }
             });
-        }.bind(this));
     };
 
     render() {
