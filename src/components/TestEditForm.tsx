@@ -1,14 +1,20 @@
 import * as React from 'react';
-import {database, storageRef} from '../modules/firebase';
+import {database} from '../modules/firebase';
 import Button from '@material-ui/core/Button';
 import {
-    AnyQuestionData, EQuestionMode, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IQuestion,
+    AnyQuestionData,
+    EQuestionMode,
+    IChooseAnswer,
+    IChooseRightData,
+    IMatchAnswer,
+    IMatchColumnsData,
+    IQuestion,
     QuestionType
 } from '../interfaces/IQuestion';
 
 import * as TestEditFormStyles from '../styles/TestEditForm.scss';
 import Typography from '@material-ui/core/Typography';
-import {embedKey} from '../utils/key-embedding';
+import {embedKey} from '../utils/utils';
 import Paper from '@material-ui/core/Paper';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -21,8 +27,13 @@ import TextField from '@material-ui/core/TextField';
 import {CHOOSE_RIGHT_POINTS, MATCH_COLUMNS_POINTS, OPEN_QUESTIONS_POINTS} from '../constants/points';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {
-    getNextQuestionKey, getQuestions, getQuestionsOrder, saveQuestion, setQuestionOrder,
-    setQuestions, setQuestionsOrder
+    getNextQuestionKey,
+    getQuestions,
+    getQuestionsOrder,
+    saveQuestion,
+    setQuestionOrder,
+    setQuestions,
+    setQuestionsOrder
 } from '../api/api-database';
 import {uploadFile} from '../api/api-storage';
 import DeleteQuestionDialog from './DeleteQuestionDialog';
@@ -390,34 +401,18 @@ export default class TestEditForm extends React.Component<{}, State> {
                 {
                     !loading &&
                     <div className={TestEditFormStyles.testEditForm}>
-                        <div className={TestEditFormStyles.testEditFormItem}>
-                            {qCount ? //TODO: replace with generator
-                                new Array(qCount).fill(true).map((v: boolean, i: number) => {
-                                    const q = questions[questionsOrderMap[i + 1]];
-                                    return <div key={i}
-                                                className={TestEditFormStyles.questionChooseDiv}
-                                                onClick={(evt) => this.editQuestion(evt, q.order)}
-                                                onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
-                                                onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
-                                    >
-                                        {q.order + ') ' + q.text}
-                                    </div>;
-                                })
-                                :
-                                <Typography variant="body1" gutterBottom>
-                                    В тесте нет вопросов.
-                                </Typography>
-                            }
-                        </div>
+                        {this.extracted(qCount, questions, questionsOrderMap)}
                         <div className={TestEditFormStyles.testEditFormItem}>
                             <DeleteQuestionDialog open={deleteQuestionDialogShow}
                                                   onClose={this.closeDeleteQuestionDialog}
                                                   onSubmit={this.onDeleteQuestion}/>
-                            <Button variant="contained"
-                                    color="primary"
-                                    fullWidth={true}
-                                    onClick={this.showAddForm}
-                                    disabled={questionFormShow}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                fullWidth={true}
+                                onClick={this.showAddForm}
+                                disabled={questionFormShow}
+                            >
                                 Добавить вопрос
                             </Button>
                             <br/>
@@ -467,7 +462,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                                     id="raised-button-file"
                                                     multiple
                                                     type="file"
-                                                    onChange={(evt) => this.onFilesUpload(evt)}
+                                                    onChange={evt => this.onFilesUpload(evt)}
                                                 />
                                                 <label htmlFor="raised-button-file">
                                                     <Button variant="contained" color="primary" component="span">
@@ -536,6 +531,30 @@ export default class TestEditForm extends React.Component<{}, State> {
                     </div>
                 }
             </React.Fragment>
+        );
+    }
+
+    extracted(qCount: number, questions: { [p: string]: IQuestion<AnyQuestionData> }, questionsOrderMap: { [p: number]: string }) {
+        return (
+            <div className={TestEditFormStyles.testEditFormItem}>
+                {qCount ? //TODO: replace with generator
+                    new Array(qCount).fill(true).map((v: boolean, i: number) => {
+                        const q = questions[questionsOrderMap[i + 1]];
+                        return <div key={i}
+                                    className={TestEditFormStyles.questionChooseDiv}
+                                    onClick={(evt) => this.editQuestion(evt, q.order)}
+                                    onMouseOver={(evt) => this.onQuestionMouseOver(evt)}
+                                    onMouseOut={(evt) => this.onQuestionMouseOut(evt)}
+                        >
+                            {q.order + ') ' + q.text}
+                        </div>;
+                    })
+                    :
+                    <Typography variant="body1" gutterBottom>
+                        В тесте нет вопросов.
+                    </Typography>
+                }
+            </div>
         );
     }
 }

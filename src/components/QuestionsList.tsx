@@ -12,7 +12,7 @@ import * as QuestionsListStyles from '../styles/QuestionsList.scss';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {AnyQuestionData, IQuestion} from '../interfaces/IQuestion';
-import {getTypeName} from '../utils/key-embedding';
+import {getTypeName} from '../utils/utils';
 
 export enum EQuestionsListMode {
     editing = 'editing',

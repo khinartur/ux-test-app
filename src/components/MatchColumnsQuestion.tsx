@@ -10,7 +10,7 @@ import {
     IMatchAnswer, IMatchColumnsData, IQuestionProps, IQuestionState, EQuestionMode, IChooseAnswer, IQuestion
 } from '../interfaces/IQuestion';
 
-import {shuffle} from '../utils/key-embedding';
+import {shuffle} from '../utils/utils';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 

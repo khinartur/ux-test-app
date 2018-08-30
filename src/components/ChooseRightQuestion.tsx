@@ -8,19 +8,18 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 import CheckCircle from 'mdi-material-ui/CheckCircle';
 
-import * as ChooseRightQuestionStyles from '../styles/ChooseRightQuestion.scss';
+import * as styles from '../styles/ChooseRightQuestion.scss';
 
 import {
     EQuestionMode,
     IChooseAnswer, IChooseRightData, IQuestion, IQuestionProps, IQuestionState,
 } from '../interfaces/IQuestion';
+import {IError} from '../interfaces/IError';
 
 interface Props extends IQuestionProps<IChooseRightData> {
 }
 
-//TODO: how to include IError interface?
-interface State extends IQuestionState<IChooseAnswer> {
-    error?: string;
+interface State extends IQuestionState<IChooseAnswer>, Partial<IError> {
     answerVariantText?: string;
     answerVariantChecked?: boolean;
 }
@@ -115,13 +114,13 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
             <div>
                 {
                     mode === EQuestionMode.editing &&
-                    <Paper className={ChooseRightQuestionStyles.chooseRightEditPaper}>
+                    <Paper className={styles.chooseRightEditPaper}>
                         <div>
                             {
                                 answers && answers.length ?
                                     answers.map((answer: IChooseAnswer, index: number) => {
                                         return <Paper key={index}
-                                                      className={ChooseRightQuestionStyles.answerPaper}>
+                                                      className={styles.answerPaper}>
                                             {answer.text} {answer.isRight && <CheckCircle color={'secondary'}/>}
                                         </Paper>;
                                     })
@@ -130,7 +129,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             }
                         </div>
                         <br/>
-                        <div className={ChooseRightQuestionStyles.answerVariant}>
+                        <div className={styles.answerVariant}>
                             <div>
                                 <TextField label='Ответ'
                                            fullWidth={true}

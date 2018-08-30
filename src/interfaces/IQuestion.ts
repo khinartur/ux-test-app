@@ -1,7 +1,7 @@
 export enum QuestionType {
-    choose_right='choose_right',
-    match_columns='match_columns',
-    open_question='open_question',
+    choose_right = 'choose_right',
+    match_columns = 'match_columns',
+    open_question = 'open_question',
 }
 
 export type AnyQuestionData = IChooseRightData | IMatchColumnsData | IOpenQuestionData;
@@ -43,12 +43,12 @@ export interface IOpenQuestionData {
 }
 
 export enum EQuestionMode {
-    passing='passing',
-    checking='checking',
-    editing='editing',
+    passing = 'passing',
+    checking = 'checking',
+    editing = 'editing',
 }
 
-export interface IQuestionProps<T extends AnyQuestionData>{
+export interface IQuestionProps<T extends AnyQuestionData> {
     question: IQuestion<T>;
     onAnswerAdd?: any;
     onAnswer?: any;

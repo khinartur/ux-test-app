@@ -2,13 +2,17 @@ import * as React from 'react';
 import {RouteComponentProps, withRouter} from 'react-router';
 import {EUserTestStatus, IUser} from '../interfaces/IUser';
 import {
-    AnyQuestionData, EQuestionMode, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IOpenQuestionData,
+    AnyQuestionData,
+    EQuestionMode,
+    IChooseAnswer,
+    IChooseRightData,
+    IMatchAnswer,
+    IMatchColumnsData,
     IQuestion,
     QuestionType
 } from '../interfaces/IQuestion';
 import {storageRef} from '../modules/firebase';
-import {embedKey} from '../utils/key-embedding';
-
+import {embedKey} from '../utils/utils';
 import * as TestStyles from '../styles/Test.scss';
 import Button from '@material-ui/core/Button';
 import * as AppStyles from '../styles/App.scss';
@@ -18,7 +22,11 @@ import TestQuestion from './TestQuestion';
 import DoneTestDialog from './DoneTestDialog';
 import * as TestQuestionStyles from '../styles/TestQuestion.scss';
 import {
-    getPassedQuestions, getQuestions, getUser, savePassedQuestion, setPassedQuestions,
+    getPassedQuestions,
+    getQuestions,
+    getUser,
+    savePassedQuestion,
+    setPassedQuestions,
     updateUser
 } from '../api/api-database';
 
@@ -61,7 +69,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         savePassedQuestion(user.github, currentQuestion.key, newCurrent)
             .then(() => {
                 const userPoints = (user.points | 0) + (points | 0);
-                updateUser(user, {points: userPoints});
+                return updateUser(user, {points: userPoints});
             })
             .then(() => {
                 this.updateQuestionsList();
@@ -267,7 +275,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     loadPictures = () => {
         const {loading, questions} = this.state;
 
-        this.picturesStorage = new Array(questions.length);
+        this.picturesStorage = [];
         questions.map((q: IQuestion<AnyQuestionData>) => {
             const pictures = q.pictures;
 
@@ -279,11 +287,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                         xhr.onload = function () {
                             const blob = xhr.response;
                             const objectURL = URL.createObjectURL(blob);
-                            if (this.picturesStorage[q.key]) {
-                                this.picturesStorage[q.key].push(objectURL);
-                            } else {
-                                this.picturesStorage[q.key] = [objectURL];
-                            }
+                            this.picturesStorage[q.key] = this.picturesStorage[q.key] || [];
+                            this.picturesStorage[q.key].push(objectURL);
                             if (loading && this.isPicturesLoaded()) {
                                 this.setState({
                                     ...this.state,

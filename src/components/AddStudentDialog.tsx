@@ -25,7 +25,7 @@ export default class AddStudentDialog extends React.Component<Props> {
 
         return (
             <React.Fragment>
-                {mode == 'create' &&
+                {mode === 'create' &&
                 <Dialog open={open} aria-labelledby="dialog-title">
                     <DialogTitle id="dialog-title">Добавление студента</DialogTitle>
                     <DialogContent>
@@ -36,7 +36,7 @@ export default class AddStudentDialog extends React.Component<Props> {
                             onChange={onChange}
                             autoFocus
                             margin="dense"
-                            name={'studentName'}
+                            name="studentName"
                             label="Имя"
                             fullWidth
                         />

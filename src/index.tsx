@@ -1,10 +1,7 @@
-import * as React from 'react'
-import { render } from 'react-dom'
-import { BrowserRouter } from 'react-router-dom'
-import App from './components/App'
-
-import * as AppStyles from './styles/App.scss';
-
+import * as React from 'react';
+import {render} from 'react-dom';
+import {BrowserRouter} from 'react-router-dom';
+import App from './components/App';
 import {createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
 
 const theme = createMuiTheme({
@@ -33,5 +30,5 @@ render(
             <App/>
         </BrowserRouter>
     </MuiThemeProvider>,
-    document.getElementById("reactContainer")
+    document.getElementById('reactContainer')
 );
