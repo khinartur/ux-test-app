@@ -4,27 +4,23 @@ import {EUserTestStatus, IUser} from '../interfaces/IUser';
 import {
     AnyQuestionData, EQuestionMode, IChooseAnswer, IChooseRightData, IMatchAnswer, IMatchColumnsData, IOpenQuestionData,
     IQuestion,
-    QuestionAnswer,
     QuestionType
 } from '../interfaces/IQuestion';
-import {auth, database, storageRef} from '../modules/firebase';
-import ChooseRightQuestion from './ChooseRightQuestion';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import {ejectKey, embedKey} from '../utils/key-embedding';
-import MatchColumnsQuestion from './MatchColumnsQuestion';
-import OpenQuestion from './OpenQuestion';
+import {storageRef} from '../modules/firebase';
+import {embedKey} from '../utils/key-embedding';
 
 import * as TestStyles from '../styles/Test.scss';
 import Button from '@material-ui/core/Button';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import TextField from '@material-ui/core/TextField';
 import QuestionsList, {EQuestionsListMode} from './QuestionsList';
 import TestQuestion from './TestQuestion';
 import DoneTestDialog from './DoneTestDialog';
 import * as TestQuestionStyles from '../styles/TestQuestion.scss';
-import {checkModeContaiter} from '../styles/Test.scss';
+import {
+    getPassedQuestions, getQuestions, getUser, savePassedQuestion, setPassedQuestions,
+    updateUser
+} from '../api/api-database';
 
 interface Props {
     checkMode?: boolean;
@@ -61,17 +57,15 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             isChecked: true,
         } as IQuestion<AnyQuestionData>;
 
-        const userPoints = +user.points;
-        database.ref('passed-questions/' + user.github + '/' + currentQuestion.key).set({
-            ...newCurrent,
-        }).then(() => {
-            database.ref('users/' + user.github).set({
-                ...user,
-                points: userPoints + +points,
-            }).then(() => {
+
+        savePassedQuestion(user.github, currentQuestion.key, newCurrent)
+            .then(() => {
+                const userPoints = (user.points | 0) + (points | 0);
+                updateUser(user, {points: userPoints});
+            })
+            .then(() => {
                 this.updateQuestionsList();
             });
-        });
 
         this.setState({
             ...this.state,
@@ -87,7 +81,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     onDialogSubmit = () => {
-        const {questions} = this.state;
+        const {history} = this.props;
+        const {user, questions} = this.state;
 
         this.setState({
             ...this.state,
@@ -103,17 +98,25 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                 case QuestionType.choose_right:
                     answers = (q as IQuestion<IChooseRightData>).questionData.answers;
                     answers.forEach((a: IChooseAnswer) => {
-                        if (a.isAnswered && !a.isRight || !a.isAnswered && a.isRight) goodboy = false;
+                        if (a.isAnswered && !a.isRight || !a.isAnswered && a.isRight) {
+                            goodboy = false;
+                        }
                     });
-                    if (goodboy) points += q.points;
+                    if (goodboy) {
+                        points += q.points;
+                    }
                     break;
 
                 case QuestionType.match_columns:
                     answers = (q as IQuestion<IMatchColumnsData>).questionData.answers;
                     answers.forEach((a: IMatchAnswer) => {
-                        if (a.right !== a.user_answer) goodboy = false;
+                        if (a.right !== a.user_answer) {
+                            goodboy = false;
+                        }
                     });
-                    if (goodboy) points += q.points;
+                    if (goodboy) {
+                        points += q.points;
+                    }
                     break;
 
                 case QuestionType.open_question:
@@ -121,18 +124,19 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             }
         });
 
-        database.ref('users/' + this.state.user.github).set({
-            ...this.state.user,
-            points,
-            test_status: EUserTestStatus.passed,
-        }).then(() => {
-            this.props.history.push('/profile');
-        });
+        updateUser(user, {points, test_status: EUserTestStatus.passed})
+            .then(() => {
+                history.push('/profile');
+            });
     };
     onDone = () => {
+        const {questions} = this.state;
+
         let isAllAnswered = true;
-        this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
-            if (!q.isAnswered) isAllAnswered = false;
+        questions.map((q: IQuestion<AnyQuestionData>) => {
+            if (!q.isAnswered) {
+                isAllAnswered = false;
+            }
         });
 
         if (!isAllAnswered) {
@@ -147,7 +151,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     onNext = () => {
         const {history, checkMode} = this.props;
         const {questions, currentQuestion} = this.state;
-        const toStart = currentQuestion.order == questions.length;
+        const toStart = currentQuestion.order === questions.length;
         const newCurrent = questions[toStart ? 0 : currentQuestion.order];
 
         if (!checkMode) {
@@ -161,10 +165,12 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     onBack = () => {
+        const {history} = this.props;
         const {questions, currentQuestion} = this.state;
-        const toEnd = currentQuestion.order == 1;
+
+        const toEnd = currentQuestion.order === 1;
         const newCurrent = questions[toEnd ? questions.length - 1 : currentQuestion.order - 2];
-        this.props.history.replace(`/test/${newCurrent.order}`);
+        history.replace(`/test/${newCurrent.order}`);
 
         this.setState({
             ...this.state,
@@ -172,7 +178,9 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     toList = () => {
-        this.props.history.replace('/test');
+        const {history} = this.props;
+
+        history.replace('/test');
 
         this.setState({
             ...this.state,
@@ -196,24 +204,25 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         const isChecked = currentQuestion.type === QuestionType.choose_right ||
             currentQuestion.type === QuestionType.match_columns;
 
-        database.ref('passed-questions/' + user.github + '/' + currentQuestion.key).set({
-            ...currentQuestion,
+        savePassedQuestion(user.github, currentQuestion.key, currentQuestion, {
             isAnswered: true,
             isChecked,
-        }).then(() => {
-            database.ref('users/' + user.github).set({
-                ...user,
-                test_status: EUserTestStatus.in_progress,
-                current_question: currentQuestion.order + 1,
-            }).then(() => {
+        })
+            .then(() => {
+                updateUser(user, {
+                    test_status: EUserTestStatus.in_progress,
+                    current_question: currentQuestion.order + 1,
+                });
+            })
+            .then(() => {
                 this.updateQuestionsList();
             });
-        });
     };
     updateQuestionsList = () => {
-        const {currentQuestion} = this.state;
-        let modifiedQuestions = this.state.questions.map((q: IQuestion<AnyQuestionData>) => {
-            if (q.key == currentQuestion.key) {
+        const {questions, currentQuestion} = this.state;
+
+        let modifiedQuestions = questions.map((q: IQuestion<AnyQuestionData>) => {
+            if (q.key === currentQuestion.key) {
                 return {
                     ...currentQuestion,
                     isAnswered: true,
@@ -246,10 +255,10 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
     getTestQuestions = () => {
         const {user} = this.state;
 
-        if (user.test_status == EUserTestStatus.in_progress || user.test_status == EUserTestStatus.passed) {
-            return database.ref(`/passed-questions/${user.github}`).once('value');
+        if (user.test_status === EUserTestStatus.in_progress || user.test_status === EUserTestStatus.passed) {
+            return getPassedQuestions(user.github);
         } else {
-            return database.ref('/questions').once('value');
+            return getQuestions();
         }
     };
     isPicturesLoaded = () => {
@@ -339,32 +348,36 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     componentDidMount() {
         const {user, checkMode} = this.props;
-        const userLogin = checkMode ? user.github : this.state.userLogin;
+        const {userLogin} = this.state;
+        const login = checkMode ? user.github : userLogin;
 
-        database.ref(`/users/${userLogin}`).once('value')
+        getUser(login)
             .then((snapshot) => {
+                const user = snapshot.val();
                 this.setState({
                     ...this.state,
-                    user: snapshot.val(),
-                }, () => {
-                    this.getTestQuestions().then((snapshot) => {
-                        const {user} = this.state;
-                        const questions = snapshot.val();
-                        if (user.test_status == EUserTestStatus.not_passed) {
-                            database.ref('passed-questions/' + user.github).set(questions).then(() => {
-                                database.ref('users/' + user.github).set({
-                                    ...user,
-                                    test_status: EUserTestStatus.in_progress,
-                                    current_question: 1,
-                                }).then(() => {
-                                    this.initState(questions);
-                                });
-                            });
-                        } else {
-                            this.initState(questions);
-                        }
-                    });
+                    user: user,
                 });
+                //TODO: what to do if user won't be stated
+                return this.getTestQuestions();
+            })
+            .then((snapshot) => {
+                const {user} = this.state;
+                const questions = snapshot.val();
+                if (user.test_status === EUserTestStatus.not_passed) {
+                    setPassedQuestions(user.github, questions)
+                        .then(() => {
+                            return updateUser(user, {
+                                test_status: EUserTestStatus.in_progress,
+                                current_question: 1,
+                            });
+                        })
+                        .then(() => {
+                            this.initState(questions);
+                        });
+                } else {
+                    this.initState(questions);
+                }
             });
     }
 
