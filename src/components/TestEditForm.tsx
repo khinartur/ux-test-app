@@ -20,8 +20,12 @@ import * as AppStyles from '../styles/App.scss';
 import TextField from '@material-ui/core/TextField';
 import {CHOOSE_RIGHT_POINTS, MATCH_COLUMNS_POINTS, OPEN_QUESTIONS_POINTS} from '../constants/points';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {getNextQuestionKey, getQuestionsOrder, saveQuestion, setQuestionOrder} from '../api/api-database';
+import {
+    getNextQuestionKey, getQuestions, getQuestionsOrder, saveQuestion, setQuestionOrder,
+    setQuestions, setQuestionsOrder
+} from '../api/api-database';
 import {uploadFile} from '../api/api-storage';
+import DeleteQuestionDialog from './DeleteQuestionDialog';
 
 interface State {
     questions?: { [key: string]: IQuestion<AnyQuestionData> };
@@ -29,8 +33,9 @@ interface State {
     currentQuestionType: QuestionType;
     currentQuestionOrder?: number;
     isNewQuestion?: boolean;
+    deleteQuestionDialogShow: boolean;
 
-    isOpenQuestionForm: boolean;
+    questionFormShow: boolean;
     questionsOrderMap?: { [key: number]: string };
 
     uploadedFiles?: File[];
@@ -191,14 +196,14 @@ export default class TestEditForm extends React.Component<{}, State> {
                 questionData: this.getDefaultQuestionData(currType),
             },
             currentQuestionOrder: currOrder,
-            isOpenQuestionForm: true,
+            questionFormShow: true,
             isNewQuestion: true,
         });
     };
     editQuestion = (evt: any, order: number) => {
-        const {isOpenQuestionForm, questionsOrderMap, questions} = this.state;
+        const {questionFormShow, questionsOrderMap, questions} = this.state;
 
-        if (isOpenQuestionForm) return;
+        if (questionFormShow) return;
 
         const qKey = questionsOrderMap[order];
         const qToEdit = questions[qKey];
@@ -206,8 +211,9 @@ export default class TestEditForm extends React.Component<{}, State> {
         this.setState({
             ...this.state,
             currentQuestion: qToEdit,
+            currentQuestionOrder: order,
             currentQuestionType: qToEdit.type,
-            isOpenQuestionForm: true,
+            questionFormShow: true,
         });
     };
     onSuccess = () => {
@@ -215,7 +221,7 @@ export default class TestEditForm extends React.Component<{}, State> {
 
         this.setState({
             ...this.state,
-            isOpenQuestionForm: false,
+            questionFormShow: false,
             loading: true,
             error: null,
             isNewQuestion: false,
@@ -229,20 +235,20 @@ export default class TestEditForm extends React.Component<{}, State> {
             currentQuestion: null,
             currentQuestionOrder: questions ? Object.keys(questions).length + 1 : 1,
             currentQuestionType: QuestionType.choose_right,
-            isOpenQuestionForm: false,
+            questionFormShow: false,
             isNewQuestion: false,
         });
     };
     onQuestionMouseOver = (evt) => {
-        const {isOpenQuestionForm} = this.state;
+        const {questionFormShow} = this.state;
 
-        if (isOpenQuestionForm) return;
+        if (questionFormShow) return;
         evt.target.className = TestEditFormStyles.questionChooseDivActive;
     };
     onQuestionMouseOut = (evt) => {
-        const {isOpenQuestionForm} = this.state;
+        const {questionFormShow} = this.state;
 
-        if (isOpenQuestionForm) return;
+        if (questionFormShow) return;
         evt.target.className = TestEditFormStyles.questionChooseDiv;
     };
     getPoints = (type) => {
@@ -283,6 +289,72 @@ export default class TestEditForm extends React.Component<{}, State> {
             });
         });
     };
+    closeDeleteQuestionDialog = () => {
+        this.setState({
+            ...this.state,
+            deleteQuestionDialogShow: false,
+        });
+    };
+    onDeleteButtonClick = () => {
+        this.setState({
+            ...this.state,
+            deleteQuestionDialogShow: true,
+        });
+    };
+    onDeleteQuestion = () => {
+        const {currentQuestion, currentQuestionOrder} = this.state;
+
+        this.setState({
+            ...this.state,
+            loading: true,
+        });
+
+        let newQuestions = {};
+        getQuestions()
+            .then((snapshot) => {
+                const oldQuestions = embedKey(snapshot.val());
+                //TODO: hmmm
+                debugger;
+                Object.entries(oldQuestions).forEach((o) => {
+                    const q = o[1] as IQuestion<AnyQuestionData>; //q - question
+                    if (q.order === currentQuestionOrder) {
+                        return;
+                    }
+                    newQuestions[q.key] = q.order < currentQuestion.order ? q : {...q, order: q.order - 1};
+                });
+                return setQuestions(newQuestions);
+            })
+            .then(() => {
+                let newOrsersMap = {};
+                Object.entries(newQuestions).forEach((o) => {
+                    const q = o[1] as IQuestion<AnyQuestionData>; //q - question
+                    newOrsersMap[q.order] = q.key;
+                });
+
+                return setQuestionsOrder(newOrsersMap);
+            })
+            .then(() => {
+                this.setState({
+                    ...this.state,
+                    deleteQuestionDialogShow: false,
+                    questionFormShow: false,
+                    loading: false,
+                });
+            });
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            questionFormShow: false,
+            currentQuestionType: QuestionType.choose_right,
+            loading: true,
+            deleteQuestionDialogShow: false,
+            error: '',
+        };
+    }
+
     uploadFiles(key: string, fileIndex: number) {
         const {uploadedFiles} = this.state;
 
@@ -297,24 +369,15 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            isOpenQuestionForm: false,
-            currentQuestionType: QuestionType.choose_right,
-            loading: true,
-            error: '',
-        };
-    }
-
     componentDidMount() {
         this.updateQuestions();
     }
 
     render() {
-        const {loading, error, questions, isOpenQuestionForm, questionsOrderMap, currentQuestion, isNewQuestion,
-            currentQuestionType} = this.state;
+        const {
+            loading, error, questions, questionFormShow, questionsOrderMap, currentQuestion, isNewQuestion,
+            currentQuestionType, deleteQuestionDialogShow
+        } = this.state;
         const qCount = questions ? Object.keys(questions).length : 0;
 
         return (
@@ -347,16 +410,19 @@ export default class TestEditForm extends React.Component<{}, State> {
                             }
                         </div>
                         <div className={TestEditFormStyles.testEditFormItem}>
+                            <DeleteQuestionDialog open={deleteQuestionDialogShow}
+                                                  onClose={this.closeDeleteQuestionDialog}
+                                                  onSubmit={this.onDeleteQuestion}/>
                             <Button variant="contained"
                                     color="primary"
                                     fullWidth={true}
                                     onClick={this.showAddForm}
-                                    disabled={isOpenQuestionForm}>
+                                    disabled={questionFormShow}>
                                 Добавить вопрос
                             </Button>
                             <br/>
                             {
-                                isOpenQuestionForm &&
+                                questionFormShow &&
                                 <Paper className={TestEditFormStyles.questionEditForm}>
                                     <FormControl>
                                         <InputLabel htmlFor="type">Тип вопроса</InputLabel>
@@ -450,6 +516,17 @@ export default class TestEditForm extends React.Component<{}, State> {
                                                     onClick={this.onCancel}>
                                                     Отмена
                                                 </Button>
+                                                {!isNewQuestion &&
+                                                <Button
+                                                    variant="contained"
+                                                    style={{
+                                                        marginRight: '10px',
+                                                        float: 'right',
+                                                    }}
+                                                    onClick={this.onDeleteButtonClick}>
+                                                    Удалить
+                                                </Button>
+                                                }
                                             </div>
                                         </form>
                                     </Paper>
