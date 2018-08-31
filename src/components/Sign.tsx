@@ -93,18 +93,17 @@ class Sign extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         return (
             <div className={SignStyles.signWrapper}>
-                <div className={SignStyles.spaceItemA}></div>
-                <div className={SignStyles.spaceItemC}></div>
-                <div className={SignStyles.spaceItemD}></div>
-                <div className={SignStyles.spaceItemE}></div>
                 <div className={SignStyles.signForm}>
                     <Paper className={AppStyles.error}>{error}</Paper>
-                    <Typography variant="headline" gutterBottom align={'center'}>
+                    <Typography variant="title" gutterBottom align={'center'}>
                         Технопарк. Тестирование по курсу UX
                     </Typography>
                     <Button variant="contained"
                             className={SignStyles.githubButton}
                             color="primary"
+                            style={{
+                                marginTop: '20px'
+                            }}
                             onClick={this.githubSignIn}
                     >
                         Войти с помощью GitHub&nbsp;&nbsp;&nbsp;

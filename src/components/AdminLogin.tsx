@@ -7,9 +7,9 @@ import {IError} from '../interfaces/IError';
 import * as AppStyles from '../styles/App.scss';
 import * as base64 from 'base-64';
 import {EAuth} from './App';
-import {Redirect, RouteComponentProps} from 'react-router';
-import {withRouter} from 'react-router-dom';
+import {Redirect, RouteComponentProps, withRouter} from 'react-router';
 import Admin from './Admin';
+import * as AdminLoginStyles from '../styles/AdminLogin.scss';
 
 interface Admin {
     login: string;
@@ -17,7 +17,7 @@ interface Admin {
 }
 
 interface State extends Partial<IError> {
-    adminsList?: {[login: string]: Admin};
+    adminsList?: { [login: string]: Admin };
     login?: string;
     password?: string;
     redirectToReferrer: boolean;
@@ -98,42 +98,49 @@ class AdminLogin extends React.Component<Props & RouteComponentProps<{}>, State>
     }
 
     render() {
-        const { auth } = this.props;
-        const { error, redirectToReferrer } = this.state;
+        const {auth} = this.props;
+        const {error, redirectToReferrer} = this.state;
 
         if (redirectToReferrer) {
-            return <Redirect to={{pathname: auth === EAuth.admin ? '/admin' : '/profile'}} />
+            return <Redirect to={{pathname: auth === EAuth.admin ? '/admin' : '/profile'}}/>;
         }
 
         return (
             <React.Fragment>
-                <Paper className={AppStyles.error}>{error}</Paper>
-                <Paper>
-                    <form onSubmit={(evt) => this.onSubmit(evt)}>
-                        <TextField
-                            onChange={this.handleChange('login')}
-                            autoFocus
-                            margin='dense'
-                            label='Логин'
-                            fullWidth
-                            required={true}
-                        />
-                        <TextField
-                            onChange={this.handleChange('password')}
-                            margin='dense'
-                            type='password'
-                            name='password'
-                            label='Пароль'
-                            fullWidth
-                            required={true}
-                        />
-                        <Button variant="contained"
-                                type='submit'
-                                color="primary">
-                            Войти
-                        </Button>
-                    </form>
-                </Paper>
+                <div className={AdminLoginStyles.adminLoginWrapper}>
+                    <div className={AdminLoginStyles.adminLoginForm}>
+                        <Paper className={AppStyles.error}>{error}</Paper>
+                        <Paper className={AdminLoginStyles.adminLoginPaper}>
+                            <form onSubmit={(evt) => this.onSubmit(evt)}>
+                                <TextField
+                                    onChange={this.handleChange('login')}
+                                    autoFocus
+                                    margin='dense'
+                                    label='Логин'
+                                    fullWidth
+                                    required={true}
+                                />
+                                <TextField
+                                    onChange={this.handleChange('password')}
+                                    margin='dense'
+                                    type='password'
+                                    name='password'
+                                    label='Пароль'
+                                    fullWidth
+                                    required={true}
+                                />
+                                <Button variant="contained"
+                                        type='submit'
+                                        color="primary"
+                                        style={{
+                                            marginTop: '20px'
+                                        }}>
+                                    Войти
+                                </Button>
+                            </form>
+                        </Paper>
+                    </div>
+                </div>
             </React.Fragment>
         );
     }

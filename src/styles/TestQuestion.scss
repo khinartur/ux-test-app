@@ -3,39 +3,34 @@
     margin: 50px auto;
 }
 
-.backArrow {
-    position: fixed;
-    top: 200px;
-    left: 200px;
-    width: 200px;
-    height: 200px;
+.arrowWrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
-.backArrow:hover {
-    background-color: aliceblue;
+.arrow {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+
+    cursor: pointer;
 }
 
-.nextArrow {
-    position: fixed;
-    top: 200px;
-    right: 200px;
-    width: 200px;
-    height: 200px;
+.arrow:hover {
+    background-color: rgba(240, 248, 255, 0.51);
 }
 
-.nextArrow:hover {
-    background-color: aliceblue;
+.arrowInner {
+    margin: 0 auto;
+    width: 24px;
+    height: 24px;
 }
 
-.leftArrow {
-    margin-left: 88px;
-    margin-top: 88px;
-}
 
-.rightArrow {
-    margin-left: 88px;
-    margin-top: 88px;
-}
 
 .questionPaper {
     padding: 50px;
@@ -59,13 +54,15 @@
     background-color: black;
     color: white;
     border-radius: 50%;
-    display: inline-block;
+    line-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
 }
 
 .questionOrderSpan {
     position: relative;
-    left: 8px;
-    top: 4px;
 }
 
 .questionSaveButton {
@@ -77,4 +74,9 @@
     grid-template-columns: 1fr 1fr;
     margin-top: 30px;
     padding: 20px;
+}
+
+.container1 {
+    display: grid;
+    grid-template-columns: 100px auto 100px;
 }

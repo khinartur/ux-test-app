@@ -57,10 +57,6 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                 }
                 {!loading &&
                 <div className={StudentProfileStyles.profileWrapper}>
-                    <div className={StudentProfileStyles.spaceItemA}></div>
-                    <div className={StudentProfileStyles.spaceItemC}></div>
-                    <div className={StudentProfileStyles.spaceItemD}></div>
-                    <div className={StudentProfileStyles.spaceItemE}></div>
                     <div className={StudentProfileStyles.userProfilePanel}>
                         <Paper className={StudentProfileStyles.profilePaper}>
                             <Typography variant="title" gutterBottom align={'center'}>

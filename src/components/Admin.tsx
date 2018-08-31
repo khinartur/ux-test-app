@@ -28,10 +28,6 @@ class Admin extends React.Component<Props> {
     render() {
         return (
             <div className={AdminStyles.adminWrapper}>
-                <div className={AdminStyles.spaceItemA}></div>
-                <div className={AdminStyles.spaceItemC}></div>
-                <div className={AdminStyles.spaceItemD}></div>
-                <div className={AdminStyles.spaceItemE}></div>
                 <div className={AdminStyles.adminForm}>
                     <Typography variant="headline" gutterBottom align={'center'}>
                         Администратор

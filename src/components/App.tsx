@@ -140,7 +140,6 @@ export default class App extends React.Component<{}, AppState> {
         return (
             !loading &&
             <React.Fragment>
-                <AuthButton auth={auth} onSignOut={this.onSignOut}/>
                 <Switch>
                     <Route exact path="/" render={() => <Redirect to={{pathname: '/login'}}/>}/>
                     <Route path="/login" render={() => <Sign auth={auth} onSign={this.onSign}/>}/>
@@ -152,6 +151,7 @@ export default class App extends React.Component<{}, AppState> {
                     <PrivateRoute auth={auth} exact path="/admin/students" component={StudentsList}/>
                     <PrivateRoute auth={auth} exact path="/admin/edit/test" component={TestEditForm}/>
                 </Switch>
+                <AuthButton auth={auth} onSignOut={this.onSignOut}/>
             </React.Fragment>
         );
     }

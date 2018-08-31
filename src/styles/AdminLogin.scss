@@ -1,4 +1,4 @@
-.profileWrapper {
+.adminLoginWrapper {
     position: absolute;
     top: 0;
     right: 0;
@@ -10,21 +10,12 @@
     justify-content: center;
 }
 
-.userProfilePanel {
+.adminLoginForm {
     display: block;
     width: 400px;
     height: auto;
 }
 
-.brDiv {
-    min-height: 2%;
-}
-
-.profilePaper {
+.adminLoginPaper {
     padding: 15px;
-}
-
-.testButton {
-    left: calc(50% - 64px);
-    margin-top: 25px;
 }
