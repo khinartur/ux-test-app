@@ -8,7 +8,7 @@ import {
     IChooseRightData,
     IMatchAnswer,
     IMatchColumnsData,
-    IQuestion,
+    IQuestion, QuestionListItem,
     QuestionType
 } from '../interfaces/IQuestion';
 
@@ -37,6 +37,8 @@ import {
 } from '../api/api-database';
 import {uploadFile} from '../api/api-storage';
 import DeleteQuestionDialog from './DeleteQuestionDialog';
+import QuestionItem from './QuestionItem';
+import * as DraggableList from 'react-draggable-list';
 
 interface State {
     questions?: { [key: string]: IQuestion<AnyQuestionData> };
@@ -48,6 +50,7 @@ interface State {
 
     questionFormShow: boolean;
     questionsOrderMap?: { [key: number]: string };
+    questionsList?: QuestionListItem[];
 
     uploadedFiles?: File[];
 
@@ -184,9 +187,17 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     updateQuestionsList = (questions, map) => {
+        let newQuestionsList = Object.entries(questions).map(o => o[1]).map((q: IQuestion<AnyQuestionData>) => {
+            return {
+                text: q.text,
+                order: q.order,
+            };
+        });
+
         this.setState({
             ...this.state,
             questions: embedKey(questions),
+            questionsList: newQuestionsList,
             questionsOrderMap: map,
             loading: false,
         });
@@ -354,6 +365,14 @@ export default class TestEditForm extends React.Component<{}, State> {
             });
     };
 
+    onListChange = (newList: QuestionListItem[]) => {
+        this.setState({
+            ...this.state,
+            questionsList: newList,
+        });
+    };
+
+
     constructor(props) {
         super(props);
 
@@ -364,6 +383,10 @@ export default class TestEditForm extends React.Component<{}, State> {
             deleteQuestionDialogShow: false,
             error: '',
         };
+    }
+
+    componentDidMount() {
+        this.updateQuestions();
     }
 
     uploadFiles(key: string, fileIndex: number) {
@@ -380,17 +403,13 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
 
-    componentDidMount() {
-        this.updateQuestions();
-    }
-
     render() {
         const {
-            loading, error, questions, questionFormShow, questionsOrderMap, currentQuestion, isNewQuestion,
-            currentQuestionType, deleteQuestionDialogShow
+            loading, error, questions, questionFormShow, currentQuestion, isNewQuestion,
+            currentQuestionType, deleteQuestionDialogShow, questionsList
         } = this.state;
         const qCount = questions ? Object.keys(questions).length : 0;
-
+        debugger;
         return (
             <React.Fragment>
                 {loading &&
@@ -401,7 +420,20 @@ export default class TestEditForm extends React.Component<{}, State> {
                 {
                     !loading &&
                     <div className={TestEditFormStyles.testEditForm}>
-                        {this.extracted(qCount, questions, questionsOrderMap)}
+                        <div className={TestEditFormStyles.testEditFormItem}>
+                            {qCount ? //TODO: replace with generator
+                                <DraggableList itemKey="text"
+                                               template={QuestionItem}
+                                               list={questionsList}
+                                               onMoveEnd={newList => this.onListChange(newList)}
+                                               container={() => {return document.body}}
+                                />
+                                :
+                                <Typography variant="body1" gutterBottom>
+                                    В тесте нет вопросов.
+                                </Typography>
+                            }
+                        </div>
                         <div className={TestEditFormStyles.testEditFormItem}>
                             <DeleteQuestionDialog open={deleteQuestionDialogShow}
                                                   onClose={this.closeDeleteQuestionDialog}

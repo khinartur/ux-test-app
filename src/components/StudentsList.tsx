@@ -1,5 +1,4 @@
 import * as React from 'react';
-import firebase from 'firebase';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
@@ -20,7 +19,6 @@ import * as StudentListStyles from '../styles/StudentsList.scss';
 import IconButton from '@material-ui/core/IconButton';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import TestEditForm from './TestEditForm';
 import Test from './Test';
 import {createUser, deleteUser, updateUser} from '../api/api-database';
 

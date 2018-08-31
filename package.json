@@ -48,6 +48,7 @@
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-table": "^6.8.6",
-    "typeface-roboto": "0.0.54"
+    "typeface-roboto": "0.0.54",
+    "react-draggable-list": "^3.6.0"
   }
 }

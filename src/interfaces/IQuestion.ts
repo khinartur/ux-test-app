@@ -68,3 +68,8 @@ export interface IQuestionState<P extends QuestionAnswer> {
     answers?: P[];
     passMode?: IPassMode;
 }
+
+export type QuestionListItem = {
+    order: number;
+    text: string;
+};

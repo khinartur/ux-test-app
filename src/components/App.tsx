@@ -8,11 +8,30 @@ import TestEditForm from './TestEditForm';
 import StudentProfile from './StudentProfile';
 import Test from './Test';
 import {auth} from '../modules/firebase';
+import {RouteComponentProps, withRouter} from 'react-router';
+
+interface AuthButtonProps {
+    isAuthenticated?: boolean;
+}
+
+type T = AuthButtonProps & RouteComponentProps<{}>;
+
+const AuthButton: React.ComponentClass<AuthButtonProps> = withRouter<T>((props: T) => {
+    return (
+        props.isAuthenticated ? (
+            <p>
+                Welcome! <button onClick={() => props.history.push('/')}>Sign out</button>
+            </p>
+        ) : (
+            <p>You are not logged in.</p>
+        )
+    );
+});
 
 export default class App extends React.Component<{}, {}> {
 
-    onSign = (login: string) => {
-        localStorage.setItem('loggedUser', login);
+    onSign= () => {
+
     };
 
     constructor(props) {
@@ -32,7 +51,8 @@ export default class App extends React.Component<{}, {}> {
     render() {
         return (
             <Switch>
-                <Route exact path="/" render={() => <Sign onSign={this.onSign}/>} />
+                {/*<AuthButton isAuthenticated={}/>*/}
+                <Route exact path="/" render={() => <Sign onSign={this.onSign}/>}/>
                 <Route exact path="/profile" component={StudentProfile}/>
                 <Route exact path="/test" component={Test}/>
                 <Route exact path="/test/:key" component={Test}/>
@@ -43,4 +63,3 @@ export default class App extends React.Component<{}, {}> {
         );
     }
 }
-
