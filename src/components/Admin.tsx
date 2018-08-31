@@ -25,19 +25,6 @@ class Admin extends React.Component<Props> {
         history.push('/admin/students');
     };
 
-    constructor(props) {
-        super(props);
-
-        const login = localStorage.getItem('loggedUser');
-        if (!login) {
-            props.history.push('/');
-        }
-
-        this.state = {
-            loading: true,
-        };
-    }
-
     render() {
         return (
             <div className={AdminStyles.adminWrapper}>

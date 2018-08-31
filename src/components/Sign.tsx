@@ -6,78 +6,90 @@ import {withRouter} from 'react-router-dom';
 
 import * as AppStyles from '../styles/App.scss';
 import * as SignStyles from '../styles/Sign.scss';
-import {auth, database, provider} from '../modules/firebase';
+import {auth, provider} from '../modules/firebase';
 import Paper from '@material-ui/core/Paper';
-import * as H from 'history';
 import {IUser} from '../interfaces/IUser';
-
-interface RouterProps {
-    history: H.History;
-}
+import {Redirect, RouteComponentProps} from 'react-router';
+import {EAuth} from './App';
+import {IError} from '../interfaces/IError';
+import {getUsersList} from '../api/api-database';
 
 interface Props {
-    onSign: (l: string) => void;
+    auth: EAuth;
+    onSign: (auth: EAuth, login: string) => void;
 }
 
-interface State {
-    error?: string;
+interface State extends Partial<IError> {
+    usersList: { [login: string]: IUser };
+    redirectToReferrer: boolean;
 }
 
-class Sign extends React.Component<Props & RouterProps, State> {
-
-    constructor(props) {
-        super(props);
-
-        const login = localStorage.getItem('loggedUser');
-        if (login) {
-            props.history.push('/profile');
-        }
-
-        this.state = {
-            error: '',
-        };
-    }
-
-    //TODO: admin list
-    isAdmin = (login: string) => {
-        return database.ref(`/admins/${login}`).once('value').then(function(snapshot) {
-            return snapshot.val();
-        });
-    };
-
-    isAllowedUser = (login: string) => {
-        return database.ref(`/users/${login}`).once('value').then(function(snapshot) {
-            return snapshot.val();
-        });
-    };
+class Sign extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     githubSignIn = () => {
-        const {history, onSign} = this.props;
+        const {onSign} = this.props;
+        const {usersList} = this.state;
 
         let login;
         auth.signInWithPopup(provider).then((result) => {
             login = result.additionalUserInfo.username;
-            return this.isAdmin(login);
-        })
-            .then((isAdmin) => {
-                if (isAdmin) history.push('/admin');
-                return this.isAllowedUser(login);
-            })
-            .then((allowedUser) => {
-                if (allowedUser) {
-                    onSign(login);
-                    history.push('/profile');
-                } else {
-                    this.setState({
-                        ...this.state,
-                        error: 'Вас не удается найти в базе студентов',
-                    });
-                }
-            });
+
+            const users = Object.entries(usersList).map(o => o[0]).filter((s: string) => s === login);
+
+            if (!users && !users.length) {
+                this.setState({
+                    ...this.state,
+                    error: 'Вы не найдены в базе студентов',
+                });
+            } else {
+                const login = users[0];
+
+                onSign(EAuth.student, login);
+
+                this.setState({
+                    ...this.state,
+                    redirectToReferrer: true,
+                });
+            }
+        });
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            usersList: {},
+            redirectToReferrer: props.auth === EAuth.student || props.auth === EAuth.admin,
+        };
+
+        getUsersList()
+            .then((snapshot) => {
+                this.state = {
+                    ...this.state,
+                    usersList: snapshot.val(),
+                };
+            });
+    }
+
+    componentDidUpdate(prevProps) {
+        const {auth} = this.props;
+
+        if (auth !== EAuth.none) {
+            this.setState({
+                ...this.state,
+                redirectToReferrer: true,
+            });
+        }
+    }
+
     render() {
-        const {error} = this.state;
+        const { auth } = this.props;
+        const {error, redirectToReferrer} = this.state;
+
+        debugger;
+        if (redirectToReferrer) {
+            return <Redirect to={{pathname: auth === EAuth.student ? '/profile' : '/admin'}}/>;
+        }
 
         return (
             <div className={SignStyles.signWrapper}>
@@ -94,7 +106,7 @@ class Sign extends React.Component<Props & RouterProps, State> {
                             className={SignStyles.githubButton}
                             color="primary"
                             onClick={this.githubSignIn}
-                            >
+                    >
                         Войти с помощью GitHub&nbsp;&nbsp;&nbsp;
                         <GithubCircle/>
                     </Button>
