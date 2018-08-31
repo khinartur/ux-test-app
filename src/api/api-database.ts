@@ -62,3 +62,7 @@ export function getPassedQuestions(userLogin) {
 export function getNextQuestionKey() {
     return database.ref().child('/questions').push().key;
 }
+
+export function updateDatabase(updates) {
+    return database.ref().update(updates);
+}
