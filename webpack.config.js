@@ -62,12 +62,17 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.(jpe?g|png|gif|ico)$/i,
+                loader: 'file?name=[name].[ext]'
+            },
         ]
     },
     plugins: [
         new HtmlWebpackPlugin({
             template: 'src/templates/index.html',
             filename: 'index.html',
+            favicon: 'src/images/favicon.ico'
         }),
         new webpack.HotModuleReplacementPlugin(),
         new MiniCssExtractPlugin({

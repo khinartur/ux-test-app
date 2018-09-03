@@ -1,17 +1,12 @@
 import * as React from 'react';
-import {withRouter} from 'react-router';
+import {RouteComponentProps, withRouter} from 'react-router';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 import * as AdminStyles from '../styles/Admin.scss';
-import {database} from '../modules/firebase';
+import {auth, database} from '../modules/firebase';
 
-interface Props {
-    history: any;
-}
-
-//TODO: remove br-div
-class Admin extends React.Component<Props> {
+class Admin extends React.Component<{} & RouteComponentProps<{}>> {
 
     goToTestEdit = () => {
         const {history} = this.props;
@@ -26,17 +21,23 @@ class Admin extends React.Component<Props> {
     };
 
     render() {
+
         return (
             <div className={AdminStyles.adminWrapper}>
                 <div className={AdminStyles.adminForm}>
                     <Typography variant="headline" gutterBottom align={'center'}>
                         Администратор
                     </Typography>
-                    <Button variant="contained" color="primary" fullWidth={true} onClick={this.goToTestEdit}>
+                    <Button variant="contained"
+                            color="primary"
+                            fullWidth={true}
+                            onClick={this.goToTestEdit}>
                         Редактировать тест
                     </Button>
-                    <div className={AdminStyles.brDiv}></div>
-                    <Button variant="contained" color="primary" fullWidth={true} onClick={this.goToStudentsResults}>
+                    <Button variant="contained"
+                            color="primary"
+                            fullWidth={true}
+                            onClick={this.goToStudentsResults}>
                         Результаты студентов
                     </Button>
                 </div>

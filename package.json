@@ -4,7 +4,7 @@
   "description": "App for UX course test examination in technopark",
   "scripts": {
     "build": "webpack --progress --mode production",
-    "dev": "webpack --progress --mode development",
+    "dev": "webpack --display-error-details --progress --mode development",
     "start": "webpack-dev-server --progress --mode development --watch"
   },
   "repository": {

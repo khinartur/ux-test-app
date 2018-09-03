@@ -1,3 +1,5 @@
+// import '/src/images/favicon.ico';
+
 import * as React from 'react';
 import {render} from 'react-dom';
 import {BrowserRouter} from 'react-router-dom';

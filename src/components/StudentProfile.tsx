@@ -14,34 +14,28 @@ import {getUser} from '../api/api-database';
 interface Props {}
 
 interface State {
-    user?: IUser;
+    user: IUser;
     loading: boolean;
 }
 
 class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     initTest = () => {
-        this.props.history.push('/test');
+        const {history} = this.props;
+
+        history.push('/test');
     };
 
     constructor(props) {
         super(props);
 
-        const login = localStorage.getItem('loggedUser');
-        if (login) {
-            getUser(login).then((snapshot) => {
-                const user = snapshot.val();
-                this.setState({
-                    loading: false,
-                    user: user,
-                });
-            });
-        } else {
-            props.history.push('/');
-        }
+        console.log('[local storage]');
+        console.dir(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem('user'));
 
         this.state = {
             loading: true,
+            user: user,
         };
     }
 

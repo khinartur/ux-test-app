@@ -10,46 +10,36 @@ import {auth, provider} from '../modules/firebase';
 import Paper from '@material-ui/core/Paper';
 import {IUser} from '../interfaces/IUser';
 import {Redirect, RouteComponentProps} from 'react-router';
-import {EAuth} from './App';
 import {IError} from '../interfaces/IError';
 import {getUsersList} from '../api/api-database';
 
-interface Props {
-    auth: EAuth;
-    onSign: (auth: EAuth, login: string) => void;
-}
-
 interface State extends Partial<IError> {
     usersList: { [login: string]: IUser };
-    redirectToReferrer: boolean;
 }
 
-class Sign extends React.Component<Props & RouteComponentProps<{}>, State> {
+class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
 
     githubSignIn = () => {
-        const {onSign} = this.props;
+        const {history} = this.props;
         const {usersList} = this.state;
 
         let login;
         auth.signInWithPopup(provider).then((result) => {
             login = result.additionalUserInfo.username;
 
-            const users = Object.entries(usersList).map(o => o[0]).filter((s: string) => s === login);
+            const users = Object.entries(usersList).map(o => o[1]).filter((u: IUser) => u.github === login);
 
-            if (!users && !users.length) {
-                this.setState({
-                    ...this.state,
-                    error: 'Вы не найдены в базе студентов',
-                });
+            if (!users || !users.length) {
+                auth.signOut()
+                    .then(() => {
+                        this.setState({
+                            ...this.state,
+                            error: 'Вы не найдены в базе студентов',
+                        });
+                    });
             } else {
-                const login = users[0];
-
-                onSign(EAuth.student, login);
-
-                this.setState({
-                    ...this.state,
-                    redirectToReferrer: true,
-                });
+                localStorage.setItem('user', JSON.stringify(users[0]));
+                history.push('/profile');
             }
         });
     };
@@ -59,7 +49,6 @@ class Sign extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         this.state = {
             usersList: {},
-            redirectToReferrer: props.auth === EAuth.student || props.auth === EAuth.admin,
         };
 
         getUsersList()
@@ -71,24 +60,12 @@ class Sign extends React.Component<Props & RouteComponentProps<{}>, State> {
             });
     }
 
-    componentDidUpdate(prevProps) {
-        const {auth} = this.props;
-
-        if (auth !== EAuth.none) {
-            this.setState({
-                ...this.state,
-                redirectToReferrer: true,
-            });
-        }
-    }
-
     render() {
-        const { auth } = this.props;
-        const {error, redirectToReferrer} = this.state;
+        const {error} = this.state;
 
         debugger;
-        if (redirectToReferrer) {
-            return <Redirect to={{pathname: auth === EAuth.student ? '/profile' : '/admin'}}/>;
+        if (auth.currentUser) {
+            return <Redirect to={{pathname: auth.currentUser.providerData[0].providerId === 'github.com' ? '/admin' : '/profile'}}/>;
         }
 
         return (

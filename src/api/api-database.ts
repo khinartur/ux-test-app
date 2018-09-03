@@ -67,10 +67,6 @@ export function updateDatabase(updates) {
     return database.ref().update(updates);
 }
 
-export function getAdminsList() {
-    return database.ref('/admins').once('value');
-}
-
 export function getUsersList() {
     return database.ref('/users').once('value');
 }

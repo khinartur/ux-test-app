@@ -6,14 +6,13 @@ import StudentsList from './StudentsList';
 import TestEditForm from './TestEditForm';
 import StudentProfile from './StudentProfile';
 import Test from './Test';
-import {auth} from '../modules/firebase';
+import {auth, firebaseApp} from '../modules/firebase';
 import {Redirect, RouteComponentProps, withRouter} from 'react-router';
 import AdminLogin from './AdminLogin';
 import Button from '@material-ui/core/Button';
 import * as AppStyles from '../styles/App.scss';
 
 interface AuthButtonProps {
-    auth: EAuth;
     onSignOut: any;
 }
 
@@ -21,7 +20,7 @@ type T = AuthButtonProps & RouteComponentProps<{}>;
 
 const AuthButton: React.ComponentClass<AuthButtonProps> = withRouter<T>((props: T) => {
     return (
-        props.auth === EAuth.admin || props.auth === EAuth.student ? (
+        auth.currentUser ? (
             <div className={AppStyles.signOutButton}>
                 <Button variant='contained'
                         color='primary'
@@ -34,64 +33,58 @@ const AuthButton: React.ComponentClass<AuthButtonProps> = withRouter<T>((props: 
     );
 });
 
-
-const ProtectedRoute = ({auth, component: Component, ...rest}) => (
+const ProtectedRoute = ({component: Component, ...rest}) => (
     <Route {...rest} render={(props) => (
-        auth === EAuth.student
-            ? <Component {...props} />
-            : <Redirect to={{
+        auth.currentUser ?
+            auth.currentUser.providerData[0].providerId === 'github.com' ?
+                <Component {...props} />
+                :
+                <Redirect to={{
+                    pathname: '/admin',
+                }}/>
+            :
+            <Redirect to={{
                 pathname: '/login',
                 state: {from: props.location}
             }}/>
     )}/>
 );
 
-const PrivateRoute = ({auth, component: Component, ...rest}) => (
+const PrivateRoute = ({component: Component, ...rest}) => (
     <Route {...rest} render={(props) => (
-        auth === EAuth.admin
-            ? <Component {...props} />
-            : <Redirect to={{
+        auth.currentUser ?
+            auth.currentUser.providerData[0].providerId === 'password' ?
+                <Component {...props} />
+                :
+                <Redirect to={{
+                    pathname: '/profile',
+                }}/>
+            :
+            <Redirect to={{
                 pathname: '/admin/login',
                 state: {from: props.location}
             }}/>
     )}/>
 );
 
-export enum EAuth {
-    none = 'none',
-    student = 'student',
-    admin = 'admin',
-}
-
 interface AppState {
-    auth: EAuth;
     loading: boolean;
 }
 
 export default class App extends React.Component<{}, AppState> {
 
-    onSign = (auth: EAuth, login: string) => {
-        if (auth === EAuth.admin) {
-            sessionStorage.setItem('loggedAdmin', login);
-        }
-
+    onSignOut = () => {
         this.setState({
             ...this.state,
-            auth,
+            loading: true,
         });
-    };
-
-    onSignOut = () => {
-        const {auth: a} = this.state;
-
-        if (a === EAuth.admin) {
-            sessionStorage.removeItem('loggedAdmin');
-        }
 
         auth.signOut().then(() => {
+            localStorage.removeItem('user');
+
             this.setState({
                 ...this.state,
-                auth: EAuth.none,
+                loading: false,
             });
         });
     };
@@ -100,58 +93,28 @@ export default class App extends React.Component<{}, AppState> {
         super(props);
 
         this.state = {
-            auth: EAuth.none,
-            loading: true,
+            loading: false,
         };
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                this.setState({
-                    ...this.state,
-                    auth: EAuth.student,
-                    loading: false,
-                });
-            } else {
-                this.setState({
-                    ...this.state,
-                    auth: EAuth.none,
-                    loading: false,
-                });
-            }
-        });
-    }
-
-    //TODO: remove
-    componentWillMount() {
-        const {auth} = this.state;
-        debugger;
-
-        if (auth === EAuth.none && sessionStorage.getItem('loggedAdmin')) {
-            this.setState({
-                ...this.state,
-                auth: EAuth.admin,
-            });
-        }
     }
 
     render() {
-        const {auth, loading} = this.state;
-        debugger;
+        const {loading} = this.state;
+
         return (
             !loading &&
             <React.Fragment>
                 <Switch>
                     <Route exact path="/" render={() => <Redirect to={{pathname: '/login'}}/>}/>
-                    <Route path="/login" render={() => <Sign auth={auth} onSign={this.onSign}/>}/>
-                    <ProtectedRoute auth={auth} exact path="/profile" component={StudentProfile}/>
-                    <ProtectedRoute auth={auth} exact path="/test" component={Test}/>
-                    <ProtectedRoute auth={auth} exact path="/test/:key" component={Test}/>
-                    <Route exact path="/admin/login" render={() => <AdminLogin auth={auth} onSign={this.onSign}/>}/>
-                    <PrivateRoute auth={auth} exact path="/admin" component={Admin}/>
-                    <PrivateRoute auth={auth} exact path="/admin/students" component={StudentsList}/>
-                    <PrivateRoute auth={auth} exact path="/admin/edit/test" component={TestEditForm}/>
+                    <Route path="/login" component={Sign}/>
+                    <ProtectedRoute exact path="/profile" component={StudentProfile}/>
+                    <ProtectedRoute exact path="/test" component={Test}/>
+                    <ProtectedRoute exact path="/test/:key" component={Test}/>
+                    <Route exact path="/admin/login" component={AdminLogin}/>
+                    <PrivateRoute exact path="/admin" component={Admin}/>
+                    <PrivateRoute exact path="/admin/students" component={StudentsList}/>
+                    <PrivateRoute exact path="/admin/edit/test" component={TestEditForm}/>
                 </Switch>
-                <AuthButton auth={auth} onSignOut={this.onSignOut}/>
+                <AuthButton onSignOut={this.onSignOut}/>
             </React.Fragment>
         );
     }
