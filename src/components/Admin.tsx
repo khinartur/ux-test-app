@@ -31,12 +31,18 @@ class Admin extends React.Component<{} & RouteComponentProps<{}>> {
                     <Button variant="contained"
                             color="primary"
                             fullWidth={true}
+                            style={{
+                                marginTop: '20px'
+                            }}
                             onClick={this.goToTestEdit}>
                         Редактировать тест
                     </Button>
                     <Button variant="contained"
                             color="primary"
                             fullWidth={true}
+                            style={{
+                                marginTop: '20px'
+                            }}
                             onClick={this.goToStudentsResults}>
                         Результаты студентов
                     </Button>

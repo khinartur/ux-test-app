@@ -60,12 +60,17 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
             });
     }
 
+
     render() {
         const {error} = this.state;
 
-        debugger;
+        // debugger;
+        // if (auth.currentUser) {
+        //     return <Redirect to={{pathname: auth.currentUser.providerData[0].providerId === 'github.com' ? '/admin' : '/profile'}}/>;
+        // }
+
         if (auth.currentUser) {
-            return <Redirect to={{pathname: auth.currentUser.providerData[0].providerId === 'github.com' ? '/admin' : '/profile'}}/>;
+            return <Redirect to={{pathname: '/profile'}}/>;
         }
 
         return (

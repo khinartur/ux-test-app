@@ -7,10 +7,12 @@ import * as AppStyles from '../styles/App.scss';
 import {Redirect, RouteComponentProps, withRouter} from 'react-router';
 import * as AdminLoginStyles from '../styles/AdminLogin.scss';
 import {auth} from '../modules/firebase';
+import LinearProgress from '@material-ui/core/LinearProgress/LinearProgress';
 
 interface State extends Partial<IError> {
     email?: string;
     password?: string;
+    loading: boolean;
 }
 
 class AdminLogin extends React.Component<{} & RouteComponentProps<{}>, State> {
@@ -27,8 +29,19 @@ class AdminLogin extends React.Component<{} & RouteComponentProps<{}>, State> {
         debugger;
         evt.preventDefault();
 
+        this.setState({
+            ...this.state,
+            loading: true,
+        });
+
         auth.signInWithEmailAndPassword(email, password)
-            .catch((error) => {
+            .then(() => {
+                this.setState({
+                    ...this.state,
+                    loading: false,
+                });
+            })
+            .catch(() => {
                 this.setState({
                     ...this.state,
                     error: 'Неправильный логин или пароль',
@@ -36,16 +49,31 @@ class AdminLogin extends React.Component<{} & RouteComponentProps<{}>, State> {
             });
     };
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            loading: false,
+        };
+    }
 
     render() {
-        const {error} = this.state;
+        const {error, loading} = this.state;
+
+        // if (auth.currentUser) {
+        //     return <Redirect to={{pathname: auth.currentUser.providerData[0].providerId === 'github.com' ? '/admin' : '/profile'}}/>;
+        // }
 
         if (auth.currentUser) {
-            return <Redirect to={{pathname: auth.currentUser.providerData[0].providerId === 'github.com' ? '/admin' : '/profile'}}/>;
+            return <Redirect to={{pathname: '/admin'}}/>;
         }
 
         return (
             <React.Fragment>
+                {loading &&
+                <div className={AppStyles.progress}>
+                    <LinearProgress/>
+                </div>
+                }
                 <div className={AdminLoginStyles.adminLoginWrapper}>
                     <div className={AdminLoginStyles.adminLoginForm}>
                         <Paper className={AppStyles.error}>{error}</Paper>
