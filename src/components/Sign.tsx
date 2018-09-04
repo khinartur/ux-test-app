@@ -15,6 +15,7 @@ import {getUsersList} from '../api/api-database';
 
 interface State extends Partial<IError> {
     usersList: { [login: string]: IUser };
+    loading: boolean;
 }
 
 class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
@@ -26,10 +27,11 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
         let login;
         auth.signInWithPopup(provider).then((result) => {
             login = result.additionalUserInfo.username;
+            debugger;
 
-            const users = Object.entries(usersList).map(o => o[1]).filter((u: IUser) => u.github === login);
+            const user = Object.keys(usersList).find((l: string) => l === login);
 
-            if (!users || !users.length) {
+            if (!user) {
                 auth.signOut()
                     .then(() => {
                         this.setState({
@@ -38,7 +40,7 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
                         });
                     });
             } else {
-                localStorage.setItem('user', JSON.stringify(users[0]));
+                localStorage.setItem('user', JSON.stringify(usersList[user]));
                 history.push('/profile');
             }
         });
@@ -49,20 +51,25 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
 
         this.state = {
             usersList: {},
+            loading: true,
         };
+    }
 
+    componentDidMount() {
+        debugger;
         getUsersList()
             .then((snapshot) => {
-                this.state = {
+                this.setState( {
                     ...this.state,
                     usersList: snapshot.val(),
-                };
+                    loading: false,
+                });
             });
     }
 
 
     render() {
-        const {error} = this.state;
+        const {error, loading} = this.state;
 
         // debugger;
         // if (auth.currentUser) {
@@ -74,25 +81,28 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
         }
 
         return (
-            <div className={SignStyles.signWrapper}>
-                <div className={SignStyles.signForm}>
-                    <Paper className={AppStyles.error}>{error}</Paper>
-                    <Typography variant="title" gutterBottom align={'center'}>
-                        Технопарк. Тестирование по курсу UX
-                    </Typography>
-                    <Button variant="contained"
-                            className={SignStyles.githubButton}
-                            color="primary"
-                            style={{
-                                marginTop: '20px'
-                            }}
-                            onClick={this.githubSignIn}
-                    >
-                        Войти с помощью GitHub&nbsp;&nbsp;&nbsp;
-                        <GithubCircle/>
-                    </Button>
-                </div>
-            </div>
+            <React.Fragment>
+                {!loading &&
+                <div className={SignStyles.signWrapper}>
+                    <div className={SignStyles.signForm}>
+                        <Paper className={AppStyles.error}>{error}</Paper>
+                        <Typography variant="title" gutterBottom align={'center'}>
+                            Технопарк. Тестирование по курсу UX
+                        </Typography>
+                        <Button variant="contained"
+                                className={SignStyles.githubButton}
+                                color="primary"
+                                style={{
+                                    marginTop: '20px'
+                                }}
+                                onClick={this.githubSignIn}
+                        >
+                            Войти с помощью GitHub&nbsp;&nbsp;&nbsp;
+                            <GithubCircle/>
+                        </Button>
+                    </div>
+                </div>}
+            </React.Fragment>
         );
     }
 }

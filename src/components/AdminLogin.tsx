@@ -56,6 +56,16 @@ class AdminLogin extends React.Component<{} & RouteComponentProps<{}>, State> {
         };
     }
 
+    componentDidMount() {
+        const {history} = this.props;
+
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                history.push('/admin');
+            }
+        });
+    }
+
     render() {
         const {error, loading} = this.state;
 

@@ -67,21 +67,21 @@ const PrivateRoute = ({component: Component, ...rest}) => (
     )}/>
 );
 
-const LoginRoute = ({component: Component, ...rest}) => (
-    <Route {...rest} render={(props) => (
-        auth.currentUser ?
-            auth.currentUser.providerData[0].providerId === 'password' ?
-                <Redirect to={{
-                    pathname: '/admin',
-                }}/>
-                :
-                <Redirect to={{
-                    pathname: '/profile',
-                }}/>
-            :
-            <Component {...props} />
-    )}/>
-);
+// const LoginRoute = ({component: Component, ...rest}) => (
+//     <Route {...rest} render={(props) => (
+//         auth.currentUser ?
+//             auth.currentUser.providerData[0].providerId === 'password' ?
+//                 <Redirect to={{
+//                     pathname: '/admin',
+//                 }}/>
+//                 :
+//                 <Redirect to={{
+//                     pathname: '/profile',
+//                 }}/>
+//             :
+//             <Component {...props} />
+//     )}/>
+// );
 
 interface AppState {
     loading: boolean;
@@ -109,8 +109,17 @@ export default class App extends React.Component<{}, AppState> {
         super(props);
 
         this.state = {
-            loading: false,
+            loading: true,
         };
+    }
+
+    componentDidMount() {
+        auth.onAuthStateChanged(() => {
+            this.setState({
+                ...this.state,
+                loading: false,
+            });
+        })
     }
 
     render() {
@@ -121,11 +130,11 @@ export default class App extends React.Component<{}, AppState> {
             <React.Fragment>
                 <Switch>
                     <Route exact path="/" render={() => <Redirect to={{pathname: '/login'}}/>}/>
-                    <LoginRoute path="/login" component={Sign}/>
+                    <Route path="/login" component={Sign}/>
                     <ProtectedRoute exact path="/profile" component={StudentProfile}/>
                     <ProtectedRoute exact path="/test" component={Test}/>
                     <ProtectedRoute exact path="/test/:key" component={Test}/>
-                    <LoginRoute exact path="/admin/login" component={AdminLogin}/>
+                    <Route exact path="/admin/login" component={AdminLogin}/>
                     <PrivateRoute exact path="/admin" component={Admin}/>
                     <PrivateRoute exact path="/admin/students" component={StudentsList}/>
                     <PrivateRoute exact path="/admin/edit/test" component={TestEditForm}/>

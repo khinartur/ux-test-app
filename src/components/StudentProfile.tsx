@@ -34,7 +34,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
         const user = JSON.parse(localStorage.getItem('user'));
 
         this.state = {
-            loading: true,
+            loading: false,
             user: user,
         };
     }

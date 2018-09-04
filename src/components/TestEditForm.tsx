@@ -219,7 +219,9 @@ export default class TestEditForm extends React.Component<{}, State> {
     editQuestion = (evt: any, order: number) => {
         const {questionFormShow, questionsOrderMap, questions} = this.state;
 
-        if (questionFormShow) return;
+        if (questionFormShow) {
+            return;
+        }
 
         const qKey = questionsOrderMap[order];
         const qToEdit = questions[qKey];
@@ -496,6 +498,9 @@ export default class TestEditForm extends React.Component<{}, State> {
                                            }
                                            container={() => {
                                                return document.body;
+                                           }}
+                                           commonProps={{
+                                               onClick: this.editQuestion
                                            }}
                             />
                             :
