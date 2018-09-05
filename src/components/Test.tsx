@@ -29,6 +29,7 @@ import {
     setPassedQuestions,
     updateUser
 } from '../api/api-database';
+import {updateUserModel} from '../model/UserModel';
 
 interface Props {
     checkMode?: boolean;
@@ -134,6 +135,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
         updateUser(user, {points, test_status: EUserTestStatus.passed})
             .then(() => {
+                updateUserModel({...user, test_status: EUserTestStatus.passed});
                 history.push('/profile');
             });
     };

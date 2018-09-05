@@ -71,7 +71,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
         } = this.props;
         const {pointsToAdd} = this.state;
 
-        const isPassingMode = mode == EQuestionMode.passing;
+        const isPassingMode = mode === EQuestionMode.passing;
 
         return (
             <React.Fragment>
@@ -160,14 +160,14 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                                         <TextField label='Добавить баллов'
                                                    fullWidth={true}
                                                    margin={'dense'}
-                                                   disabled={!(question.type == QuestionType.open_question)}
+                                                   disabled={!(question.type === QuestionType.open_question)}
                                                    onChange={(evt) => this.onPointsToAddChange(evt)}
                                                    defaultValue={pointsToAdd}/>
                                     </div>
                                     <div>
                                         <Button variant="contained"
                                                 color="primary"
-                                                disabled={!(question.type == QuestionType.open_question)}
+                                                disabled={!(question.type === QuestionType.open_question)}
                                                 onClick={(evt) => onPointsAdd(evt, pointsToAdd)}>
                                             Добавить баллы
                                         </Button>

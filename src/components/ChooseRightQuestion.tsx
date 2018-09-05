@@ -73,7 +73,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
         let userAnswer = evt.target.value;
 
         let newAnswers = answers.map((ans: IChooseAnswer) => {
-            if (ans.text == userAnswer) {
+            if (ans.text === userAnswer) {
                 return {
                     ...ans,
                     isAnswered: !ans.isAnswered,
@@ -164,7 +164,7 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                 }
 
                 {
-                    (mode === EQuestionMode.passing || mode == EQuestionMode.checking) &&
+                    (mode === EQuestionMode.passing || mode === EQuestionMode.checking) &&
                     <div>
                         {
                             answers.map((answer: IChooseAnswer, i: number) => {

@@ -64,7 +64,7 @@ export default class QuestionsList extends React.Component<Props, State> {
                                     <React.Fragment>
                                         <TableCell>Статус</TableCell>
                                         {
-                                            mode == EQuestionsListMode.checking &&
+                                            mode === EQuestionsListMode.checking &&
                                             <TableCell>Статус проверки</TableCell>
                                         }
                                     </React.Fragment>
@@ -92,7 +92,7 @@ export default class QuestionsList extends React.Component<Props, State> {
                                                     }
                                                 </TableCell>
                                                 {
-                                                    mode == EQuestionsListMode.checking &&
+                                                    mode === EQuestionsListMode.checking &&
                                                     <TableCell>
                                                         {q.isChecked ?
                                                             <span style={{color: '#00695f'}}>проверен</span> :

@@ -3,51 +3,44 @@ import {ChangeEvent} from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import TextField from '@material-ui/core/TextField';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
+import {IUser} from '../interfaces/IUser';
 
 interface Props {
     onClose: () => any;
     onChange: (evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => any;
     onSubmit: () => any;
     open: boolean;
+    student: IUser,
 }
 
-export default class AddStudentDialog extends React.Component<Props> {
+export default class EditStudentDialog extends React.Component<Props> {
 
     render() {
-        const {open, onChange, onSubmit, onClose} = this.props;
+        const {open, onChange, onSubmit, onClose, student} = this.props;
 
         return (
             <Dialog open={open} aria-labelledby="dialog-title">
-                <DialogTitle id="dialog-title">Добавление студента</DialogTitle>
+                <DialogTitle id="dialog-title">Редактирование студента</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Введите данные студента.
-                    </DialogContentText>
                     <TextField
                         onChange={onChange}
                         autoFocus
                         margin="dense"
-                        name="studentName"
+                        name={'name'}
                         label="Имя"
                         fullWidth
+                        defaultValue={student.name}
                     />
                     <TextField
                         onChange={onChange}
                         margin="dense"
-                        name={'studentSurname'}
+                        name={'surname'}
                         label="Фамилия"
                         fullWidth
-                    />
-                    <TextField
-                        onChange={onChange}
-                        margin="dense"
-                        name={'studentGithub'}
-                        label="Логин Github"
-                        fullWidth
+                        defaultValue={student.surname}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -55,7 +48,7 @@ export default class AddStudentDialog extends React.Component<Props> {
                         Отмена
                     </Button>
                     <Button onClick={onSubmit} color="primary">
-                        Добавить
+                        Сохранить
                     </Button>
                 </DialogActions>
             </Dialog>

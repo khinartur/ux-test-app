@@ -1,7 +1,7 @@
 export enum EUserTestStatus {
-    not_passed='not_passed',
-    in_progress='in_progress',
-    passed='passed',
+    not_passed = 'not_passed',
+    in_progress = 'in_progress',
+    passed = 'passed',
 }
 
 export interface IUser {

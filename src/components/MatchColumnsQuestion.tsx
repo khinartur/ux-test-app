@@ -65,9 +65,9 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
         const {rightAnswers} = this.state.passMode;
         const {question, onAnswer} = this.props;
 
-        const down = dir == 'down';
-        if (down && index == answers.length - 1 ||
-            !down && index == 0) return;
+        const down = dir === 'down';
+        if (down && index === answers.length - 1 ||
+            !down && index === 0) return;
 
         const bIndex = down ? index + 1 : index - 1;
 
@@ -216,7 +216,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     </Paper>
                 }
                 {
-                    mode == EQuestionMode.passing &&
+                    mode === EQuestionMode.passing &&
                     <div>
                         {
                             question.questionData.answers.map((a: IMatchAnswer, i: number) => {
@@ -254,7 +254,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                     </div>
                 }
                 {
-                    mode == EQuestionMode.checking &&
+                    mode === EQuestionMode.checking &&
                     <div>
                         {
                             question.questionData.answers.map((a: IMatchAnswer, i: number) => {

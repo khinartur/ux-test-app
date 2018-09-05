@@ -26,7 +26,7 @@ class AdminLogin extends React.Component<{} & RouteComponentProps<{}>, State> {
 
     onSubmit = (evt) => {
         const {email, password} = this.state;
-        debugger;
+
         evt.preventDefault();
 
         this.setState({
@@ -88,7 +88,7 @@ class AdminLogin extends React.Component<{} & RouteComponentProps<{}>, State> {
                     <div className={AdminLoginStyles.adminLoginForm}>
                         <Paper className={AppStyles.error}>{error}</Paper>
                         <Paper className={AdminLoginStyles.adminLoginPaper}>
-                            <form onSubmit={(evt) => this.onSubmit(evt)}>
+                            <form onSubmit={this.onSubmit}>
                                 <TextField
                                     onChange={this.handleChange('email')}
                                     autoFocus

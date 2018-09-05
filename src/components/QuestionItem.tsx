@@ -17,8 +17,8 @@ export default class QuestionItem extends React.Component<QuestionItemProps, Que
         const {item, itemSelected, dragHandle, commonProps} = this.props;
         const scale = itemSelected * 0.05 + 1;
         const shadow = itemSelected * 15 + 1;
-        const dragged = itemSelected !== 0;
-        debugger;
+        //const dragged = itemSelected !== 0;
+
         return (
             <React.Fragment>
                 <div

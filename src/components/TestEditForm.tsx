@@ -189,11 +189,20 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     updateQuestionsList = (questions, map) => {
+
+        let newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
+            return {
+                text: q.text,
+                order: q.order,
+            };
+        }).sort((a, b) => a.order - b.order);
+
         this.setState({
             ...this.state,
             questions: embedKey(questions),
             questionsOrderMap: map,
             loading: false,
+            questionsList: newQuestionsList,
         });
     };
     showAddForm = () => {
@@ -332,7 +341,7 @@ export default class TestEditForm extends React.Component<{}, State> {
             .then((snapshot) => {
                 const oldQuestions = embedKey(snapshot.val());
                 //TODO: hmmm
-                debugger;
+
                 Object.entries(oldQuestions).forEach((o) => {
                     const q = o[1] as IQuestion<AnyQuestionData>; //q - question
                     if (q.order === currentQuestionOrder) {
@@ -441,7 +450,7 @@ export default class TestEditForm extends React.Component<{}, State> {
             .then((snapshot) => {
                 const questions = snapshot.val();
 
-                let newQuestionsList = Object.entries(questions).map(o => o[1]).map((q: IQuestion<AnyQuestionData>) => {
+                let newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
                     return {
                         text: q.text,
                         order: q.order,
@@ -463,7 +472,7 @@ export default class TestEditForm extends React.Component<{}, State> {
 
         const file = uploadedFiles[fileIndex];
         uploadFile(key, file).then(() => {
-            if (uploadedFiles.length == fileIndex + 1) {
+            if (uploadedFiles.length === fileIndex + 1) {
                 console.log('On success add question');
                 this.onSuccess();
             } else {
@@ -478,7 +487,7 @@ export default class TestEditForm extends React.Component<{}, State> {
             currentQuestionType, deleteQuestionDialogShow, questionsList
         } = this.state;
         const qCount = questions ? Object.keys(questions).length : 0;
-        debugger;
+
         return (
             <React.Fragment>
                 {loading &&
@@ -547,7 +556,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                     </Typography>
                                     <br/>
                                     <Paper className={AppStyles.error}>{error}</Paper>
-                                    <form autoComplete="off" onSubmit={(evt) => this.onFormSubmit(evt)}>
+                                    <form autoComplete="off" onSubmit={this.onFormSubmit}>
                                         <TextField label="Формулировка вопроса:"
                                                    fullWidth={true}
                                                    margin={'dense'}

@@ -65,7 +65,7 @@ class StudentProfile extends React.Component<Props & RouteComponentProps<{}>, St
                             <Typography variant="body2" gutterBottom>
                                 Github: {user.github}
                             </Typography>
-                            {user.test_status == EUserTestStatus.passed ?
+                            {user.test_status === EUserTestStatus.passed ?
                                 (
                                     <Typography variant="body2" gutterBottom>
                                         Вы прошли тест. Следите за новостями на портале.

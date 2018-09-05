@@ -27,7 +27,7 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
         let login;
         auth.signInWithPopup(provider).then((result) => {
             login = result.additionalUserInfo.username;
-            debugger;
+
 
             const user = Object.keys(usersList).find((l: string) => l === login);
 
@@ -56,7 +56,7 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
     }
 
     componentDidMount() {
-        debugger;
+
         getUsersList()
             .then((snapshot) => {
                 this.setState( {
@@ -71,7 +71,7 @@ class Sign extends React.Component<{} & RouteComponentProps<{}>, State> {
     render() {
         const {error, loading} = this.state;
 
-        // debugger;
+        //
         // if (auth.currentUser) {
         //     return <Redirect to={{pathname: auth.currentUser.providerData[0].providerId === 'github.com' ? '/admin' : '/profile'}}/>;
         // }
