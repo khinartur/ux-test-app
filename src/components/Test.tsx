@@ -98,6 +98,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             loading: true,
         });
 
+        const saveQuestionsPromises = [];
         let points = 0;
         questions.forEach((q: IQuestion<AnyQuestionData>) => {
             if (!q.isAnswered) return;
@@ -111,9 +112,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             goodboy = false;
                         }
                     });
-                    if (goodboy) {
-                        points += q.points;
-                    }
                     break;
 
                 case QuestionType.match_columns:
@@ -123,21 +121,32 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             goodboy = false;
                         }
                     });
-                    if (goodboy) {
-                        points += q.points;
-                    }
                     break;
 
                 case QuestionType.open_question:
                     return;
             }
+
+            if (goodboy) {
+                points += q.points;
+            } else {
+                saveQuestionsPromises.push(
+                    savePassedQuestion(user.github, q.key, q, {
+                        points: 0,
+                    })
+                );
+            }
         });
 
-        updateUser(user, {points, test_status: EUserTestStatus.passed})
+        Promise.all(saveQuestionsPromises)
             .then(() => {
-                updateUserModel({...user, test_status: EUserTestStatus.passed});
-                history.push('/profile');
-            });
+                updateUser(user, {points, test_status: EUserTestStatus.passed})
+                    .then(() => {
+                        updateUserModel({...user, test_status: EUserTestStatus.passed});
+                        history.push('/profile');
+                    });
+            }
+        );
     };
     onDone = () => {
         const {questions} = this.state;
@@ -211,8 +220,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             loading: true,
         });
 
-        const isChecked = currentQuestion.type === QuestionType.choose_right ||
-            currentQuestion.type === QuestionType.match_columns;
+        const isChecked = [QuestionType.choose_right, QuestionType.match_columns].includes(currentQuestion.type);
 
         savePassedQuestion(user.github, currentQuestion.key, currentQuestion, {
             isAnswered: true,

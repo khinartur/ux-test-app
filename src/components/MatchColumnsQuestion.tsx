@@ -5,7 +5,7 @@ import Button from '@material-ui/core/Button';
 import MenuUp from 'mdi-material-ui/MenuUp';
 import MenuDown from 'mdi-material-ui/MenuDown';
 
-import * as MatchColumnsQuestionStyles from '../styles/MatchColumnsQuestion.scss';
+import * as styles from '../styles/MatchColumnsQuestion.scss';
 import {
     IMatchAnswer, IMatchColumnsData, IQuestionProps, IQuestionState, EQuestionMode, IChooseAnswer, IQuestion
 } from '../interfaces/IQuestion';
@@ -168,12 +168,14 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
             <div>
                 {
                     mode === EQuestionMode.editing &&
-                    <Paper className={MatchColumnsQuestionStyles.matchColumnsEditPaper}>
+                    <Paper className={styles.matchColumnsEditPaper}>
                         <div>
                             {
                                 answers && answers.length ?
                                     answers.map((answer: IMatchAnswer, index: number) => {
-                                        return <Paper key={index}>
+                                        return <Paper 
+                                                    key={index}
+                                                    className={styles.answerEditPaper}>
                                             {answer.left + '   =====>   ' + answer.right}
                                         </Paper>;
                                     })
@@ -182,7 +184,7 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                             }
                         </div>
                         <br/>
-                        <div className={MatchColumnsQuestionStyles.matchAnswerVariant}>
+                        <div className={styles.matchAnswerVariant}>
                             <div>
                                 <TextField label='Левый столбец'
                                            fullWidth={true}
@@ -221,18 +223,18 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                         {
                             question.questionData.answers.map((a: IMatchAnswer, i: number) => {
                                 return (
-                                    <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
-                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
-                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                    <div key={i} className={styles.matchRow}>
+                                        <Paper className={styles.answerPaper}>
+                                            <div className={styles.matchTypography}>
                                                 <Typography variant="body2">
                                                     {passMode.leftAnswers[i]}
                                                 </Typography>
                                             </div>
                                         </Paper>
-                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
-                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                        <Paper className={styles.answerPaper}>
+                                            <div className={styles.matchTypography}>
                                                 <Typography variant="body2"
-                                                            className={MatchColumnsQuestionStyles.matchTypography}>
+                                                            className={styles.matchTypography}>
                                                     {passMode.rightAnswers[i]}
                                                 </Typography>
                                             </div>
@@ -259,18 +261,18 @@ export default class MatchColumnsQuestion extends React.Component<Props, State> 
                         {
                             question.questionData.answers.map((a: IMatchAnswer, i: number) => {
                                 return (
-                                    <div key={i} className={MatchColumnsQuestionStyles.matchRow}>
-                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
-                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                    <div key={i} className={styles.matchRow}>
+                                        <Paper className={styles.answerPaper}>
+                                            <div className={styles.matchTypography}>
                                                 <Typography variant="body2">
                                                     {a.left}
                                                 </Typography>
                                             </div>
                                         </Paper>
-                                        <Paper className={MatchColumnsQuestionStyles.answerPaper}>
-                                            <div className={MatchColumnsQuestionStyles.matchTypography}>
+                                        <Paper className={styles.answerPaper}>
+                                            <div className={styles.matchTypography}>
                                                 <Typography variant="body2"
-                                                            className={MatchColumnsQuestionStyles.matchTypography}>
+                                                            className={styles.matchTypography}>
                                                     {a.user_answer || a.right}
                                                 </Typography>
                                             </div>

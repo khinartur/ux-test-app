@@ -190,12 +190,16 @@ export default class TestEditForm extends React.Component<{}, State> {
     };
     updateQuestionsList = (questions, map) => {
 
-        let newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
-            return {
-                text: q.text,
-                order: q.order,
-            };
-        }).sort((a, b) => a.order - b.order);
+        let newQuestionsList = [];
+
+        if (questions) {
+            newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
+                return {
+                    text: q.text,
+                    order: q.order,
+                };
+            }).sort((a, b) => a.order - b.order);
+        }
 
         this.setState({
             ...this.state,
@@ -450,13 +454,17 @@ export default class TestEditForm extends React.Component<{}, State> {
             .then((snapshot) => {
                 const questions = snapshot.val();
 
-                let newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
-                    return {
-                        text: q.text,
-                        order: q.order,
-                    };
-                })
-                .sort((a, b) => a.order - b.order);
+                let newQuestionsList = [];
+
+                if (questions) {
+                    newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
+                        return {
+                            text: q.text,
+                            order: q.order,
+                        };
+                    })
+                        .sort((a, b) => a.order - b.order);
+                }
 
                 this.setState({
                     ...this.state,

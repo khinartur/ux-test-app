@@ -169,11 +169,13 @@ export default class StudentsList extends React.Component<{}, State> {
             loading: false,
         });
     };
-    updateStudentList = (students) => {
+    updateStudentList = (students = {}) => {
         let list = [];
-        Object.entries(students).forEach((prop) => {
-            list.push(students[prop[0]]);
-        });
+        if (students) {
+            Object.entries(students).forEach((prop) => {
+                list.push(students[prop[0]]);
+            });
+        }
 
         this.setState({
             ...this.state,

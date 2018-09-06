@@ -57,9 +57,9 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
 
     constructor(props) {
         super(props);
+        debugger;
 
         this.state = {
-            pointsToAdd: this.props.question.points,
             loading: false,
         };
     }
@@ -69,9 +69,9 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
             question, questionsCount, pictures, mode, onList,
             onBack, onNext, onAnswer, onAnswerSave, onPointsAdd
         } = this.props;
-        const {pointsToAdd} = this.state;
 
         const isPassingMode = mode === EQuestionMode.passing;
+        const isOpenQuestion = question.type === QuestionType.open_question;
 
         return (
             <React.Fragment>
@@ -97,14 +97,16 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                 </div>
                 }
                 <div className={TestQuestionStyles.container1}>
-                    <div className={TestQuestionStyles.arrowWrapper}>{isPassingMode &&
-                    <div className={TestQuestionStyles.arrow}
-                         onClick={onBack}>
-                        <div className={TestQuestionStyles.arrowInner}>
-                            <ChevronDoubleLeft/>
+                    {isPassingMode &&
+                        <div className={TestQuestionStyles.arrowWrapper}>
+                            <div className={TestQuestionStyles.arrow}
+                                 onClick={onBack}>
+                                <div className={TestQuestionStyles.arrowInner}>
+                                    <ChevronDoubleLeft/>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    }</div>
+                    }
                     <div className={TestQuestionStyles.container}>
                         {
                             <Paper className={TestQuestionStyles.questionPaper}
@@ -157,35 +159,38 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                                 {!isPassingMode &&
                                 <div className={TestQuestionStyles.addPointsDiv}>
                                     <div>
-                                        <TextField label='Добавить баллов'
+                                        <TextField label={isOpenQuestion ? 'Добавить баллов' : 'Начислено баллов'}
                                                    fullWidth={true}
                                                    margin={'dense'}
-                                                   disabled={!(question.type === QuestionType.open_question)}
+                                                   disabled={!isOpenQuestion || !question.isAnswered}
                                                    onChange={(evt) => this.onPointsToAddChange(evt)}
-                                                   defaultValue={pointsToAdd}/>
+                                                   defaultValue={isOpenQuestion ? 0 : question.points}/>
                                     </div>
-                                    <div>
-                                        <Button variant="contained"
-                                                color="primary"
-                                                disabled={!(question.type === QuestionType.open_question)}
-                                                onClick={(evt) => onPointsAdd(evt, pointsToAdd)}>
-                                            Добавить баллы
-                                        </Button>
-                                    </div>
+                                    {isOpenQuestion &&
+                                        <div>
+                                            <Button variant="contained"
+                                                    color="primary"
+                                                    disabled={!question.isAnswered}
+                                                    onClick={(evt) => onPointsAdd(evt, question.points)}>
+                                                Добавить баллы
+                                            </Button>
+                                        </div>
+                                    }
                                 </div>
                                 }
                             </Paper>
                         }
                     </div>
-                    <div className={TestQuestionStyles.arrowWrapper}>{isPassingMode &&
-                    <div className={TestQuestionStyles.arrow}
-                         onClick={onNext}>
-                        <div className={TestQuestionStyles.arrowInner}>
-                            <ChevronDoubleRight/>
+                    {isPassingMode &&
+                        <div className={TestQuestionStyles.arrowWrapper}>
+                            <div className={TestQuestionStyles.arrow}
+                                 onClick={onNext}>
+                                <div className={TestQuestionStyles.arrowInner}>
+                                    <ChevronDoubleRight/>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    }</div>
-
+                    }
                 </div>
             </React.Fragment>
         );
