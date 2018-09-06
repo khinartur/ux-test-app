@@ -4,7 +4,10 @@ body, html {
 }
 
 #reactContainer {
-    min-height: 100vh;
+    position: absolute;
+    display: block;
+    height: 100%;
+    width: 100%;
 }
 
 .error {

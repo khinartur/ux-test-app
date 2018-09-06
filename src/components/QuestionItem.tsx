@@ -30,8 +30,8 @@ export default class QuestionItem extends React.Component<QuestionItemProps, Que
                     }}
                     onClick={(evt) => commonProps.onClick(evt, item.order)}
                 >
-                    {item.order + ') ' + item.text}
-                    {dragHandle(<div className={styles.dragIcon}><Drag/></div>)}
+                    <div className={styles.questionText}>{item.order + ') ' + item.text}</div>
+                    {dragHandle(<div className={styles.dragIcon}><Drag style={{float: 'right'}}/></div>)}
                 </div>
             </React.Fragment>
         );

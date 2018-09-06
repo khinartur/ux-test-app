@@ -8,7 +8,7 @@ import TableRow from '@material-ui/core/TableRow';
 import CheckCircleOutline from 'mdi-material-ui/CheckCircleOutline';
 import CheckBlankCircleOutline from 'mdi-material-ui/CheckboxBlankCircleOutline';
 
-import * as QuestionsListStyles from '../styles/QuestionsList.scss';
+import * as styles from '../styles/QuestionsList.scss';
 import * as AppStyles from '../styles/App.scss';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {AnyQuestionData, IQuestion} from '../interfaces/IQuestion';
@@ -52,20 +52,24 @@ export default class QuestionsList extends React.Component<Props, State> {
                 </div>
                 }
                 {!loading &&
-                <Paper className={QuestionsListStyles.tablePaper}>
-                    <Table>
+                <Paper className={styles.tablePaper}>
+                    <Table
+                        className={styles.table}>
                         <TableHead>
                             <TableRow>
-                                <TableCell>No</TableCell>
-                                <TableCell>Вопрос</TableCell>
-                                <TableCell>Тип</TableCell>
+                                <TableCell className={styles.noColumn}>No</TableCell>
+                                <TableCell className={styles.questionColumn}>Вопрос</TableCell>
+                                <TableCell className={styles.typeColumn}>Тип</TableCell>
                                 {
                                     mode !== EQuestionsListMode.editing &&
                                     <React.Fragment>
-                                        <TableCell>Статус</TableCell>
+                                        <TableCell className={styles.statusColumn}>Статус</TableCell>
                                         {
                                             mode === EQuestionsListMode.checking &&
-                                            <TableCell>Статус проверки</TableCell>
+                                            <React.Fragment>
+                                                <TableCell className={styles.checkColumn}>Статус проверки</TableCell>
+                                                <TableCell className={styles.markColumn}>Начислено баллов</TableCell>
+                                            </React.Fragment>
                                         }
                                     </React.Fragment>
                                 }
@@ -75,17 +79,19 @@ export default class QuestionsList extends React.Component<Props, State> {
                             {questions.map((q: IQuestion<AnyQuestionData>, i: number) => {
                                 return (
                                     <TableRow key={i}
-                                              className={QuestionsListStyles.questionTableRow}
+                                              className={styles.questionTableRow}
                                               onClick={(evt) => onClick(evt, i)}>
-                                        <TableCell>{q.order + '.'}</TableCell>
-                                        <TableCell className={QuestionsListStyles.questionTextCell}>
+                                        <TableCell className={styles.noColumn}>{q.order + '.'}</TableCell>
+                                        <TableCell className={styles.questionColumn}>
                                             {q.text}
                                         </TableCell>
-                                        <TableCell>{getTypeName(q)}</TableCell>
+                                        <TableCell className={styles.typeColumn}>
+                                            {getTypeName(q)}
+                                        </TableCell>
                                         {
                                             mode !== EQuestionsListMode.editing &&
                                             <React.Fragment>
-                                                <TableCell>
+                                                <TableCell className={styles.statusColumn}>
                                                     {
                                                         q.isAnswered ? <CheckCircleOutline color={'secondary'}/> :
                                                             <CheckBlankCircleOutline color={'error'}/>
@@ -93,11 +99,16 @@ export default class QuestionsList extends React.Component<Props, State> {
                                                 </TableCell>
                                                 {
                                                     mode === EQuestionsListMode.checking &&
-                                                    <TableCell>
-                                                        {q.isChecked ?
-                                                            <span style={{color: '#00695f'}}>проверен</span> :
-                                                            <span style={{color: '#b2102f'}}>не проверен</span>}
-                                                    </TableCell>
+                                                    <React.Fragment>
+                                                        <TableCell className={styles.checkColumn}>
+                                                            {q.isChecked ?
+                                                                <span style={{color: '#00695f'}}>проверен</span> :
+                                                                <span style={{color: '#b2102f'}}>не проверен</span>}
+                                                        </TableCell>
+                                                        <TableCell className={styles.markColumn}>
+                                                            {q.points}
+                                                        </TableCell>
+                                                    </React.Fragment>
                                                 }
                                             </React.Fragment>
                                         }

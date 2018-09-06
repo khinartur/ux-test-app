@@ -572,12 +572,14 @@ export default class TestEditForm extends React.Component<{}, State> {
                                                    defaultValue={currentQuestion.text}>
                                         </TextField>
                                         <br/>
-                                        <TextField label="Количество баллов:"
-                                                   fullWidth={true}
-                                                   margin={'dense'}
-                                                   onChange={this.onPointsChange}
-                                                   defaultValue={currentQuestion.points}>
-                                        </TextField>
+                                        {!(currentQuestionType === QuestionType.open_question) &&
+                                            <TextField label="Количество баллов:"
+                                                       fullWidth={true}
+                                                       margin={'dense'}
+                                                       onChange={this.onPointsChange}
+                                                       defaultValue={currentQuestion.points}>
+                                            </TextField>
+                                        }
                                         <br/>
                                         <div>
                                             <input
@@ -590,7 +592,7 @@ export default class TestEditForm extends React.Component<{}, State> {
                                             />
                                             <label htmlFor="raised-button-file">
                                                 <Button variant="contained" color="primary" component="span">
-                                                    Добавить картинки
+                                                    Добавить картинку
                                                 </Button>
                                             </label>
                                         </div>

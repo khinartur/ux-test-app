@@ -4,13 +4,28 @@
 }
 
 .answerPaper {
-    padding: 5px;
-    height: 24px;
-    line-height: 24px;
+    padding: 6px;
+    min-height: 24px;
+    white-space: nowrap;
+    margin-bottom: 12px;
 }
 
 .chooseRightEditPaper {
     margin-top: 15px;
     margin-bottom: 15px;
     padding: 10px;
+}
+
+.answerText {
+    display: inline-block;
+    width: calc(100% - 30px);
+    white-space: normal;
+    line-height: 24px;
+}
+
+.answerMark {
+    display: inline-block;
+    vertical-align: top;
+    height: 100%;
+    padding-left: 6px;
 }

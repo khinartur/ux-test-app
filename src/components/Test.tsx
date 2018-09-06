@@ -30,7 +30,6 @@ import {
     updateUser
 } from '../api/api-database';
 import {updateUserModel} from '../model/UserModel';
-import {AnyAaaaRecord} from 'dns';
 
 interface Props {
     checkMode?: boolean;
@@ -102,7 +101,6 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         const saveQuestionsPromises = [];
         let points = 0;
         questions.forEach((q: IQuestion<AnyQuestionData>) => {
-            if (!q.isAnswered) return;
             let answers;
             let goodboy = true;
             switch (q.type) {
@@ -130,24 +128,24 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
             if (goodboy) {
                 points += q.points;
-            } else {
-                saveQuestionsPromises.push(
-                    savePassedQuestion(user.github, q.key, q, {
-                        points: 0,
-                    })
-                );
             }
+            saveQuestionsPromises.push(
+                savePassedQuestion(user.github, q.key, q, {
+                    points: goodboy ? q.points : 0,
+                    isChecked: true,
+                })
+            );
         });
 
         Promise.all(saveQuestionsPromises)
             .then(() => {
-                updateUser(user, {points, test_status: EUserTestStatus.passed})
-                    .then(() => {
-                        updateUserModel({...user, test_status: EUserTestStatus.passed});
-                        history.push('/profile');
-                    });
-            }
-        );
+                    updateUser(user, {points, test_status: EUserTestStatus.passed})
+                        .then(() => {
+                            updateUserModel({...user, test_status: EUserTestStatus.passed});
+                            history.push('/profile');
+                        });
+                }
+            );
     };
     onDone = () => {
         const {questions} = this.state;
@@ -323,8 +321,8 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
         });
     };
     toStudentList = () => {
-        const { toStudentList } = this.props;
-        const { user, questions } = this.state;
+        const {toStudentList} = this.props;
+        const {user, questions} = this.state;
 
         this.setState({
             ...this.state,
@@ -341,20 +339,19 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
 
         if (isAllChecked) {
-            updateUser(user, { test_is_checked: true })
+            updateUser(user, {test_is_checked: true})
                 .then(() => {
                     this.setState({
                         ...this.state,
                         loading: false,
                     }, () => toStudentList());
                 });
+        } else {
+            this.setState({
+                ...this.state,
+                loading: false,
+            }, () => toStudentList());
         }
-
-        this.setState({
-            ...this.state,
-            loading: false,
-        }, () => toStudentList());
-
     };
     initState = (questions) => {
         const {locationNumber} = this.state;
@@ -442,77 +439,71 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                     <LinearProgress/>
                 </div>
                 }
-                {
-                    !checkMode && !loading &&
-                    <React.Fragment>
-
-                        {
-                            showQuestionsList &&
+                {!checkMode && !loading &&
+                <React.Fragment>
+                    {showQuestionsList &&
+                    <QuestionsList
+                        mode={EQuestionsListMode.passing}
+                        questions={questions}
+                        onClick={this.onQuestionsListClick}
+                    />
+                    }
+                    {!showQuestionsList &&
+                    <TestQuestion
+                        question={currentQuestion}
+                        questionsCount={questions.length}
+                        pictures={this.picturesStorage[currentQuestion.key]}
+                        mode={EQuestionMode.passing}
+                        onList={this.toList}
+                        onBack={this.onBack}
+                        onNext={this.onNext}
+                        onAnswer={this.onAnswer}
+                        onAnswerSave={this.onAnswerSave}
+                        onPointsAdd={this.onPointsAdd}
+                        user={user}
+                    />
+                    }
+                    {showQuestionsList &&
+                    <div style={{margin: '25px'}}>
+                        <Button variant='contained'
+                                color='primary'
+                                fullWidth={false}
+                                onClick={this.onDone}>
+                            Завершить тест
+                        </Button>
+                    </div>
+                    }
+                </React.Fragment>
+                }
+                {!loading && checkMode &&
+                <React.Fragment>
+                    <div className={TestQuestionStyles.toQuestionsButton}>
+                        <Button variant='contained'
+                                color='primary'
+                                fullWidth={false}
+                                onClick={this.toStudentList}>
+                            Назад
+                        </Button>
+                    </div>
+                    <div className={TestStyles.checkModeContaiter}>
+                        <div className={TestStyles.checkModeContaiterItem}>
                             <QuestionsList
-                                mode={EQuestionsListMode.passing}
+                                mode={EQuestionsListMode.checking}
                                 questions={questions}
                                 onClick={this.onQuestionsListClick}
                             />
-                        }
-                        {
-                            !showQuestionsList &&
+                        </div>
+                        <div className={TestStyles.checkModeContaiterItem}>
                             <TestQuestion
                                 question={currentQuestion}
                                 questionsCount={questions.length}
                                 pictures={this.picturesStorage[currentQuestion.key]}
-                                mode={EQuestionMode.passing}
-                                onList={this.toList}
-                                onBack={this.onBack}
-                                onNext={this.onNext}
-                                onAnswer={this.onAnswer}
-                                onAnswerSave={this.onAnswerSave}
+                                mode={EQuestionMode.checking}
                                 onPointsAdd={this.onPointsAdd}
-                                user={user}
                             />
-                        }
-                        {
-                            showQuestionsList &&
-                            <div style={{margin: '25px'}}>
-                                <Button variant='contained'
-                                        color='primary'
-                                        fullWidth={false}
-                                        onClick={this.onDone}>
-                                    Завершить тест
-                                </Button>
-                            </div>
-                        }
-                    </React.Fragment>
-                }
-                {
-                    !loading && checkMode &&
-                    <React.Fragment>
-                        <div className={TestQuestionStyles.toQuestionsButton}>
-                            <Button variant='contained'
-                                    color='primary'
-                                    fullWidth={false}
-                                    onClick={this.toStudentList}>
-                                Назад
-                            </Button>
                         </div>
-                        <div className={TestStyles.checkModeContaiter}>
-                            <div className={TestStyles.checkModeContaiterItem}>
-                                <QuestionsList
-                                    mode={EQuestionsListMode.checking}
-                                    questions={questions}
-                                    onClick={this.onQuestionsListClick}
-                                />
-                            </div>
-                            <div className={TestStyles.checkModeContaiterItem}>
-                                <TestQuestion
-                                    question={currentQuestion}
-                                    questionsCount={questions.length}
-                                    pictures={this.picturesStorage[currentQuestion.key]}
-                                    mode={EQuestionMode.checking}
-                                    onPointsAdd={this.onPointsAdd}
-                                />
-                            </div>
-                        </div>
-                    </React.Fragment>
+                    </div>
+                </React.Fragment>
                 }
                 <DoneTestDialog open={showDoneTestDialog}
                                 onClose={this.closeDoneTestDialog}

@@ -11,7 +11,11 @@ import * as styles from '../styles/ChooseRightQuestion.scss';
 
 import {
     EQuestionMode,
-    IChooseAnswer, IChooseRightData, IQuestion, IQuestionProps, IQuestionState,
+    IChooseAnswer,
+    IChooseRightData,
+    IQuestion,
+    IQuestionProps,
+    IQuestionState,
 } from '../interfaces/IQuestion';
 import {IError} from '../interfaces/IError';
 
@@ -118,10 +122,15 @@ export default class ChooseRightQuestion extends React.Component<Props, State> {
                             {
                                 answers && answers.length ?
                                     answers.map((answer: IChooseAnswer, index: number) => {
-                                        return <Paper key={index}
-                                                      className={styles.answerPaper}>
-                                            {answer.text} {answer.isRight && <CheckCircle color={'secondary'}/>}
-                                        </Paper>;
+                                        return (
+                                            <Paper
+                                                key={index}
+                                                className={styles.answerPaper}
+                                            >
+                                                <div className={styles.answerText}>{answer.text}</div>
+                                                <div className={styles.answerMark}>{answer.isRight && <CheckCircle color={'secondary'}/>}</div>
+                                            </Paper>
+                                        );
                                     })
                                     :
                                     <div>Нет вариантов ответа.</div>

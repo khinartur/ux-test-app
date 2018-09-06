@@ -1,3 +1,7 @@
+.table {
+    table-layout: fixed;
+}
+
 .tablePaper {
     margin: 20px;
     padding: 20px;
@@ -9,4 +13,28 @@
 
 .questionTableRow:hover {
     background-color: dimgray;
+}
+
+.noColumn {
+    width: 3%;
+}
+
+.questionColumn {
+    width: 40%;
+}
+
+.typeColumn {
+    width: 18%;
+}
+
+.statusColumn {
+    width: 8%;
+}
+
+.checkColumn {
+    width: 18%;
+}
+
+.markColumn {
+    width: 13%;
 }
