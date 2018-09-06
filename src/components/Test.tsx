@@ -30,6 +30,7 @@ import {
     updateUser
 } from '../api/api-database';
 import {updateUserModel} from '../model/UserModel';
+import {AnyAaaaRecord} from 'dns';
 
 interface Props {
     checkMode?: boolean;
@@ -321,6 +322,40 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
             }
         });
     };
+    toStudentList = () => {
+        const { toStudentList } = this.props;
+        const { user, questions } = this.state;
+
+        this.setState({
+            ...this.state,
+            loading: true,
+        });
+
+        let isAllChecked = true;
+
+        questions.forEach((q: IQuestion<AnyQuestionData>) => {
+            if (!q.isChecked) {
+                isAllChecked = false;
+            }
+        });
+
+
+        if (isAllChecked) {
+            updateUser(user, { test_is_checked: true })
+                .then(() => {
+                    this.setState({
+                        ...this.state,
+                        loading: false,
+                    }, () => toStudentList());
+                });
+        }
+
+        this.setState({
+            ...this.state,
+            loading: false,
+        }, () => toStudentList());
+
+    };
     initState = (questions) => {
         const {locationNumber} = this.state;
 
@@ -398,7 +433,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
 
     render() {
         const {loading, showQuestionsList, questions, currentQuestion, user, showDoneTestDialog} = this.state;
-        const {checkMode, toStudentList} = this.props;
+        const {checkMode} = this.props;
 
         return (
             <React.Fragment>
@@ -455,7 +490,7 @@ class Test extends React.Component<Props & RouteComponentProps<{}>, State> {
                             <Button variant='contained'
                                     color='primary'
                                     fullWidth={false}
-                                    onClick={toStudentList}>
+                                    onClick={this.toStudentList}>
                                 Назад
                             </Button>
                         </div>

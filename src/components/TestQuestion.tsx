@@ -69,6 +69,7 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
             question, questionsCount, pictures, mode, onList,
             onBack, onNext, onAnswer, onAnswerSave, onPointsAdd
         } = this.props;
+        debugger;
 
         const isPassingMode = mode === EQuestionMode.passing;
         const isOpenQuestion = question.type === QuestionType.open_question;
@@ -156,26 +157,23 @@ class TestQuestion extends React.Component<Props & RouteComponentProps<{}>, Stat
                                     </Button>
                                 </div>
                                 }
-                                {!isPassingMode &&
+                                {!isPassingMode && isOpenQuestion &&
                                 <div className={TestQuestionStyles.addPointsDiv}>
                                     <div>
-                                        <TextField label={isOpenQuestion ? 'Добавить баллов' : 'Начислено баллов'}
+                                        <TextField label={isOpenQuestion ? 'Введите кол-во баллов' : 'Начислено баллов'}
                                                    fullWidth={true}
                                                    margin={'dense'}
                                                    disabled={!isOpenQuestion || !question.isAnswered}
-                                                   onChange={(evt) => this.onPointsToAddChange(evt)}
-                                                   defaultValue={isOpenQuestion ? 0 : question.points}/>
+                                                   onChange={(evt) => this.onPointsToAddChange(evt)}/>
                                     </div>
-                                    {isOpenQuestion &&
-                                        <div>
-                                            <Button variant="contained"
-                                                    color="primary"
-                                                    disabled={!question.isAnswered}
-                                                    onClick={(evt) => onPointsAdd(evt, question.points)}>
-                                                Добавить баллы
-                                            </Button>
-                                        </div>
-                                    }
+                                    <div>
+                                        <Button variant="contained"
+                                                color="primary"
+                                                disabled={!question.isAnswered}
+                                                onClick={(evt) => onPointsAdd(evt, question.points)}>
+                                            Добавить баллы
+                                        </Button>
+                                    </div>
                                 </div>
                                 }
                             </Paper>
