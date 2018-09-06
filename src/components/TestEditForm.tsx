@@ -189,17 +189,9 @@ export default class TestEditForm extends React.Component<{}, State> {
         });
     };
     updateQuestionsList = (questions, map) => {
-
-        let newQuestionsList = [];
-
-        if (questions) {
-            newQuestionsList = Object.values(questions).map((q: IQuestion<AnyQuestionData>) => {
-                return {
-                    text: q.text,
-                    order: q.order,
-                };
-            }).sort((a, b) => a.order - b.order);
-        }
+        const newQuestionsList = Object.values(questions || {})
+            .map(({text, order}: IQuestion<AnyQuestionData>) => ({text, order}))
+            .sort((a, b) => a.order - b.order);
 
         this.setState({
             ...this.state,
@@ -409,11 +401,11 @@ export default class TestEditForm extends React.Component<{}, State> {
         //     if (o.order === oldI) {
         //         return {...o, order: newI};
         //     }
-		//
+        //
         //     if (o.order === newI) {
         //         return {...o, order: oldI};
         //     }
-		//
+        //
         //     return o;
         // });
 
@@ -573,12 +565,12 @@ export default class TestEditForm extends React.Component<{}, State> {
                                         </TextField>
                                         <br/>
                                         {!(currentQuestionType === QuestionType.open_question) &&
-                                            <TextField label="Количество баллов:"
-                                                       fullWidth={true}
-                                                       margin={'dense'}
-                                                       onChange={this.onPointsChange}
-                                                       defaultValue={currentQuestion.points}>
-                                            </TextField>
+                                        <TextField label="Количество баллов:"
+                                                   fullWidth={true}
+                                                   margin={'dense'}
+                                                   onChange={this.onPointsChange}
+                                                   defaultValue={currentQuestion.points}>
+                                        </TextField>
                                         }
                                         <br/>
                                         <div>
